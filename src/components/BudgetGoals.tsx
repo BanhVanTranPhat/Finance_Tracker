@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { Target, Plus, X, TrendingUp } from 'lucide-react';
+import { useState } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { Target, Plus, X, TrendingUp } from "lucide-react";
 
 interface Goal {
   id: string;
@@ -13,26 +13,30 @@ interface Goal {
 }
 
 const GoalSchema = Yup.object().shape({
-  name: Yup.string().required('Vui lòng nhập tên mục tiêu'),
-  targetAmount: Yup.number().positive('Số tiền phải lớn hơn 0').required('Vui lòng nhập số tiền mục tiêu'),
-  currentAmount: Yup.number().min(0, 'Số tiền không thể âm').required('Vui lòng nhập số tiền hiện tại'),
-  deadline: Yup.date().required('Vui lòng chọn hạn hoàn thành'),
-  category: Yup.string().required('Vui lòng chọn danh mục'),
+  name: Yup.string().required("Vui lòng nhập tên mục tiêu"),
+  targetAmount: Yup.number()
+    .positive("Số tiền phải lớn hơn 0")
+    .required("Vui lòng nhập số tiền mục tiêu"),
+  currentAmount: Yup.number()
+    .min(0, "Số tiền không thể âm")
+    .required("Vui lòng nhập số tiền hiện tại"),
+  deadline: Yup.date().required("Vui lòng chọn hạn hoàn thành"),
+  category: Yup.string().required("Vui lòng chọn danh mục"),
 });
 
 export default function BudgetGoals() {
   const [goals, setGoals] = useState<Goal[]>(() => {
-    const saved = localStorage.getItem('financial_goals');
+    const saved = localStorage.getItem("financial_goals");
     return saved ? JSON.parse(saved) : [];
   });
   const [showForm, setShowForm] = useState(false);
 
   const saveGoals = (newGoals: Goal[]) => {
     setGoals(newGoals);
-    localStorage.setItem('financial_goals', JSON.stringify(newGoals));
+    localStorage.setItem("financial_goals", JSON.stringify(newGoals));
   };
 
-  const addGoal = (goal: Omit<Goal, 'id'>) => {
+  const addGoal = (goal: Omit<Goal, "id">) => {
     const newGoal: Goal = {
       ...goal,
       id: Math.random().toString(36).substr(2, 9),
@@ -42,34 +46,34 @@ export default function BudgetGoals() {
   };
 
   const deleteGoal = (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa mục tiêu này?')) {
-      saveGoals(goals.filter(g => g.id !== id));
+    if (window.confirm("Bạn có chắc chắn muốn xóa mục tiêu này?")) {
+      saveGoals(goals.filter((g) => g.id !== id));
     }
   };
 
   const updateProgress = (id: string, amount: number) => {
     saveGoals(
-      goals.map(g =>
+      goals.map((g) =>
         g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g
       )
     );
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
 
   const categories = [
-    { value: 'emergency', label: 'Quỹ khẩn cấp' },
-    { value: 'vacation', label: 'Du lịch' },
-    { value: 'house', label: 'Mua nhà' },
-    { value: 'car', label: 'Mua xe' },
-    { value: 'education', label: 'Giáo dục' },
-    { value: 'retirement', label: 'Nghỉ hưu' },
-    { value: 'other', label: 'Khác' },
+    { value: "emergency", label: "Quỹ khẩn cấp" },
+    { value: "vacation", label: "Du lịch" },
+    { value: "house", label: "Mua nhà" },
+    { value: "car", label: "Mua xe" },
+    { value: "education", label: "Giáo dục" },
+    { value: "retirement", label: "Nghỉ hưu" },
+    { value: "other", label: "Khác" },
   ];
 
   return (
@@ -80,7 +84,9 @@ export default function BudgetGoals() {
             <Target className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Mục tiêu tài chính</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Mục tiêu tài chính
+            </h2>
             <p className="text-gray-600">Theo dõi tiến độ tiết kiệm của bạn</p>
           </div>
         </div>
@@ -96,8 +102,12 @@ export default function BudgetGoals() {
       {goals.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
           <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Chưa có mục tiêu nào</h3>
-          <p className="text-gray-600 mb-6">Tạo mục tiêu tài chính đầu tiên của bạn</p>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Chưa có mục tiêu nào
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Tạo mục tiêu tài chính đầu tiên của bạn
+          </p>
           <button
             onClick={() => setShowForm(true)}
             className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 transition"
@@ -108,23 +118,30 @@ export default function BudgetGoals() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
-          {goals.map(goal => {
+          {goals.map((goal) => {
             const progress = (goal.currentAmount / goal.targetAmount) * 100;
             const remaining = goal.targetAmount - goal.currentAmount;
-            const daysLeft = Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            const daysLeft = Math.ceil(
+              (new Date(goal.deadline).getTime() - new Date().getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
 
             return (
               <div key={goal.id} className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-1">{goal.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">
+                      {goal.name}
+                    </h3>
                     <span className="text-sm text-gray-500">
-                      {categories.find(c => c.value === goal.category)?.label}
+                      {categories.find((c) => c.value === goal.category)?.label}
                     </span>
                   </div>
                   <button
                     onClick={() => deleteGoal(goal.id)}
                     className="text-gray-400 hover:text-red-500 transition"
+                    title="Xóa mục tiêu"
+                    aria-label="Xóa mục tiêu"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -133,12 +150,19 @@ export default function BudgetGoals() {
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm mb-2">
                     <span className="text-gray-600">Tiến độ</span>
-                    <span className="font-semibold text-purple-600">{progress.toFixed(1)}%</span>
+                    <span className="font-semibold text-purple-600">
+                      {progress.toFixed(1)}%
+                    </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
                       className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(progress, 100)}%` }}
+                      role="progressbar"
+                      aria-valuenow={Math.round(Math.min(progress, 100))}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Tiến độ: ${progress.toFixed(1)}%`}
                     />
                   </div>
                 </div>
@@ -146,27 +170,39 @@ export default function BudgetGoals() {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Hiện tại:</span>
-                    <span className="font-semibold text-gray-800">{formatCurrency(goal.currentAmount)}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatCurrency(goal.currentAmount)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Mục tiêu:</span>
-                    <span className="font-semibold text-gray-800">{formatCurrency(goal.targetAmount)}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatCurrency(goal.targetAmount)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Còn thiếu:</span>
-                    <span className="font-semibold text-orange-600">{formatCurrency(remaining)}</span>
+                    <span className="font-semibold text-orange-600">
+                      {formatCurrency(remaining)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Thời hạn:</span>
-                    <span className={`font-semibold ${daysLeft < 30 ? 'text-red-600' : 'text-gray-800'}`}>
-                      {daysLeft > 0 ? `${daysLeft} ngày nữa` : 'Đã hết hạn'}
+                    <span
+                      className={`font-semibold ${
+                        daysLeft < 30 ? "text-red-600" : "text-gray-800"
+                      }`}
+                    >
+                      {daysLeft > 0 ? `${daysLeft} ngày nữa` : "Đã hết hạn"}
                     </span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => {
-                    const amount = prompt('Nhập số tiền bạn đã tiết kiệm thêm:');
+                    const amount = prompt(
+                      "Nhập số tiền bạn đã tiết kiệm thêm:"
+                    );
                     if (amount && !isNaN(Number(amount))) {
                       updateProgress(goal.id, Number(amount));
                     }
@@ -186,10 +222,14 @@ export default function BudgetGoals() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Thêm mục tiêu mới</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Thêm mục tiêu mới
+              </h2>
               <button
                 onClick={() => setShowForm(false)}
                 className="text-gray-400 hover:text-gray-600 transition"
+                title="Đóng form"
+                aria-label="Đóng form thêm mục tiêu"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -197,11 +237,11 @@ export default function BudgetGoals() {
 
             <Formik
               initialValues={{
-                name: '',
-                targetAmount: '',
-                currentAmount: '0',
-                deadline: '',
-                category: '',
+                name: "",
+                targetAmount: "",
+                currentAmount: "0",
+                deadline: "",
+                category: "",
               }}
               validationSchema={GoalSchema}
               onSubmit={(values) => {
@@ -217,7 +257,10 @@ export default function BudgetGoals() {
               {({ isSubmitting }) => (
                 <Form className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Tên mục tiêu
                     </label>
                     <Field
@@ -227,11 +270,18 @@ export default function BudgetGoals() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
                       placeholder="Ví dụ: Mua laptop mới"
                     />
-                    <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                    <ErrorMessage
+                      name="name"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="category"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Danh mục
                     </label>
                     <Field
@@ -241,17 +291,24 @@ export default function BudgetGoals() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
                     >
                       <option value="">Chọn danh mục</option>
-                      {categories.map(cat => (
+                      {categories.map((cat) => (
                         <option key={cat.value} value={cat.value}>
                           {cat.label}
                         </option>
                       ))}
                     </Field>
-                    <ErrorMessage name="category" component="div" className="text-red-500 text-sm mt-1" />
+                    <ErrorMessage
+                      name="category"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="targetAmount" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="targetAmount"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Số tiền mục tiêu (VNĐ)
                     </label>
                     <Field
@@ -261,11 +318,18 @@ export default function BudgetGoals() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
                       placeholder="10000000"
                     />
-                    <ErrorMessage name="targetAmount" component="div" className="text-red-500 text-sm mt-1" />
+                    <ErrorMessage
+                      name="targetAmount"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="currentAmount" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="currentAmount"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Số tiền hiện tại (VNĐ)
                     </label>
                     <Field
@@ -275,11 +339,18 @@ export default function BudgetGoals() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
                       placeholder="0"
                     />
-                    <ErrorMessage name="currentAmount" component="div" className="text-red-500 text-sm mt-1" />
+                    <ErrorMessage
+                      name="currentAmount"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="deadline"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Hạn hoàn thành
                     </label>
                     <Field
@@ -288,7 +359,11 @@ export default function BudgetGoals() {
                       id="deadline"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
                     />
-                    <ErrorMessage name="deadline" component="div" className="text-red-500 text-sm mt-1" />
+                    <ErrorMessage
+                      name="deadline"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
                   </div>
 
                   <button
@@ -297,7 +372,7 @@ export default function BudgetGoals() {
                     className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-5 h-5" />
-                    {isSubmitting ? 'Đang thêm...' : 'Thêm mục tiêu'}
+                    {isSubmitting ? "Đang thêm..." : "Thêm mục tiêu"}
                   </button>
                 </Form>
               )}

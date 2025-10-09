@@ -1,22 +1,33 @@
-import { useMemo } from 'react';
-import { useTransactions } from '../contexts/TransactionContext';
-import { formatCurrency as formatCurrencyUtil } from '../utils/currency';
-import { TrendingUp, TrendingDown, AlertCircle, Lightbulb, ArrowUp, ArrowDown } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { useMemo } from "react";
+import { useTransactions } from "../contexts/TransactionContext";
+import { formatCurrency as formatCurrencyUtil } from "../utils/currency";
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
+  Lightbulb,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import {
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  isWithinInterval,
+} from "date-fns";
 
 const categoryLabels: Record<string, string> = {
-  food: 'Ăn uống',
-  transportation: 'Đi lại',
-  bills: 'Hóa đơn',
-  shopping: 'Mua sắm',
-  entertainment: 'Giải trí',
-  healthcare: 'Y tế',
-  education: 'Giáo dục',
-  salary: 'Lương',
-  business: 'Kinh doanh',
-  investment: 'Đầu tư',
-  other: 'Khác',
+  food: "Ăn uống",
+  transportation: "Đi lại",
+  bills: "Hóa đơn",
+  shopping: "Mua sắm",
+  entertainment: "Giải trí",
+  healthcare: "Y tế",
+  education: "Giáo dục",
+  salary: "Lương",
+  business: "Kinh doanh",
+  investment: "Đầu tư",
+  other: "Khác",
 };
 
 export default function Analytics() {
@@ -35,51 +46,57 @@ export default function Analytics() {
       end: endOfMonth(subMonths(now, 1)),
     };
 
-    const thisMonthTransactions = transactions.filter(t =>
+    const thisMonthTransactions = transactions.filter((t) =>
       isWithinInterval(new Date(t.date), thisMonth)
     );
-    const lastMonthTransactions = transactions.filter(t =>
+    const lastMonthTransactions = transactions.filter((t) =>
       isWithinInterval(new Date(t.date), lastMonth)
     );
 
     const thisMonthIncome = thisMonthTransactions
-      .filter(t => t.type === 'income')
+      .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const thisMonthExpense = thisMonthTransactions
-      .filter(t => t.type === 'expense')
+      .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const lastMonthIncome = lastMonthTransactions
-      .filter(t => t.type === 'income')
+      .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const lastMonthExpense = lastMonthTransactions
-      .filter(t => t.type === 'expense')
+      .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const categoryExpenses: Record<string, number> = {};
     thisMonthTransactions
-      .filter(t => t.type === 'expense')
-      .forEach(t => {
-        categoryExpenses[t.category] = (categoryExpenses[t.category] || 0) + t.amount;
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        categoryExpenses[t.category] =
+          (categoryExpenses[t.category] || 0) + t.amount;
       });
 
-    const topCategory = Object.entries(categoryExpenses).sort((a, b) => b[1] - a[1])[0];
+    const topCategory = Object.entries(categoryExpenses).sort(
+      (a, b) => b[1] - a[1]
+    )[0];
 
     const avgDailyExpense = thisMonthExpense / new Date().getDate();
 
-    const incomeChange = lastMonthIncome === 0
-      ? 0
-      : ((thisMonthIncome - lastMonthIncome) / lastMonthIncome) * 100;
+    const incomeChange =
+      lastMonthIncome === 0
+        ? 0
+        : ((thisMonthIncome - lastMonthIncome) / lastMonthIncome) * 100;
 
-    const expenseChange = lastMonthExpense === 0
-      ? 0
-      : ((thisMonthExpense - lastMonthExpense) / lastMonthExpense) * 100;
+    const expenseChange =
+      lastMonthExpense === 0
+        ? 0
+        : ((thisMonthExpense - lastMonthExpense) / lastMonthExpense) * 100;
 
-    const savingsRate = thisMonthIncome === 0
-      ? 0
-      : ((thisMonthIncome - thisMonthExpense) / thisMonthIncome) * 100;
+    const savingsRate =
+      thisMonthIncome === 0
+        ? 0
+        : ((thisMonthIncome - thisMonthExpense) / thisMonthIncome) * 100;
 
     return {
       thisMonthIncome,
@@ -102,34 +119,46 @@ export default function Analytics() {
   const generateRecommendations = () => {
     if (!insights) return [];
 
-    const recommendations: Array<{ type: 'success' | 'warning' | 'info'; message: string }> = [];
+    const recommendations: Array<{
+      type: "success" | "warning" | "info";
+      message: string;
+    }> = [];
 
     if (insights.savingsRate >= 20) {
       recommendations.push({
-        type: 'success',
-        message: `Tuyệt vời! Bạn đang tiết kiệm được ${insights.savingsRate.toFixed(1)}% thu nhập. Tiếp tục duy trì!`,
+        type: "success",
+        message: `Tuyệt vời! Bạn đang tiết kiệm được ${insights.savingsRate.toFixed(
+          1
+        )}% thu nhập. Tiếp tục duy trì!`,
       });
     } else if (insights.savingsRate < 10 && insights.savingsRate > 0) {
       recommendations.push({
-        type: 'warning',
-        message: `Tỷ lệ tiết kiệm của bạn chỉ ${insights.savingsRate.toFixed(1)}%. Cố gắng giảm chi tiêu để tăng tiết kiệm.`,
+        type: "warning",
+        message: `Tỷ lệ tiết kiệm của bạn chỉ ${insights.savingsRate.toFixed(
+          1
+        )}%. Cố gắng giảm chi tiêu để tăng tiết kiệm.`,
       });
     } else if (insights.savingsRate < 0) {
       recommendations.push({
-        type: 'warning',
-        message: 'Chi tiêu của bạn đang vượt thu nhập! Cần cắt giảm chi tiêu khẩn cấp.',
+        type: "warning",
+        message:
+          "Chi tiêu của bạn đang vượt thu nhập! Cần cắt giảm chi tiêu khẩn cấp.",
       });
     }
 
     if (insights.expenseChange > 20) {
       recommendations.push({
-        type: 'warning',
-        message: `Chi tiêu tăng ${insights.expenseChange.toFixed(1)}% so với tháng trước. Hãy xem xét lại các khoản chi.`,
+        type: "warning",
+        message: `Chi tiêu tăng ${insights.expenseChange.toFixed(
+          1
+        )}% so với tháng trước. Hãy xem xét lại các khoản chi.`,
       });
     } else if (insights.expenseChange < -10) {
       recommendations.push({
-        type: 'success',
-        message: `Tốt lắm! Chi tiêu giảm ${Math.abs(insights.expenseChange).toFixed(1)}% so với tháng trước.`,
+        type: "success",
+        message: `Tốt lắm! Chi tiêu giảm ${Math.abs(
+          insights.expenseChange
+        ).toFixed(1)}% so với tháng trước.`,
       });
     }
 
@@ -138,23 +167,29 @@ export default function Analytics() {
       const percentage = (amount / insights.thisMonthExpense) * 100;
       if (percentage > 40) {
         recommendations.push({
-          type: 'info',
-          message: `${categoryLabels[category]} chiếm ${percentage.toFixed(1)}% tổng chi tiêu. Xem xét tối ưu hóa khoản này.`,
+          type: "info",
+          message: `${categoryLabels[category]} chiếm ${percentage.toFixed(
+            1
+          )}% tổng chi tiêu. Xem xét tối ưu hóa khoản này.`,
         });
       }
     }
 
     if (insights.avgDailyExpense * 30 > insights.thisMonthIncome * 0.8) {
       recommendations.push({
-        type: 'warning',
-        message: `Chi tiêu trung bình ${formatCurrency(insights.avgDailyExpense)}/ngày có thể khiến bạn chi hết 80% thu nhập.`,
+        type: "warning",
+        message: `Chi tiêu trung bình ${formatCurrency(
+          insights.avgDailyExpense
+        )}/ngày có thể khiến bạn chi hết 80% thu nhập.`,
       });
     }
 
     if (insights.incomeChange > 10) {
       recommendations.push({
-        type: 'success',
-        message: `Thu nhập tăng ${insights.incomeChange.toFixed(1)}% so với tháng trước. Đừng quên tiết kiệm phần tăng thêm!`,
+        type: "success",
+        message: `Thu nhập tăng ${insights.incomeChange.toFixed(
+          1
+        )}% so với tháng trước. Đừng quên tiết kiệm phần tăng thêm!`,
       });
     }
 
@@ -165,8 +200,12 @@ export default function Analytics() {
     return (
       <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
         <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">Chưa đủ dữ liệu</h3>
-        <p className="text-gray-600">Thêm giao dịch để xem phân tích và gợi ý chi tiết</p>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          Chưa đủ dữ liệu
+        </h3>
+        <p className="text-gray-600">
+          Thêm giao dịch để xem phân tích và gợi ý chi tiết
+        </p>
       </div>
     );
   }
@@ -180,8 +219,12 @@ export default function Analytics() {
           <Lightbulb className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Phân tích & Gợi ý</h2>
-          <p className="text-gray-600">Thông tin chi tiết về tài chính của bạn</p>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Phân tích & Gợi ý
+          </h2>
+          <p className="text-gray-600">
+            Thông tin chi tiết về tài chính của bạn
+          </p>
         </div>
       </div>
 
@@ -190,8 +233,18 @@ export default function Analytics() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-600 text-sm">Thu nhập tháng này</span>
             {insights.incomeChange !== 0 && (
-              <div className={`flex items-center gap-1 text-xs font-semibold ${insights.incomeChange > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                {insights.incomeChange > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+              <div
+                className={`flex items-center gap-1 text-xs font-semibold ${
+                  insights.incomeChange > 0
+                    ? "text-emerald-600"
+                    : "text-red-600"
+                }`}
+              >
+                {insights.incomeChange > 0 ? (
+                  <ArrowUp className="w-3 h-3" />
+                ) : (
+                  <ArrowDown className="w-3 h-3" />
+                )}
                 {Math.abs(insights.incomeChange).toFixed(1)}%
               </div>
             )}
@@ -208,8 +261,18 @@ export default function Analytics() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-600 text-sm">Chi tiêu tháng này</span>
             {insights.expenseChange !== 0 && (
-              <div className={`flex items-center gap-1 text-xs font-semibold ${insights.expenseChange > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                {insights.expenseChange > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+              <div
+                className={`flex items-center gap-1 text-xs font-semibold ${
+                  insights.expenseChange > 0
+                    ? "text-red-600"
+                    : "text-emerald-600"
+                }`}
+              >
+                {insights.expenseChange > 0 ? (
+                  <ArrowUp className="w-3 h-3" />
+                ) : (
+                  <ArrowDown className="w-3 h-3" />
+                )}
                 {Math.abs(insights.expenseChange).toFixed(1)}%
               </div>
             )}
@@ -223,20 +286,49 @@ export default function Analytics() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <span className="text-gray-600 text-sm block mb-2">Tỷ lệ tiết kiệm</span>
-          <p className={`text-2xl font-bold mb-1 ${insights.savingsRate >= 20 ? 'text-emerald-600' : insights.savingsRate >= 10 ? 'text-blue-600' : 'text-red-600'}`}>
+          <span className="text-gray-600 text-sm block mb-2">
+            Tỷ lệ tiết kiệm
+          </span>
+          <p
+            className={`text-2xl font-bold mb-1 ${
+              insights.savingsRate >= 20
+                ? "text-emerald-600"
+                : insights.savingsRate >= 10
+                ? "text-blue-600"
+                : "text-red-600"
+            }`}
+          >
             {insights.savingsRate.toFixed(1)}%
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
             <div
-              className={`h-2 rounded-full ${insights.savingsRate >= 20 ? 'bg-emerald-500' : insights.savingsRate >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
-              style={{ width: `${Math.min(Math.max(insights.savingsRate, 0), 100)}%` }}
+              className={`h-2 rounded-full ${
+                insights.savingsRate >= 20
+                  ? "bg-emerald-500"
+                  : insights.savingsRate >= 10
+                  ? "bg-blue-500"
+                  : "bg-red-500"
+              }`}
+              style={{
+                width: `${Math.min(Math.max(insights.savingsRate, 0), 100)}%`,
+              }}
+              role="progressbar"
+              aria-valuenow={Math.round(
+                Math.min(Math.max(insights.savingsRate, 0), 100)
+              )}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Tỷ lệ tiết kiệm: ${insights.savingsRate.toFixed(
+                1
+              )}%`}
             />
           </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <span className="text-gray-600 text-sm block mb-2">Chi tiêu TB/ngày</span>
+          <span className="text-gray-600 text-sm block mb-2">
+            Chi tiêu TB/ngày
+          </span>
           <p className="text-2xl font-bold text-gray-900 mb-1">
             {formatCurrency(insights.avgDailyExpense)}
           </p>
@@ -248,14 +340,20 @@ export default function Analytics() {
 
       {insights.topCategory && (
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Chi tiêu nhiều nhất</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-4">
+            Chi tiêu nhiều nhất
+          </h3>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xl font-semibold text-orange-700">
                 {categoryLabels[insights.topCategory[0]]}
               </p>
               <p className="text-sm text-gray-600">
-                {((insights.topCategory[1] / insights.thisMonthExpense) * 100).toFixed(1)}% tổng chi tiêu
+                {(
+                  (insights.topCategory[1] / insights.thisMonthExpense) *
+                  100
+                ).toFixed(1)}
+                % tổng chi tiêu
               </p>
             </div>
             <p className="text-2xl font-bold text-orange-600">
@@ -277,27 +375,29 @@ export default function Analytics() {
               <div
                 key={index}
                 className={`p-4 rounded-xl flex items-start gap-3 ${
-                  rec.type === 'success'
-                    ? 'bg-emerald-50 border border-emerald-200'
-                    : rec.type === 'warning'
-                    ? 'bg-orange-50 border border-orange-200'
-                    : 'bg-blue-50 border border-blue-200'
+                  rec.type === "success"
+                    ? "bg-emerald-50 border border-emerald-200"
+                    : rec.type === "warning"
+                    ? "bg-orange-50 border border-orange-200"
+                    : "bg-blue-50 border border-blue-200"
                 }`}
               >
-                {rec.type === 'success' ? (
+                {rec.type === "success" ? (
                   <TrendingUp className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                ) : rec.type === 'warning' ? (
+                ) : rec.type === "warning" ? (
                   <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                 ) : (
                   <TrendingDown className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 )}
-                <p className={`text-sm ${
-                  rec.type === 'success'
-                    ? 'text-emerald-800'
-                    : rec.type === 'warning'
-                    ? 'text-orange-800'
-                    : 'text-blue-800'
-                }`}>
+                <p
+                  className={`text-sm ${
+                    rec.type === "success"
+                      ? "text-emerald-800"
+                      : rec.type === "warning"
+                      ? "text-orange-800"
+                      : "text-blue-800"
+                  }`}
+                >
                   {rec.message}
                 </p>
               </div>
@@ -311,7 +411,9 @@ export default function Analytics() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg p-6">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">Phân bổ chi tiêu tháng này</h3>
+        <h3 className="text-lg font-bold text-gray-800 mb-4">
+          Phân bổ chi tiêu tháng này
+        </h3>
         <div className="space-y-3">
           {Object.entries(insights.categoryExpenses)
             .sort((a, b) => b[1] - a[1])
@@ -336,6 +438,13 @@ export default function Analytics() {
                     <div
                       className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
+                      role="progressbar"
+                      aria-valuenow={Math.round(percentage)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Phần trăm chi tiêu: ${percentage.toFixed(
+                        1
+                      )}%`}
                     />
                   </div>
                 </div>

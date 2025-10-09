@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { authAPI } from "../services/api";
 
 interface User {
   id: string;
@@ -16,56 +17,74 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const initAuth = async () => {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      if (token && storedUser) {
+        try {
+          // Verify token with backend
+          const response = await authAPI.getCurrentUser();
+          setUser(response.user);
+        } catch (error) {
+          // Token is invalid, clear storage
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find((u: any) => u.email === email && u.password === password);
+    try {
+      const response = await authAPI.login(email, password);
 
-    if (!user) {
-      throw new Error('Email hoặc mật khẩu không đúng');
+      const userData = {
+        id: response.user.id,
+        email: response.user.email,
+        name: response.user.name,
+      };
+
+      setUser(userData);
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Đăng nhập thất bại");
     }
-
-    const userData = { id: user.id, email: user.email, name: user.name };
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const register = async (email: string, password: string, name: string) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    try {
+      const response = await authAPI.register(name, email, password);
 
-    if (users.find((u: any) => u.email === email)) {
-      throw new Error('Email đã được sử dụng');
+      const userData = {
+        id: response.user.id,
+        email: response.user.email,
+        name: response.user.name,
+      };
+
+      setUser(userData);
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Đăng ký thất bại");
     }
-
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      password,
-      name,
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    const userData = { id: newUser.id, email: newUser.email, name: newUser.name };
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   return (
@@ -78,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

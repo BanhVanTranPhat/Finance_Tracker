@@ -1,16 +1,24 @@
-import { useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { useTransactions, Currency } from '../contexts/TransactionContext';
-import { X, Plus } from 'lucide-react';
-import { formatNumber, parseFormattedNumber, getCurrencySymbol } from '../utils/currency';
+import { useState } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { useTransactions, Currency } from "../contexts/TransactionContext";
+import { X, Plus } from "lucide-react";
+import {
+  formatNumber,
+  parseFormattedNumber,
+  getCurrencySymbol,
+} from "../utils/currency";
 
 const TransactionSchema = Yup.object().shape({
-  type: Yup.string().oneOf(['income', 'expense']).required('Vui lòng chọn loại giao dịch'),
-  amount: Yup.string().required('Vui lòng nhập số tiền'),
-  currency: Yup.string().oneOf(['VND', 'USD']).required('Vui lòng chọn loại tiền'),
-  date: Yup.date().required('Vui lòng chọn ngày'),
-  category: Yup.string().required('Vui lòng chọn danh mục'),
+  type: Yup.string()
+    .oneOf(["income", "expense"])
+    .required("Vui lòng chọn loại giao dịch"),
+  amount: Yup.string().required("Vui lòng nhập số tiền"),
+  currency: Yup.string()
+    .oneOf(["VND"]) // fixed currency
+    .required("Vui lòng chọn loại tiền"),
+  date: Yup.date().required("Vui lòng chọn ngày"),
+  category: Yup.string().required("Vui lòng chọn danh mục"),
   note: Yup.string(),
 });
 
@@ -20,26 +28,26 @@ interface TransactionFormProps {
 
 const categories = {
   income: [
-    { value: 'salary', label: 'Lương' },
-    { value: 'business', label: 'Kinh doanh' },
-    { value: 'investment', label: 'Đầu tư' },
-    { value: 'other', label: 'Khác' },
+    { value: "salary", label: "Lương" },
+    { value: "business", label: "Kinh doanh" },
+    { value: "investment", label: "Đầu tư" },
+    { value: "other", label: "Khác" },
   ],
   expense: [
-    { value: 'food', label: 'Ăn uống' },
-    { value: 'transportation', label: 'Đi lại' },
-    { value: 'bills', label: 'Hóa đơn' },
-    { value: 'shopping', label: 'Mua sắm' },
-    { value: 'entertainment', label: 'Giải trí' },
-    { value: 'healthcare', label: 'Y tế' },
-    { value: 'education', label: 'Giáo dục' },
-    { value: 'other', label: 'Khác' },
+    { value: "food", label: "Ăn uống" },
+    { value: "transportation", label: "Đi lại" },
+    { value: "bills", label: "Hóa đơn" },
+    { value: "shopping", label: "Mua sắm" },
+    { value: "entertainment", label: "Giải trí" },
+    { value: "healthcare", label: "Y tế" },
+    { value: "education", label: "Giáo dục" },
+    { value: "other", label: "Khác" },
   ],
 };
 
 export default function TransactionForm({ onClose }: TransactionFormProps) {
   const { addTransaction, currency: defaultCurrency } = useTransactions();
-  const [displayAmount, setDisplayAmount] = useState('');
+  const [displayAmount, setDisplayAmount] = useState("");
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -49,6 +57,8 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition"
+            title="Đóng form"
+            aria-label="Đóng form thêm giao dịch"
           >
             <X className="w-6 h-6" />
           </button>
@@ -56,12 +66,12 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
 
         <Formik
           initialValues={{
-            type: 'expense' as 'income' | 'expense',
-            amount: '',
-            currency: defaultCurrency,
-            date: new Date().toISOString().split('T')[0],
-            category: '',
-            note: '',
+            type: "expense" as "income" | "expense",
+            amount: "",
+            currency: "VND" as Currency,
+            date: new Date().toISOString().split("T")[0],
+            category: "",
+            note: "",
           }}
           validationSchema={TransactionSchema}
           onSubmit={(values, { setSubmitting }) => {
@@ -88,39 +98,46 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="flex items-center justify-center cursor-pointer">
-                    <Field type="radio" name="type" value="expense" className="sr-only peer" />
+                    <Field
+                      type="radio"
+                      name="type"
+                      value="expense"
+                      className="sr-only peer"
+                    />
                     <div className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-red-500 peer-checked:bg-red-50 transition text-center font-medium">
                       Chi tiêu
                     </div>
                   </label>
                   <label className="flex items-center justify-center cursor-pointer">
-                    <Field type="radio" name="type" value="income" className="sr-only peer" />
+                    <Field
+                      type="radio"
+                      name="type"
+                      value="income"
+                      className="sr-only peer"
+                    />
                     <div className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition text-center font-medium">
                       Thu nhập
                     </div>
                   </label>
                 </div>
-                <ErrorMessage name="type" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="type"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
               </div>
 
               <div>
-                <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-2">
-                  Loại tiền tệ
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tiền tệ: VNĐ (cố định)
                 </label>
-                <Field
-                  as="select"
-                  name="currency"
-                  id="currency"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                >
-                  <option value="VND">VNĐ (₫)</option>
-                  <option value="USD">USD ($)</option>
-                </Field>
-                <ErrorMessage name="currency" component="div" className="text-red-500 text-sm mt-1" />
               </div>
 
               <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Số tiền
                 </label>
                 <div className="relative">
@@ -132,25 +149,34 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
                     onChange={(e) => {
                       const formatted = formatNumber(e.target.value);
                       setDisplayAmount(formatted);
-                      setFieldValue('amount', formatted);
+                      setFieldValue("amount", formatted);
                     }}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                    placeholder={values.currency === 'VND' ? '200,000' : '1,000'}
+                    placeholder={"200,000"}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
-                    {getCurrencySymbol(values.currency as Currency)}
+                    ₫
                   </span>
                 </div>
-                <ErrorMessage name="amount" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="amount"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
                 {displayAmount && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Giá trị: {parseFormattedNumber(displayAmount).toLocaleString()} {values.currency}
+                    Giá trị:{" "}
+                    {parseFormattedNumber(displayAmount).toLocaleString()}{" "}
+                    {values.currency}
                   </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="date"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Ngày giao dịch
                 </label>
                 <Field
@@ -159,11 +185,18 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
                   id="date"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                 />
-                <ErrorMessage name="date" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="date"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
               </div>
 
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Danh mục
                 </label>
                 <Field
@@ -179,11 +212,18 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
                     </option>
                   ))}
                 </Field>
-                <ErrorMessage name="category" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="category"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
               </div>
 
               <div>
-                <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="note"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Ghi chú (tùy chọn)
                 </label>
                 <Field
@@ -194,7 +234,11 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none"
                   placeholder="Thêm ghi chú..."
                 />
-                <ErrorMessage name="note" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="note"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
               </div>
 
               <button
@@ -203,7 +247,7 @@ export default function TransactionForm({ onClose }: TransactionFormProps) {
                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="w-5 h-5" />
-                {isSubmitting ? 'Đang thêm...' : 'Thêm giao dịch'}
+                {isSubmitting ? "Đang thêm..." : "Thêm giao dịch"}
               </button>
             </Form>
           )}
