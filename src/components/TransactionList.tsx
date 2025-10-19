@@ -132,8 +132,12 @@ export default function TransactionList() {
       ];
       const csv = [
         header.join(","),
-        ...rows.map((r) =>
-          r.map((c) => `"${c}`.replace(/\n/g, " ") + '"').join(",")
+        ...rows.map((r: (string | number)[]) =>
+          r
+            .map(
+              (c: string | number) => `"${String(c)}`.replace(/\n/g, " ") + '"'
+            )
+            .join(",")
         ),
       ].join("\n");
       const blob = new Blob(["\uFEFF" + csv], {
@@ -615,7 +619,7 @@ export default function TransactionList() {
                     }`}
                   >
                     {transaction.type === "income" ? "+" : "-"}
-                    {formatCurrencyUtil(transaction.amount, "VND")}
+                    {formatCurrencyUtil(transaction.amount)}
                   </span>
 
                   <button

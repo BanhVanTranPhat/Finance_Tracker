@@ -17,8 +17,16 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
       minlength: 6,
+    },
+    googleId: {
+      type: String,
+      index: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
     },
   },
   {
@@ -45,4 +53,3 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 module.exports = mongoose.model("User", userSchema);
-

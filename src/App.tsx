@@ -10,6 +10,7 @@ import TransactionForm from "./components/TransactionForm";
 import BudgetGoals from "./components/BudgetGoals";
 import Analytics from "./components/Analytics";
 import ExportData from "./components/ExportData";
+import Onboarding from "./pages/Onboarding";
 import {
   Plus,
   LogOut,
@@ -28,6 +29,7 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("landing");
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [onboardingVersion, setOnboardingVersion] = useState(0);
 
   if (!user) {
     if (currentPage === "login") {
@@ -40,6 +42,20 @@ function AppContent() {
       <LandingPage
         onLogin={() => setCurrentPage("login")}
         onRegister={() => setCurrentPage("register")}
+      />
+    );
+  }
+
+  const shouldShowOnboarding =
+    localStorage.getItem("onboarding_completed") !== "true";
+
+  if (shouldShowOnboarding) {
+    return (
+      <Onboarding
+        onComplete={() => {
+          // Onboarding component đã đặt localStorage; chỉ cần kích hoạt re-render
+          setOnboardingVersion((v) => v + 1);
+        }}
       />
     );
   }
@@ -95,8 +111,8 @@ function AppContent() {
           </div>
         </nav>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-wrap gap-3 mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8">
+          <div className="hidden sm:flex flex-wrap gap-3 mb-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -124,6 +140,37 @@ function AppContent() {
           {activeTab === "analytics" && <Analytics />}
           {activeTab === "export" && <ExportData />}
         </div>
+
+        {/* Bottom navigation for mobile */}
+        <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-40">
+          <div className="grid grid-cols-5">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center justify-center py-2.5 text-xs font-medium ${
+                    isActive ? "text-emerald-600" : "text-gray-500"
+                  }`}
+                  aria-label={tab.label}
+                >
+                  <div
+                    className={`rounded-full p-2 mb-1 ${
+                      isActive ? "bg-emerald-50" : "bg-transparent"
+                    }`}
+                  >
+                    <Icon
+                      className={`w-5 h-5 ${isActive ? "" : "opacity-70"}`}
+                    />
+                  </div>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
 
         {showTransactionForm && (
           <TransactionForm onClose={() => setShowTransactionForm(false)} />

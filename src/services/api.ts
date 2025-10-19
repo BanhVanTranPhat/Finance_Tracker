@@ -119,7 +119,7 @@ export const transactionAPI = {
   },
 
   getStats: async (startDate?: string, endDate?: string) => {
-    const params: any = {};
+    const params: { startDate?: string; endDate?: string } = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
 

@@ -155,15 +155,18 @@ export default function BudgetGoals() {
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(progress, 100)}%` }}
-                      role="progressbar"
-                      aria-valuenow={Math.round(Math.min(progress, 100))}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-label={`Tiến độ: ${progress.toFixed(1)}%`}
-                    />
+                    {(() => {
+                      const pct = Math.round(
+                        Math.min(Math.max(progress, 0), 100)
+                      );
+                      return (
+                        <div
+                          className={`bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500 w-pct-${pct}`}
+                          role="progressbar"
+                          aria-label={`Tiến độ: ${progress.toFixed(1)}%`}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
 

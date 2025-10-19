@@ -17,6 +17,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type ApiError = {
+  response?: { data?: { message?: string } };
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -33,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // Verify token with backend
           const response = await authAPI.getCurrentUser();
           setUser(response.user);
-        } catch (error) {
+        } catch {
           // Token is invalid, clear storage
           localStorage.removeItem("token");
           localStorage.removeItem("user");
@@ -58,8 +62,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(userData);
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(userData));
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Đăng nhập thất bại");
+      if (!localStorage.getItem("onboarding_completed")) {
+        localStorage.setItem("onboarding_completed", "false");
+      }
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      // cspell:disable-next-line
+      throw new Error(err.response?.data?.message || "Đăng nhập thất bại");
     }
   };
 
@@ -76,8 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(userData);
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(userData));
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Đăng ký thất bại");
+      if (!localStorage.getItem("onboarding_completed")) {
+        localStorage.setItem("onboarding_completed", "false");
+      }
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      // cspell:disable-next-line
+      throw new Error(err.response?.data?.message || "Đăng ký thất bại");
     }
   };
 
@@ -94,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

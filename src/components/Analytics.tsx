@@ -31,7 +31,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default function Analytics() {
-  const { transactions, currency: defaultCurrency } = useTransactions();
+  const { transactions } = useTransactions();
 
   const insights = useMemo(() => {
     if (transactions.length === 0) return null;
@@ -112,9 +112,7 @@ export default function Analytics() {
     };
   }, [transactions]);
 
-  const formatCurrency = (amount: number) => {
-    return formatCurrencyUtil(amount, defaultCurrency);
-  };
+  const formatCurrency = (amount: number) => formatCurrencyUtil(amount);
 
   const generateRecommendations = () => {
     if (!insights) return [];
@@ -301,27 +299,26 @@ export default function Analytics() {
             {insights.savingsRate.toFixed(1)}%
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-            <div
-              className={`h-2 rounded-full ${
-                insights.savingsRate >= 20
-                  ? "bg-emerald-500"
-                  : insights.savingsRate >= 10
-                  ? "bg-blue-500"
-                  : "bg-red-500"
-              }`}
-              style={{
-                width: `${Math.min(Math.max(insights.savingsRate, 0), 100)}%`,
-              }}
-              role="progressbar"
-              aria-valuenow={Math.round(
+            {(() => {
+              const pct = Math.round(
                 Math.min(Math.max(insights.savingsRate, 0), 100)
-              )}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Tỷ lệ tiết kiệm: ${insights.savingsRate.toFixed(
-                1
-              )}%`}
-            />
+              );
+              return (
+                <div
+                  className={`h-2 rounded-full ${
+                    insights.savingsRate >= 20
+                      ? "bg-emerald-500"
+                      : insights.savingsRate >= 10
+                      ? "bg-blue-500"
+                      : "bg-red-500"
+                  } w-pct-${pct}`}
+                  role="progressbar"
+                  aria-label={`Tỷ lệ tiết kiệm: ${insights.savingsRate.toFixed(
+                    1
+                  )}%`}
+                />
+              );
+            })()}
           </div>
         </div>
 
@@ -435,17 +432,20 @@ export default function Analytics() {
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                      role="progressbar"
-                      aria-valuenow={Math.round(percentage)}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-label={`Phần trăm chi tiêu: ${percentage.toFixed(
-                        1
-                      )}%`}
-                    />
+                    {(() => {
+                      const pct = Math.round(
+                        Math.min(Math.max(percentage, 0), 100)
+                      );
+                      return (
+                        <div
+                          className={`bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 w-pct-${pct}`}
+                          role="progressbar"
+                          aria-label={`Phần trăm chi tiêu: ${percentage.toFixed(
+                            1
+                          )}%`}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
               );

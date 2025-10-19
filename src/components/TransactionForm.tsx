@@ -3,11 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useTransactions, Currency } from "../contexts/TransactionContext";
 import { X, Plus } from "lucide-react";
-import {
-  formatNumber,
-  parseFormattedNumber,
-  getCurrencySymbol,
-} from "../utils/currency";
+import { formatNumber, parseFormattedNumber } from "../utils/currency";
 
 const TransactionSchema = Yup.object().shape({
   type: Yup.string()
@@ -46,7 +42,7 @@ const categories = {
 };
 
 export default function TransactionForm({ onClose }: TransactionFormProps) {
-  const { addTransaction, currency: defaultCurrency } = useTransactions();
+  const { addTransaction } = useTransactions();
   const [displayAmount, setDisplayAmount] = useState("");
 
   return (

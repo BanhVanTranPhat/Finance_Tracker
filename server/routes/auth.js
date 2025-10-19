@@ -2,8 +2,12 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+const { OAuth2Client } = require("google-auth-library");
 
 const router = express.Router();
+const googleClient = process.env.GOOGLE_CLIENT_ID
+  ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+  : null;
 
 // Register
 router.post("/register", async (req, res) => {
@@ -116,5 +120,91 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+// Google Sign-In: exchange Google ID token -> our JWT
+router.post("/google", async (req, res) => {
+  try {
+    if (!googleClient) {
+      console.error("Google OAuth not configured: GOOGLE_CLIENT_ID missing");
+      return res
+        .status(500)
+        .json({ message: "Thiếu GOOGLE_CLIENT_ID trên server" });
+    }
 
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ message: "Thiếu idToken" });
+    }
+
+    console.log("Verifying Google ID token...");
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+    const name = payload?.name || email;
+    const googleId = payload?.sub;
+
+    if (!email || !googleId) {
+      console.error("Invalid Google payload:", { email, googleId });
+      return res
+        .status(400)
+        .json({ message: "Không xác thực được người dùng Google" });
+    }
+
+    console.log("Google user verified:", { email, name, googleId });
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      console.log("Creating new user for Google login");
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        authProvider: "google",
+      });
+    } else if (!user.googleId) {
+      console.log("Linking existing user with Google account");
+      user.googleId = googleId;
+      user.authProvider = user.authProvider || "google";
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "7d" }
+    );
+
+    console.log("Google login successful for user:", user.email);
+    res.json({
+      message: "Đăng nhập Google thành công",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Google auth error:", error);
+
+    // More specific error messages
+    if (error.message?.includes("Invalid token")) {
+      return res.status(400).json({ message: "Token Google không hợp lệ" });
+    }
+    if (error.message?.includes("Token expired")) {
+      return res.status(400).json({ message: "Token Google đã hết hạn" });
+    }
+    if (error.message?.includes("Invalid audience")) {
+      return res
+        .status(400)
+        .json({ message: "Cấu hình Google OAuth không đúng" });
+    }
+
+    res.status(500).json({ message: "Lỗi xác thực Google: " + error.message });
+  }
+});
+
+module.exports = router;
