@@ -1,7 +1,7 @@
 {
-  "name": "finance-tracker-server",
+  "name": "moneyflow-server",
   "version": "1.0.0",
-  "description": "Finance Tracker Backend API",
+  "description": "MoneyFlow Backend API - Ứng dụng quản lý tài chính cá nhân",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

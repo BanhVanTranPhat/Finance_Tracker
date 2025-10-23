@@ -1,28 +1,33 @@
-# 💰 Finance Tracker - Ứng dụng Quản lý Tài chính Cá nhân
+# 💰 MoneyFlow - Ứng dụng Quản lý Tài chính Cá nhân Thông minh
 
-![Finance Tracker](https://img.shields.io/badge/React-18.3.1-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue) ![Node.js](https://img.shields.io/badge/Node.js-Express-green) ![MongoDB](https://img.shields.io/badge/MongoDB-Database-green)
+![MoneyFlow](https://img.shields.io/badge/React-18.3.1-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue) ![Node.js](https://img.shields.io/badge/Node.js-Express-green) ![MongoDB](https://img.shields.io/badge/MongoDB-Database-green)
 
 ## 📸 Ảnh màn hình
 
 ### 🏠 Trang chủ - Dashboard
+
 ![Dashboard](https://via.placeholder.com/800x400/10b981/ffffff?text=Dashboard+Overview)
-*Tổng quan tài chính với biểu đồ thu chi và thống kê*
+_Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ### 📊 Phân tích tài chính
+
 ![Analytics](https://via.placeholder.com/800x400/3b82f6/ffffff?text=Analytics+Charts)
-*Biểu đồ phân tích chi tiết theo tháng và danh mục*
+_Biểu đồ phân tích chi tiết theo tháng và danh mục_
 
 ### 💳 Quản lý giao dịch
+
 ![Transactions](https://via.placeholder.com/800x400/8b5cf6/ffffff?text=Transaction+Management)
-*Danh sách và quản lý các giao dịch thu chi*
+_Danh sách và quản lý các giao dịch thu chi_
 
 ### 🎯 Mục tiêu ngân sách
+
 ![Budget Goals](https://via.placeholder.com/800x400/f59e0b/ffffff?text=Budget+Goals)
-*Thiết lập và theo dõi mục tiêu ngân sách*
+_Thiết lập và theo dõi mục tiêu ngân sách_
 
 ### 🔐 Đăng nhập/Đăng ký
+
 ![Authentication](https://via.placeholder.com/800x400/ef4444/ffffff?text=Login+Register)
-*Hệ thống xác thực với Google OAuth và tài khoản local*
+_Hệ thống xác thực với Google OAuth và tài khoản local_
 
 ## 🚀 Cài đặt và Chạy Project
 
@@ -43,11 +48,13 @@ cd Finance_Tracker
 ### 📦 Bước 2: Cài đặt Dependencies
 
 #### Cách 1: Cài đặt tự động (Khuyến nghị)
+
 ```bash
 npm run install:all
 ```
 
 #### Cách 2: Cài đặt thủ công
+
 ```bash
 # Cài đặt frontend dependencies
 npm install
@@ -61,14 +68,18 @@ cd ..
 ### ⚙️ Bước 3: Cấu hình Environment Variables
 
 #### Frontend (.env)
+
 Tạo file `.env` trong thư mục gốc:
+
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_GOOGLE_CLIENT_ID=your-google-client-id-here
 ```
 
 #### Backend (server/.env)
+
 Tạo file `server/.env`:
+
 ```env
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/finance-tracker
@@ -79,6 +90,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 ### 🗄️ Bước 4: Khởi động MongoDB
 
 #### Windows:
+
 ```bash
 # Khởi động MongoDB service
 net start MongoDB
@@ -88,6 +100,7 @@ mongod
 ```
 
 #### macOS/Linux:
+
 ```bash
 # Khởi động MongoDB
 sudo systemctl start mongod
@@ -98,6 +111,7 @@ mongod
 ### 🚀 Bước 5: Chạy Ứng dụng
 
 #### Cách 1: Sử dụng Script Tự động (Khuyến nghị)
+
 ```bash
 # Chạy file start.bat (Windows)
 start.bat
@@ -106,12 +120,14 @@ start.bat
 #### Cách 2: Chạy Thủ công
 
 **Terminal 1 - Backend:**
+
 ```bash
 cd server
 npm run dev
 ```
 
 **Terminal 2 - Frontend:**
+
 ```bash
 npm run dev
 ```
@@ -142,6 +158,7 @@ npm run dev
 ### 2. Cập nhật Environment Variables
 
 Sao chép Client ID vào file `.env` và `server/.env`:
+
 ```env
 VITE_GOOGLE_CLIENT_ID=your-google-client-id-here
 GOOGLE_CLIENT_ID=your-google-client-id-here
@@ -150,6 +167,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 ## ✨ Chức năng chính
 
 ### 🔐 Xác thực và Bảo mật
+
 - ✅ **Đăng ký/Đăng nhập** với email và mật khẩu
 - ✅ **Google OAuth** - Đăng nhập nhanh bằng Google
 - ✅ **JWT Authentication** - Bảo mật API
@@ -157,6 +175,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 - ✅ **Session Management** - Quản lý phiên đăng nhập
 
 ### 💰 Quản lý Giao dịch
+
 - ✅ **Thêm/Sửa/Xóa** giao dịch thu chi
 - ✅ **Phân loại giao dịch** theo danh mục
 - ✅ **Tìm kiếm và lọc** giao dịch
@@ -165,6 +184,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 - ✅ **Ghi chú chi tiết** cho mỗi giao dịch
 
 ### 📊 Phân tích và Báo cáo
+
 - ✅ **Dashboard tổng quan** với thống kê chính
 - ✅ **Biểu đồ thu chi** theo tháng
 - ✅ **Phân tích theo danh mục** với biểu đồ tròn
@@ -173,6 +193,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 - ✅ **Thống kê chi tiết** theo ngày/tuần/tháng
 
 ### 🎯 Mục tiêu và Ngân sách
+
 - ✅ **Thiết lập mục tiêu** ngân sách hàng tháng
 - ✅ **Theo dõi tiến độ** đạt mục tiêu
 - ✅ **Cảnh báo vượt ngân sách**
@@ -180,6 +201,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 - ✅ **Đề xuất điều chỉnh** ngân sách
 
 ### 📱 Giao diện và Trải nghiệm
+
 - ✅ **Responsive Design** - Tối ưu cho mọi thiết bị
 - ✅ **Dark/Light Mode** - Chế độ sáng/tối
 - ✅ **Mobile Navigation** - Điều hướng dễ dàng trên mobile
@@ -188,6 +210,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 - ✅ **Error Handling** - Xử lý lỗi thân thiện
 
 ### 🔧 Tính năng Kỹ thuật
+
 - ✅ **Real-time Updates** - Cập nhật dữ liệu thời gian thực
 - ✅ **Data Validation** - Kiểm tra dữ liệu đầu vào
 - ✅ **API Rate Limiting** - Giới hạn tần suất gọi API
@@ -198,6 +221,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 ## 🛠️ Công nghệ sử dụng
 
 ### Frontend
+
 - **React 18.3.1** - UI Framework
 - **TypeScript 5.2.2** - Type Safety
 - **Vite 5.3.1** - Build Tool
@@ -209,6 +233,7 @@ GOOGLE_CLIENT_ID=your-google-client-id-here
 - **Axios 1.6.0** - HTTP Client
 
 ### Backend
+
 - **Node.js** - Runtime Environment
 - **Express.js 5.1.0** - Web Framework
 - **MongoDB 8.19.1** - Database
@@ -261,12 +286,14 @@ Finance_Tracker/
 ## 🔧 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Đăng ký tài khoản mới
 - `POST /api/auth/login` - Đăng nhập
 - `POST /api/auth/google` - Đăng nhập Google OAuth
 - `GET /api/auth/me` - Lấy thông tin user hiện tại
 
 ### Transactions
+
 - `GET /api/transactions` - Lấy danh sách giao dịch
 - `POST /api/transactions` - Tạo giao dịch mới
 - `PUT /api/transactions/:id` - Cập nhật giao dịch
@@ -274,22 +301,26 @@ Finance_Tracker/
 - `GET /api/transactions/stats/summary` - Thống kê giao dịch
 
 ### Health Check
+
 - `GET /api/health` - Kiểm tra trạng thái API
 
 ## 🚀 Deployment
 
 ### Backend Deployment
+
 1. Thiết lập MongoDB Atlas hoặc cloud MongoDB service
 2. Cập nhật environment variables cho production
 3. Deploy lên Heroku, Railway, hoặc Vercel
 
 ### Frontend Deployment
+
 1. Build project: `npm run build`
 2. Deploy lên Vercel, Netlify, hoặc GitHub Pages
 
 ## 🐛 Troubleshooting
 
 ### Lỗi MongoDB
+
 ```bash
 # Kiểm tra MongoDB có chạy không
 mongosh
@@ -300,6 +331,7 @@ sudo systemctl start mongod  # Linux
 ```
 
 ### Lỗi Port đã được sử dụng
+
 ```bash
 # Tìm process đang sử dụng port
 netstat -ano | findstr :5000
@@ -307,6 +339,7 @@ taskkill /PID <PID> /F
 ```
 
 ### Lỗi Dependencies
+
 ```bash
 # Xóa node_modules và cài lại
 rm -rf node_modules server/node_modules
@@ -314,6 +347,7 @@ npm run install:all
 ```
 
 ### Lỗi Google OAuth
+
 1. Kiểm tra `VITE_GOOGLE_CLIENT_ID` trong `.env`
 2. Xác nhận URI được thêm vào Google Cloud Console
 3. Kiểm tra CORS configuration
@@ -351,6 +385,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 👨‍💻 Author
 
 **BanhVanTranPhat**
+
 - GitHub: [@BanhVanTranPhat](https://github.com/BanhVanTranPhat)
 - Email: your.email@example.com
 

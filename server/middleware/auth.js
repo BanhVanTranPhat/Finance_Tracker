@@ -14,7 +14,7 @@ const auth = async (req, res, next) => {
       token,
       process.env.JWT_SECRET || "your-secret-key"
     );
-    req.userId = decoded.userId;
+    req.user = { id: decoded.userId };
     next();
   } catch (error) {
     res.status(401).json({ message: "Token không hợp lệ" });
@@ -22,4 +22,3 @@ const auth = async (req, res, next) => {
 };
 
 module.exports = auth;
-

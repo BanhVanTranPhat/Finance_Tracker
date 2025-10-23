@@ -1,0 +1,1 @@
+ export default function ProgressBarClean({currentStep, totalSteps, className = "",}){const progress = ((currentStep + 1)/ totalSteps)* 100;return(<div className = {`w-full bg-gray-200 rounded-full h-2 ${className}`}> <div className = "bg-blue-500 h-2 rounded-full transition-all duration-500" style = {{width: `${progress}%`}}></div> </div>);}

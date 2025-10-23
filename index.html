@@ -4,11 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MERN Personal Finance Tracker</title>
+    <title>MoneyFlow - Quản lý tài chính cá nhân</title>
   </head>
   <body>
     <div id="root"></div>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Global callback function for Google Sign-In
+      window.handleGoogleCredential = function (response) {
+        console.log("Google credential received:", response);
+        // This will be handled by the React component
+        if (window.googleSignInCallback) {
+          window.googleSignInCallback(response);
+        }
+      };
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

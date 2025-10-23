@@ -1,0 +1,267 @@
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { categoryAPI, walletAPI, transactionAPI } from "../services/api.js";
+
+const FinanceContext = createContext(undefined);
+
+export const useFinance = () => {
+  const context = useContext(FinanceContext);
+  if (!context) {
+    throw new Error("useFinance must be used within a FinanceProvider");
+  }
+  return context;
+};
+
+export const FinanceProvider = ({ children }) => {
+  const [wallets, setWallets] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load data from API on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        // Try to load from API, fallback to sample data
+        let walletsData = [];
+        let categoriesData = [];
+        let transactionsData = [];
+
+        try {
+          const [walletsResult, categoriesResult, transactionsResult] =
+            await Promise.all([
+              walletAPI.getWallets(),
+              categoryAPI.getCategories(),
+              transactionAPI.getTransactions(),
+            ]);
+
+          walletsData = walletsResult || [];
+          categoriesData = categoriesResult || [];
+          transactionsData =
+            transactionsResult.transactions || transactionsResult || [];
+        } catch (apiError) {
+          console.warn("API not available, using sample data:", apiError);
+
+          // Fallback to sample data
+          walletsData = [
+            {
+              id: "sample-wallet-1",
+              name: "Ví chính",
+              balance: 0,
+              icon: "wallet",
+              color: "bg-blue-500",
+              isDefault: true,
+            },
+          ];
+
+          categoriesData = [
+            {
+              id: "sample-category-1",
+              name: "Ăn uống",
+              group: "Chi phí hàng ngày",
+              isDefault: true,
+            },
+            {
+              id: "sample-category-2",
+              name: "Tiền nhà",
+              group: "Chi phí bắt buộc",
+              isDefault: true,
+            },
+          ];
+
+          transactionsData = [];
+        }
+
+        setWallets(walletsData);
+        setCategories(categoriesData);
+        setTransactions(transactionsData);
+      } catch (error) {
+        console.error("Error loading data:", error);
+        // Set empty arrays
+        setWallets([]);
+        setCategories([]);
+        setTransactions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Wallet functions
+  const addWallet = async (walletData) => {
+    try {
+      const newWallet = await walletAPI.createWallet(walletData);
+      setWallets((prev) => [...prev, newWallet]);
+    } catch (error) {
+      console.error("Error creating wallet:", error);
+      throw error;
+    }
+  };
+
+  const updateWallet = async (id, walletData) => {
+    try {
+      const updatedWallet = await walletAPI.updateWallet(id, walletData);
+      setWallets((prev) =>
+        prev.map((wallet) => (wallet.id === id ? updatedWallet : wallet))
+      );
+    } catch (error) {
+      console.error("Error updating wallet:", error);
+      throw error;
+    }
+  };
+
+  const deleteWallet = async (id) => {
+    try {
+      await walletAPI.deleteWallet(id);
+      setWallets((prev) => prev.filter((wallet) => wallet.id !== id));
+    } catch (error) {
+      console.error("Error deleting wallet:", error);
+      throw error;
+    }
+  };
+
+  // Category functions
+  const addCategory = async (categoryData) => {
+    try {
+      const newCategory = await categoryAPI.createCategory(categoryData);
+      setCategories((prev) => [...prev, newCategory]);
+    } catch (error) {
+      console.error("Error creating category:", error);
+      throw error;
+    }
+  };
+
+  const updateCategory = async (id, categoryData) => {
+    try {
+      const updatedCategory = await categoryAPI.updateCategory(
+        id,
+        categoryData
+      );
+      setCategories((prev) =>
+        prev.map((category) =>
+          category.id === id ? updatedCategory : category
+        )
+      );
+    } catch (error) {
+      console.error("Error updating category:", error);
+      throw error;
+    }
+  };
+
+  const deleteCategory = async (id) => {
+    try {
+      await categoryAPI.deleteCategory(id);
+      setCategories((prev) => prev.filter((category) => category.id !== id));
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      throw error;
+    }
+  };
+
+  const initializeCategories = async (newCategories) => {
+    try {
+      const createdCategories = await categoryAPI.initializeCategories(
+        newCategories
+      );
+      setCategories(createdCategories);
+    } catch (error) {
+      console.error("Error initializing categories:", error);
+      throw error;
+    }
+  };
+
+  // Transaction functions
+  const addTransaction = async (transactionData) => {
+    try {
+      const response = await transactionAPI.createTransaction({
+        type: transactionData.type,
+        amount: transactionData.amount,
+        date: transactionData.date,
+        category: transactionData.category,
+        note: transactionData.description,
+      });
+
+      const newTransaction = response.transaction || response;
+      setTransactions((prev) => [newTransaction, ...prev]);
+    } catch (error) {
+      console.error("Error creating transaction:", error);
+      throw error;
+    }
+  };
+
+  const updateTransaction = async (id, transactionData) => {
+    try {
+      const updatedTransaction = await transactionAPI.updateTransaction(id, {
+        type: transactionData.type,
+        amount: transactionData.amount,
+        date: transactionData.date,
+        category: transactionData.category,
+        note: transactionData.description,
+      });
+
+      setTransactions((prev) =>
+        prev.map((transaction) =>
+          transaction.id === id ? updatedTransaction : transaction
+        )
+      );
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      throw error;
+    }
+  };
+
+  const deleteTransaction = async (id) => {
+    try {
+      await transactionAPI.deleteTransaction(id);
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== id)
+      );
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      throw error;
+    }
+  };
+
+  // Computed values
+  const totalAssets = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+  const totalIncome = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const savingsPercentage =
+    totalIncome > 0
+      ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100)
+      : 0;
+  const recentTransactions = transactions.slice(0, 5);
+
+  const value = {
+    loading,
+    wallets,
+    addWallet,
+    updateWallet,
+    deleteWallet,
+    categories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    initializeCategories,
+    transactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    totalAssets,
+    totalIncome,
+    totalExpense,
+    savingsPercentage,
+    recentTransactions,
+  };
+
+  return (
+    <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>
+  );
+};

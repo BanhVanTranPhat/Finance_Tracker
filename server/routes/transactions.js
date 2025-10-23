@@ -25,7 +25,7 @@ router.get("/", auth, async (req, res) => {
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
 
-    const query = { userId: req.userId };
+    const query = { user: req.user.id };
 
     if (type && ["income", "expense"].includes(type)) query.type = type;
     if (currency && ["VND", "USD"].includes(currency))
@@ -84,7 +84,7 @@ router.get("/:id", auth, async (req, res) => {
   try {
     const transaction = await Transaction.findOne({
       _id: req.params.id,
-      userId: req.userId,
+      user: req.user.id,
     });
 
     if (!transaction) {
@@ -118,12 +118,18 @@ router.post("/", auth, async (req, res) => {
       return res.status(400).json({ message: "Số tiền phải lớn hơn 0" });
     }
 
+    // Validate and parse date
+    const transactionDate = new Date(date);
+    if (isNaN(transactionDate.getTime())) {
+      return res.status(400).json({ message: "Ngày không hợp lệ" });
+    }
+
     const transaction = new Transaction({
-      userId: req.userId,
+      user: req.user.id,
       type,
       amount,
       currency: currency || "VND",
-      date: new Date(date),
+      date: transactionDate,
       category,
       note,
     });
@@ -136,6 +142,12 @@ router.post("/", auth, async (req, res) => {
     });
   } catch (error) {
     console.error("Create transaction error:", error);
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Dữ liệu không hợp lệ",
+        errors: error.errors,
+      });
+    }
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -147,7 +159,7 @@ router.put("/:id", auth, async (req, res) => {
 
     const transaction = await Transaction.findOne({
       _id: req.params.id,
-      userId: req.userId,
+      user: req.user.id,
     });
 
     if (!transaction) {
@@ -179,7 +191,7 @@ router.delete("/:id", auth, async (req, res) => {
   try {
     const transaction = await Transaction.findOneAndDelete({
       _id: req.params.id,
-      userId: req.userId,
+      user: req.user.id,
     });
 
     if (!transaction) {
