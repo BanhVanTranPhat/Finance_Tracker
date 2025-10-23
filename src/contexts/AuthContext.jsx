@@ -14,13 +14,25 @@ export const AuthProvider = ({ children }) => {
 
       if (token && storedUser) {
         try {
-          // Verify token with backend
-          const response = await authAPI.getCurrentUser();
-          setUser(response.user);
+          // First, set user from localStorage immediately for better UX
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+
+          // Then verify token with backend in background
+          try {
+            const response = await authAPI.getCurrentUser();
+            setUser(response.user);
+          } catch {
+            // Token is invalid, clear storage
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
+          }
         } catch {
-          // Token is invalid, clear storage
+          // Invalid user data, clear storage
           localStorage.removeItem("token");
           localStorage.removeItem("user");
+          setUser(null);
         }
       }
       setIsLoading(false);
@@ -28,8 +40,18 @@ export const AuthProvider = ({ children }) => {
 
     initAuth();
 
-    // Listen for storage changes (for Google OAuth)
+    // Listen for Google OAuth success
+    const handleGoogleAuthSuccess = (e) => {
+      console.log("🎉 Received googleAuthSuccess event:", e.detail);
+      const { user, token } = e.detail;
+      setUser(user);
+      setIsLoading(false);
+      console.log("✅ AuthContext updated with user:", user);
+    };
+
+    // Listen for storage changes (for other OAuth flows)
     const handleStorageChange = (e) => {
+      console.log("📦 Storage event received:", e.key, e.newValue);
       if (e.key === "token" || e.key === "user") {
         // Immediately update user state from localStorage for Google OAuth
         const token = localStorage.getItem("token");
@@ -38,6 +60,7 @@ export const AuthProvider = ({ children }) => {
         if (token && storedUser) {
           try {
             const userData = JSON.parse(storedUser);
+            console.log("🔄 Updating user from storage:", userData);
             setUser(userData);
             setIsLoading(false);
           } catch {
@@ -52,9 +75,11 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    window.addEventListener("googleAuthSuccess", handleGoogleAuthSuccess);
     window.addEventListener("storage", handleStorageChange);
 
     return () => {
+      window.removeEventListener("googleAuthSuccess", handleGoogleAuthSuccess);
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
@@ -112,7 +137,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, setUser, login, register, logout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );

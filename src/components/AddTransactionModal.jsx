@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { X, ArrowUp, ArrowDown, Building2, Folder, Calendar, Check } from "lucide-react";
+import {
+  X,
+  ArrowUp,
+  ArrowDown,
+  Building2,
+  Folder,
+  Calendar,
+  Check,
+} from "lucide-react";
 
 export default function AddTransactionModal({
   isOpen,
@@ -75,7 +83,9 @@ export default function AddTransactionModal({
           <button
             onClick={() => setType("expense")}
             className={`flex-1 flex items-center justify-center py-3 px-4 rounded-full transition-colors ${
-              type === "expense" ? "bg-yellow-400 text-emerald-800" : "text-gray-500"
+              type === "expense"
+                ? "bg-yellow-400 text-emerald-800"
+                : "text-gray-500"
             }`}
             aria-label="Chọn loại chi tiêu"
           >
@@ -85,7 +95,9 @@ export default function AddTransactionModal({
           <button
             onClick={() => setType("income")}
             className={`flex-1 flex items-center justify-center py-3 px-4 rounded-full transition-colors ${
-              type === "income" ? "bg-yellow-400 text-emerald-800" : "text-gray-500"
+              type === "income"
+                ? "bg-yellow-400 text-emerald-800"
+                : "text-gray-500"
             }`}
             aria-label="Chọn loại thu nhập"
           >
@@ -99,7 +111,11 @@ export default function AddTransactionModal({
           <div className="w-24 h-24 bg-yellow-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <div className="w-8 h-8 bg-amber-600 rounded-full" />
           </div>
-          <div className={`text-3xl font-bold ${type === "expense" ? "text-red-500" : "text-green-500"}`}>
+          <div
+            className={`text-3xl font-bold ${
+              type === "expense" ? "text-red-500" : "text-green-500"
+            }`}
+          >
             {type === "expense" ? "-" : "+"}đ{parseInt(amount).toLocaleString()}
           </div>
           <div className="text-sm text-emerald-600 mt-1">

@@ -44,16 +44,16 @@ window.handleGoogleCredential = async (response) => {
       localStorage.setItem("onboarding_completed", "false");
     }
 
-    // Trigger storage event to update AuthContext immediately
+    // Trigger custom event to update AuthContext immediately
+    console.log("🔔 Dispatching googleAuthSuccess event with user:", data.user);
     window.dispatchEvent(
-      new StorageEvent("storage", {
-        key: "token",
-        newValue: data.token,
-        oldValue: null,
-        url: window.location.href,
+      new CustomEvent("googleAuthSuccess", {
+        detail: { user: data.user, token: data.token },
       })
     );
 
+    // Also trigger storage event as fallback
+    console.log("🔔 Dispatching storage event as fallback");
     window.dispatchEvent(
       new StorageEvent("storage", {
         key: "user",
@@ -64,10 +64,10 @@ window.handleGoogleCredential = async (response) => {
     );
 
     console.log("🚀 Redirecting to dashboard...");
-    // Small delay to ensure AuthContext is updated
+    // Wait a bit longer to ensure AuthContext is updated
     setTimeout(() => {
       window.location.href = "/dashboard";
-    }, 100);
+    }, 300);
   } catch (e) {
     console.error("❌ Google OAuth Error:", e);
     const errorMessage =

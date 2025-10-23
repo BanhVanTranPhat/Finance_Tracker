@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function GoogleCallback() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   useEffect(() => {
     const handleGoogleCallback = async () => {
@@ -49,6 +51,9 @@ export default function GoogleCallback() {
           "onboarding_completed",
           data.user.onboardingCompleted ? "true" : "false"
         );
+
+        // Update AuthContext state immediately
+        setUser(data.user);
 
         // Redirect to dashboard
         navigate("/dashboard");

@@ -11,7 +11,6 @@ export default function BottomNav({ activeTab, onTabChange, onCreateWallet }) {
   const navItems = [
     { id: "budget", icon: DollarSign, label: "Ngân sách" },
     { id: "wallet", icon: Wallet, label: "Ví" },
-    { id: "analytics", icon: BarChart3, label: "Phân tích" },
     { id: "transactions", icon: List, label: "Giao dịch" },
     { id: "settings", icon: Settings, label: "Cài đặt" },
   ];

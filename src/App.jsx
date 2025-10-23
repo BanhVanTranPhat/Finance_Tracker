@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { TransactionProvider } from "./contexts/TransactionContext.jsx";
 import { FinanceProvider } from "./contexts/FinanceContext.jsx";
@@ -12,6 +12,7 @@ import BudgetScreen from "./components/BudgetScreen.jsx";
 import WalletScreen from "./components/WalletScreen.jsx";
 import AnalyticsScreen from "./components/AnalyticsScreen.jsx";
 import TransactionsPage from "./pages/TransactionsPage.jsx";
+import TransactionsWithAnalytics from "./components/TransactionsWithAnalytics.jsx";
 import WalletManagementModal from "./components/WalletManagementModal.jsx";
 
 function AppContent() {
@@ -19,6 +20,46 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState("landing");
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [activeTab, setActiveTab] = useState("budget");
+  const [forceUpdate, setForceUpdate] = useState(0);
+
+  // Debug logging
+  console.log(
+    "🔍 App render - user:",
+    user,
+    "isLoading:",
+    isLoading,
+    "pathname:",
+    window.location.pathname,
+    "forceUpdate:",
+    forceUpdate
+  );
+
+  // Check localStorage for credentials when on dashboard
+  useEffect(() => {
+    if (window.location.pathname === "/dashboard" && !user && !isLoading) {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      if (token && storedUser) {
+        console.log(
+          "🔄 Found credentials in localStorage, triggering AuthContext update via useEffect"
+        );
+
+        // Force a re-render by dispatching a storage event
+        window.dispatchEvent(
+          new StorageEvent("storage", {
+            key: "user",
+            newValue: storedUser,
+            oldValue: null,
+            url: window.location.href,
+          })
+        );
+
+        // Also force a re-render
+        setForceUpdate((prev) => prev + 1);
+      }
+    }
+  }, [user, isLoading, forceUpdate]);
 
   // Check if this is a Google OAuth callback
   if (window.location.pathname === "/auth/callback") {
@@ -27,7 +68,53 @@ function AppContent() {
 
   // Check if user is trying to access dashboard
   if (window.location.pathname === "/dashboard" && !user && !isLoading) {
-    // Redirect to login if not authenticated and not loading
+    // Check if we have token in localStorage (Google OAuth might be in progress)
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    console.log(
+      "🔍 Dashboard check - token:",
+      !!token,
+      "storedUser:",
+      !!storedUser
+    );
+
+    if (token && storedUser) {
+      // We have credentials but AuthContext hasn't loaded yet, show loading
+      console.log(
+        "🔄 Found credentials in localStorage, triggering AuthContext update"
+      );
+
+      // Force a re-render by dispatching a storage event
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: "user",
+          newValue: storedUser,
+          oldValue: null,
+          url: window.location.href,
+        })
+      );
+
+      // Also force a re-render after a short delay
+      setTimeout(() => {
+        setForceUpdate((prev) => prev + 1);
+      }, 100);
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Đang tải...
+            </h2>
+            <p className="text-gray-600">Vui lòng chờ trong giây lát</p>
+          </div>
+        </div>
+      );
+    }
+
+    // No credentials, redirect to login
+    console.log("❌ No credentials found, redirecting to login");
     window.location.href = "/";
     return null;
   }
@@ -71,8 +158,7 @@ function AppContent() {
             {/* Main Content */}
             {activeTab === "budget" && <BudgetScreen />}
             {activeTab === "wallet" && <WalletScreen />}
-            {activeTab === "analytics" && <AnalyticsScreen />}
-            {activeTab === "transactions" && <TransactionsPage />}
+            {activeTab === "transactions" && <TransactionsWithAnalytics />}
             {activeTab === "settings" && (
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -145,8 +231,7 @@ function AppContent() {
           {/* Main Content */}
           {activeTab === "budget" && <BudgetScreen />}
           {activeTab === "wallet" && <WalletScreen />}
-          {activeTab === "analytics" && <AnalyticsScreen />}
-          {activeTab === "transactions" && <TransactionsPage />}
+          {activeTab === "transactions" && <TransactionsWithAnalytics />}
           {activeTab === "settings" && (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
               <div className="text-center">
