@@ -31,6 +31,11 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    wallet: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     note: {
       type: String,
       trim: true,

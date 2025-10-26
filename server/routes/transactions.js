@@ -1,5 +1,6 @@
 const express = require("express");
 const Transaction = require("../models/Transaction");
+const Wallet = require("../models/Wallet");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
@@ -101,10 +102,10 @@ router.get("/:id", auth, async (req, res) => {
 // Create new transaction
 router.post("/", auth, async (req, res) => {
   try {
-    const { type, amount, currency, date, category, note } = req.body;
+    const { type, amount, currency, date, category, wallet, note } = req.body;
 
     // Validation
-    if (!type || !amount || !date || !category) {
+    if (!type || !amount || !date || !category || !wallet) {
       return res
         .status(400)
         .json({ message: "Vui lòng điền đầy đủ thông tin bắt buộc" });
@@ -124,6 +125,25 @@ router.post("/", auth, async (req, res) => {
       return res.status(400).json({ message: "Ngày không hợp lệ" });
     }
 
+    // Find wallet by name
+    const walletDoc = await Wallet.findOne({
+      user: req.user.id,
+      name: wallet,
+    });
+
+    if (!walletDoc) {
+      return res.status(404).json({ message: "Không tìm thấy ví" });
+    }
+
+    // Update wallet balance
+    if (type === "income") {
+      walletDoc.balance += amount;
+    } else {
+      walletDoc.balance -= amount;
+    }
+
+    await walletDoc.save();
+
     const transaction = new Transaction({
       user: req.user.id,
       type,
@@ -131,6 +151,7 @@ router.post("/", auth, async (req, res) => {
       currency: currency || "VND",
       date: transactionDate,
       category,
+      wallet,
       note,
     });
 
@@ -155,7 +176,7 @@ router.post("/", auth, async (req, res) => {
 // Update transaction
 router.put("/:id", auth, async (req, res) => {
   try {
-    const { type, amount, currency, date, category, note } = req.body;
+    const { type, amount, currency, date, category, wallet, note } = req.body;
 
     const transaction = await Transaction.findOne({
       _id: req.params.id,
@@ -166,15 +187,52 @@ router.put("/:id", auth, async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy giao dịch" });
     }
 
-    // Update fields
+    // Store old values for wallet balance adjustment
+    const oldType = transaction.type;
+    const oldAmount = transaction.amount;
+    const oldWallet = transaction.wallet;
+
+    // Find old wallet
+    const oldWalletDoc = await Wallet.findOne({
+      user: req.user.id,
+      name: oldWallet,
+    });
+
+    if (oldWalletDoc) {
+      // Reverse old transaction effect
+      if (oldType === "income") {
+        oldWalletDoc.balance -= oldAmount;
+      } else {
+        oldWalletDoc.balance += oldAmount;
+      }
+      await oldWalletDoc.save();
+    }
+
+    // Update transaction fields
     if (type) transaction.type = type;
     if (amount !== undefined) transaction.amount = amount;
     if (currency) transaction.currency = currency;
     if (date) transaction.date = new Date(date);
     if (category) transaction.category = category;
+    if (wallet) transaction.wallet = wallet;
     if (note !== undefined) transaction.note = note;
 
     await transaction.save();
+
+    // Apply new transaction effect to wallet
+    const newWalletDoc = await Wallet.findOne({
+      user: req.user.id,
+      name: transaction.wallet,
+    });
+
+    if (newWalletDoc) {
+      if (transaction.type === "income") {
+        newWalletDoc.balance += transaction.amount;
+      } else {
+        newWalletDoc.balance -= transaction.amount;
+      }
+      await newWalletDoc.save();
+    }
 
     res.json({
       message: "Cập nhật giao dịch thành công",
@@ -203,7 +261,7 @@ router.delete("/all", auth, async (req, res) => {
 // Delete single transaction
 router.delete("/:id", auth, async (req, res) => {
   try {
-    const transaction = await Transaction.findOneAndDelete({
+    const transaction = await Transaction.findOne({
       _id: req.params.id,
       user: req.user.id,
     });
@@ -211,6 +269,23 @@ router.delete("/:id", auth, async (req, res) => {
     if (!transaction) {
       return res.status(404).json({ message: "Không tìm thấy giao dịch" });
     }
+
+    // Reverse transaction effect on wallet
+    const walletDoc = await Wallet.findOne({
+      user: req.user.id,
+      name: transaction.wallet,
+    });
+
+    if (walletDoc) {
+      if (transaction.type === "income") {
+        walletDoc.balance -= transaction.amount;
+      } else {
+        walletDoc.balance += transaction.amount;
+      }
+      await walletDoc.save();
+    }
+
+    await Transaction.findByIdAndDelete(req.params.id);
 
     res.json({ message: "Xóa giao dịch thành công" });
   } catch (error) {

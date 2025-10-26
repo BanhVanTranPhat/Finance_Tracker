@@ -212,11 +212,16 @@ export const FinanceProvider = ({ children }) => {
         amount: transactionData.amount,
         date: transactionData.date,
         category: transactionData.category,
+        wallet: transactionData.wallet,
         note: transactionData.description,
       });
 
       const newTransaction = response.transaction || response;
       setTransactions((prev) => [newTransaction, ...prev]);
+
+      // Reload wallets to get updated balance
+      const updatedWallets = await walletAPI.getWallets();
+      setWallets(updatedWallets || []);
     } catch (error) {
       console.error("Error creating transaction:", error);
       throw error;
@@ -230,6 +235,7 @@ export const FinanceProvider = ({ children }) => {
         amount: transactionData.amount,
         date: transactionData.date,
         category: transactionData.category,
+        wallet: transactionData.wallet,
         note: transactionData.description,
       });
 
@@ -238,6 +244,10 @@ export const FinanceProvider = ({ children }) => {
           transaction.id === id ? updatedTransaction : transaction
         )
       );
+
+      // Reload wallets to get updated balance
+      const updatedWallets = await walletAPI.getWallets();
+      setWallets(updatedWallets || []);
     } catch (error) {
       console.error("Error updating transaction:", error);
       throw error;
@@ -250,6 +260,10 @@ export const FinanceProvider = ({ children }) => {
       setTransactions((prev) =>
         prev.filter((transaction) => transaction.id !== id)
       );
+
+      // Reload wallets to get updated balance
+      const updatedWallets = await walletAPI.getWallets();
+      setWallets(updatedWallets || []);
     } catch (error) {
       console.error("Error deleting transaction:", error);
       throw error;
