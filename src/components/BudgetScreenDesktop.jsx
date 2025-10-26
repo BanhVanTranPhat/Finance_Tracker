@@ -23,6 +23,8 @@ export default function BudgetScreenDesktop() {
 
   let budgetSummary = {
     totalIncome: 0,
+    totalWalletBalance: 0,
+    availableMoney: 0,
     totalBudgeted: 0,
     totalSpent: 0,
     remainingToBudget: 0,
@@ -116,7 +118,13 @@ export default function BudgetScreenDesktop() {
                       position="top"
                     />
                   </div>
-                  <span className={`text-2xl font-bold ${remainingToBudget < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                  <span
+                    className={`text-2xl font-bold ${
+                      remainingToBudget < 0
+                        ? "text-red-500"
+                        : "text-emerald-600"
+                    }`}
+                  >
                     {remainingToBudget.toLocaleString()}₫
                   </span>
                 </div>

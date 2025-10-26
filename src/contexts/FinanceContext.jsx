@@ -19,6 +19,8 @@ export const FinanceProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [budgetSummary, setBudgetSummary] = useState({
     totalIncome: 0,
+    totalWalletBalance: 0,
+    availableMoney: 0,
     totalBudgeted: 0,
     totalSpent: 0,
     remainingToBudget: 0,
@@ -135,7 +137,7 @@ export const FinanceProvider = ({ children }) => {
       try {
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
-        
+
         const summary = await categoryAPI.getBudgetSummary(year, month);
         setBudgetSummary(summary);
       } catch (error) {
@@ -143,6 +145,8 @@ export const FinanceProvider = ({ children }) => {
         // Set default values on error
         setBudgetSummary({
           totalIncome: 0,
+          totalWalletBalance: 0,
+          availableMoney: 0,
           totalBudgeted: 0,
           totalSpent: 0,
           remainingToBudget: 0,
@@ -153,7 +157,7 @@ export const FinanceProvider = ({ children }) => {
     };
 
     loadBudgetSummary();
-  }, [selectedDate, transactions, categories]); // Reload when date, transactions, or categories change
+  }, [selectedDate, transactions, categories, wallets]); // Reload when date, transactions, categories, or wallets change
 
   // Wallet functions
   const addWallet = async (walletData) => {

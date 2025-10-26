@@ -1,6 +1,7 @@
 const express = require("express");
 const Category = require("../models/Category");
 const Transaction = require("../models/Transaction");
+const Wallet = require("../models/Wallet");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
@@ -58,7 +59,8 @@ router.put("/:id", auth, async (req, res) => {
     if (name) updateData.name = name;
     if (type) updateData.type = type;
     if (group) updateData.group = group;
-    if (budgeted_amount !== undefined) updateData.budgeted_amount = budgeted_amount;
+    if (budgeted_amount !== undefined)
+      updateData.budgeted_amount = budgeted_amount;
     if (isDefault !== undefined) updateData.isDefault = isDefault;
 
     const category = await Category.findOneAndUpdate(
@@ -184,11 +186,22 @@ router.get("/budget-summary", auth, async (req, res) => {
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
+    // Calculate total wallet balance
+    const wallets = await Wallet.find({ user: req.user.id });
+    const totalWalletBalance = wallets.reduce(
+      (sum, wallet) => sum + (wallet.balance || 0),
+      0
+    );
+
     // Calculate remaining to budget
-    const remainingToBudget = totalIncome - totalBudgeted;
+    // Tiền chưa có việc = (Thu nhập + Tổng số dư ví) - Tiền đã lập kế hoạch
+    const availableMoney = totalIncome + totalWalletBalance;
+    const remainingToBudget = availableMoney - totalBudgeted;
 
     res.json({
       totalIncome,
+      totalWalletBalance,
+      availableMoney,
       totalBudgeted,
       totalSpent,
       remainingToBudget,
