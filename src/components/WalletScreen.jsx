@@ -1,6 +1,14 @@
-import { Building2, TrendingUp, TrendingDown, Folder } from "lucide-react";
+import { useState } from "react";
+import {
+  Building2,
+  TrendingUp,
+  TrendingDown,
+  Folder,
+  Edit2,
+} from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 import { formatDateForTransaction } from "../utils/dateFormatter.js";
+import WalletManagementModal from "./WalletManagementModal.jsx";
 
 export default function WalletScreen() {
   const {
@@ -10,6 +18,27 @@ export default function WalletScreen() {
     totalExpense,
     recentTransactions,
   } = useFinance();
+
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [editingWallet, setEditingWallet] = useState(null);
+  const [modalMode, setModalMode] = useState("create");
+
+  const handleEditWallet = (wallet) => {
+    setEditingWallet(wallet);
+    setModalMode("edit");
+    setShowWalletModal(true);
+  };
+
+  const handleCreateWallet = () => {
+    setEditingWallet(null);
+    setModalMode("create");
+    setShowWalletModal(true);
+  };
+
+  const handleSaveWallet = () => {
+    setShowWalletModal(false);
+    setEditingWallet(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -42,7 +71,12 @@ export default function WalletScreen() {
       <div className="px-4 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-800">Danh sách ví</h2>
-          <button className="text-emerald-600 font-medium">+ Thêm ví</button>
+          <button
+            onClick={handleCreateWallet}
+            className="text-emerald-600 font-medium"
+          >
+            + Thêm ví
+          </button>
         </div>
         {wallets.length === 0 ? (
           <div className="text-center py-8">
@@ -68,7 +102,9 @@ export default function WalletScreen() {
                     <div className="font-medium text-gray-800">
                       {wallet.name}
                     </div>
-                    <div className="text-sm text-gray-500">Số dư</div>
+                    <div className="text-sm text-gray-500">
+                      {wallet.isDefault ? "Ví mặc định" : "Ví phụ"}
+                    </div>
                   </div>
                   <div
                     className={`font-bold ${
@@ -77,12 +113,31 @@ export default function WalletScreen() {
                   >
                     {wallet.balance.toLocaleString()}₫
                   </div>
+                  <button
+                    onClick={() => handleEditWallet(wallet)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="Chỉnh sửa ví"
+                    title="Chỉnh sửa ví"
+                  >
+                    <Edit2 className="w-5 h-5 text-gray-500" />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Wallet Management Modal */}
+      {showWalletModal && (
+        <WalletManagementModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onSave={handleSaveWallet}
+          editWallet={editingWallet}
+          mode={modalMode}
+        />
+      )}
 
       {/* Recent Transactions */}
       <div className="px-4">

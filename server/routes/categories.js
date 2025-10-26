@@ -20,7 +20,7 @@ router.get("/", auth, async (req, res) => {
 // Create new category
 router.post("/", auth, async (req, res) => {
   try {
-    const { name, group, isDefault = false } = req.body;
+    const { name, type = "expense", group, isDefault = false } = req.body;
 
     if (!name || !group) {
       return res.status(400).json({ message: "Name and group are required" });
@@ -28,6 +28,7 @@ router.post("/", auth, async (req, res) => {
 
     const category = new Category({
       name,
+      type,
       group,
       isDefault,
       user: req.user.id,
@@ -44,10 +45,16 @@ router.post("/", auth, async (req, res) => {
 // Update category
 router.put("/:id", auth, async (req, res) => {
   try {
-    const { name, group, isDefault } = req.body;
+    const { name, type, group, isDefault } = req.body;
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (type) updateData.type = type;
+    if (group) updateData.group = group;
+    if (isDefault !== undefined) updateData.isDefault = isDefault;
+
     const category = await Category.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
-      { name, group, isDefault },
+      updateData,
       { new: true }
     );
 

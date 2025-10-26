@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import { useCategory } from "../contexts/CategoryContext.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
-import { categoryTemplates } from "../data/categoryTemplates.js";
+import {
+  categoryTemplates,
+  defaultIncomeCategories,
+} from "../data/categoryTemplates.js";
 
 export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
   const {
@@ -58,10 +61,11 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
   };
 
   const handleNext = async () => {
-    // Chuyển đổi selectedCategories thành format cho FinanceContext
-    const categoriesForFinance = selectedCategories.map((category) => ({
+    // Chuyển đổi selectedCategories (chi tiêu) thành format cho FinanceContext
+    const expenseCategories = selectedCategories.map((category) => ({
       id: category.id,
       name: category.name,
+      type: "expense",
       group:
         selectedTemplate?.groups.find((g) =>
           g.categories.some((c) => c.id === category.id)
@@ -69,8 +73,26 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
       isDefault: false,
     }));
 
-    // Khởi tạo danh mục trong FinanceContext (có thể là mảng rỗng)
-    await initializeCategories(categoriesForFinance);
+    // Thêm danh mục thu nhập mặc định
+    const incomeCategories = defaultIncomeCategories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      type: "income",
+      group: "Thu nhập",
+      isDefault: true,
+    }));
+
+    // Kết hợp cả thu nhập và chi tiêu
+    const allCategories = [...incomeCategories, ...expenseCategories];
+
+    console.log("📝 Initializing categories (Desktop):", {
+      income: incomeCategories.length,
+      expense: expenseCategories.length,
+      total: allCategories.length,
+    });
+
+    // Khởi tạo danh mục trong FinanceContext
+    await initializeCategories(allCategories);
 
     // Chuyển sang bước tiếp theo
     onNext();
@@ -107,7 +129,7 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
             </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Chọn danh mục
+                Chọn danh mục chi tiêu
               </h1>
               <p className="text-lg text-gray-600">
                 {getTotalSelectedCount()} danh mục đã chọn
@@ -116,10 +138,13 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
           </div>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Hãy chọn các nhóm danh mục và danh mục để bắt đầu
+              Chọn danh mục chi tiêu của bạn
             </h2>
             <p className="text-gray-600">
-              Đây là một vài gợi ý, bạn có thể chỉnh sửa bất kì lúc nào.
+              Danh mục thu nhập (Lương, Thưởng, Đầu tư...) sẽ được tạo tự động.
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Bạn có thể chỉnh sửa bất kì lúc nào sau này.
             </p>
           </div>
         </div>

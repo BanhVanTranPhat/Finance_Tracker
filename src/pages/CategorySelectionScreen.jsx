@@ -2,7 +2,10 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useCategory } from "../contexts/CategoryContext.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
-import { categoryTemplates } from "../data/categoryTemplates.js";
+import {
+  categoryTemplates,
+  defaultIncomeCategories,
+} from "../data/categoryTemplates.js";
 
 export default function CategorySelectionScreen({ onBack, onNext }) {
   const {
@@ -61,10 +64,11 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
   };
 
   const handleNext = async () => {
-    // Chuyển đổi selectedCategories thành format cho FinanceContext
-    const categoriesForFinance = selectedCategories.map((category) => ({
+    // Chuyển đổi selectedCategories (chi tiêu) thành format cho FinanceContext
+    const expenseCategories = selectedCategories.map((category) => ({
       id: category.id,
       name: category.name,
+      type: "expense",
       group:
         selectedTemplate?.groups.find((g) =>
           g.categories.some((c) => c.id === category.id)
@@ -72,8 +76,26 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
       isDefault: false,
     }));
 
-    // Khởi tạo danh mục trong FinanceContext (có thể là mảng rỗng)
-    await initializeCategories(categoriesForFinance);
+    // Thêm danh mục thu nhập mặc định
+    const incomeCategories = defaultIncomeCategories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      type: "income",
+      group: "Thu nhập",
+      isDefault: true,
+    }));
+
+    // Kết hợp cả thu nhập và chi tiêu
+    const allCategories = [...incomeCategories, ...expenseCategories];
+
+    console.log("📝 Initializing categories:", {
+      income: incomeCategories.length,
+      expense: expenseCategories.length,
+      total: allCategories.length,
+    });
+
+    // Khởi tạo danh mục trong FinanceContext
+    await initializeCategories(allCategories);
 
     // Chuyển sang bước tiếp theo
     onNext();
@@ -93,7 +115,9 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Chọn danh mục</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Chọn danh mục chi tiêu
+            </h1>
             <p className="text-sm text-gray-600">
               {getTotalSelectedCount()} danh mục đã chọn
             </p>
@@ -102,10 +126,13 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
         </div>
         <div className="text-center mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-2">
-            Hãy chọn các nhóm danh mục và danh mục để bắt đầu
+            Chọn danh mục chi tiêu của bạn
           </h2>
           <p className="text-sm text-gray-600">
-            Đây là một vài gợi ý, bạn có thể chỉnh sửa bất kì lúc nào.
+            Danh mục thu nhập (Lương, Thưởng, Đầu tư...) sẽ được tạo tự động.
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Bạn có thể chỉnh sửa bất kì lúc nào sau này.
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Target, Calendar, DollarSign, AlertCircle } from "lucide-react";
+import { X, Target, Calendar, AlertCircle } from "lucide-react";
 
 export default function GoalModal({
   isOpen,
@@ -16,6 +16,7 @@ export default function GoalModal({
     priority: "medium",
     description: "",
   });
+  const [displayTargetAmount, setDisplayTargetAmount] = useState("");
   const [errors, setErrors] = useState({});
 
   const categories = [
@@ -35,16 +36,42 @@ export default function GoalModal({
     { value: "high", label: "Cao", color: "text-red-600" },
   ];
 
+  // Format số tiền với dấu chấm phân cách
+  const formatNumber = (value) => {
+    // Loại bỏ tất cả ký tự không phải số
+    const number = value.replace(/\D/g, "");
+    // Thêm dấu chấm phân cách hàng nghìn
+    return number.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  // Xử lý thay đổi số tiền
+  const handleAmountChange = (e) => {
+    const inputValue = e.target.value;
+    // Loại bỏ tất cả dấu chấm
+    const numericValue = inputValue.replace(/\./g, "");
+    // Lưu giá trị số thuần
+    setFormData((prev) => ({ ...prev, targetAmount: numericValue }));
+    // Hiển thị với format
+    setDisplayTargetAmount(formatNumber(numericValue));
+    // Clear error
+    if (errors.targetAmount) {
+      setErrors((prev) => ({ ...prev, targetAmount: "" }));
+    }
+  };
+
   useEffect(() => {
     if (goal && mode === "edit") {
+      const amount = goal.targetAmount?.toString() || "";
       setFormData({
         title: goal.title || "",
-        targetAmount: goal.targetAmount?.toString() || "",
+        targetAmount: amount,
         targetDate: goal.targetDate || "",
         category: goal.category || "General",
         priority: goal.priority || "medium",
         description: goal.description || "",
       });
+      // Format số tiền khi edit
+      setDisplayTargetAmount(formatNumber(amount));
     } else {
       setFormData({
         title: "",
@@ -54,6 +81,7 @@ export default function GoalModal({
         priority: "medium",
         description: "",
       });
+      setDisplayTargetAmount("");
     }
     setErrors({});
   }, [goal, mode, isOpen]);
@@ -158,18 +186,17 @@ export default function GoalModal({
               Số tiền mục tiêu (₫) *
             </label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                đ
+              </span>
               <input
-                type="number"
-                value={formData.targetAmount}
-                onChange={(e) =>
-                  handleInputChange("targetAmount", e.target.value)
-                }
+                type="text"
+                value={displayTargetAmount}
+                onChange={handleAmountChange}
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                   errors.targetAmount ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="10000000"
-                min="1"
+                placeholder="10.000.000"
               />
             </div>
             {errors.targetAmount && (

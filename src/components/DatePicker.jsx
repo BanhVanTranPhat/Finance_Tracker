@@ -88,9 +88,11 @@ export default function DatePicker({
       {/* Selected Date Display */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-white text-gray-800 px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-gray-50 transition-colors shadow-sm"
+        className="bg-white text-gray-800 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl flex items-center space-x-2 sm:space-x-3 transition-all shadow-sm border border-white hover:shadow-md sm:hover:bg-gray-50 sm:border-gray-100"
       >
-        <span className="font-medium">{formatDisplayDate(selectedDate)}</span>
+        <span className="font-semibold text-sm sm:text-base">
+          {formatDisplayDate(selectedDate)}
+        </span>
         <ChevronDown
           className={`w-4 h-4 transition-transform ${
             isOpen ? "rotate-180" : ""
@@ -100,55 +102,67 @@ export default function DatePicker({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 z-50 min-w-64">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 w-[calc(100vw-2rem)] max-w-sm sm:w-80">
           {/* Header with Year Navigation */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-blue-50">
             <button
               onClick={handlePreviousYear}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-1.5 sm:p-2 hover:bg-white/70 rounded-lg transition-all active:scale-95"
+              aria-label="Previous Year"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
             </button>
-            <span className="font-semibold text-lg text-gray-800">
+            <span className="font-bold text-lg sm:text-xl text-gray-800">
               {currentYear}
             </span>
             <button
               onClick={handleNextYear}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-1.5 sm:p-2 hover:bg-white/70 rounded-lg transition-all active:scale-95"
+              aria-label="Next Year"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5 text-gray-700" />
             </button>
           </div>
 
           {/* Month Grid */}
-          <div className="p-4">
-            <div className="grid grid-cols-3 gap-2">
-              {months.map((month, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleDateSelect(currentYear, index)}
-                  className={`p-3 text-sm rounded-lg transition-colors ${
-                    selectedDate.getFullYear() === currentYear &&
-                    selectedDate.getMonth() === index
-                      ? "bg-emerald-500 text-white"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {month}
-                </button>
-              ))}
+          <div className="p-3 sm:p-5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {months.map((month, index) => {
+                const isSelected =
+                  selectedDate.getFullYear() === currentYear &&
+                  selectedDate.getMonth() === index;
+                const isCurrentMonth =
+                  new Date().getFullYear() === currentYear &&
+                  new Date().getMonth() === index;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleDateSelect(currentYear, index)}
+                    className={`p-2.5 sm:p-3 text-xs sm:text-sm font-medium rounded-xl transition-all active:scale-95 ${
+                      isSelected
+                        ? "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200"
+                        : isCurrentMonth
+                        ? "bg-blue-50 text-blue-700 active:bg-blue-100 border border-blue-200"
+                        : "active:bg-gray-50 text-gray-700 border border-transparent active:border-gray-200"
+                    }`}
+                  >
+                    {month}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="p-4 border-t border-gray-100">
-            <div className="flex space-x-2">
+          <div className="px-3 sm:px-5 pb-3 sm:pb-5 pt-2 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <button
                 onClick={() => {
                   const today = new Date();
                   handleDateSelect(today.getFullYear(), today.getMonth());
                 }}
-                className="flex-1 py-2 px-3 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl active:from-emerald-600 active:to-emerald-700 transition-all shadow-sm active:scale-95"
               >
                 Tháng này
               </button>
@@ -161,7 +175,7 @@ export default function DatePicker({
                     lastMonth.getMonth()
                   );
                 }}
-                className="flex-1 py-2 px-3 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 rounded-xl active:bg-gray-200 transition-all shadow-sm active:scale-95"
               >
                 Tháng trước
               </button>

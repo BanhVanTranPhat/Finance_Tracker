@@ -1,3 +1,11 @@
+// Danh mục thu nhập mặc định (tự động tạo)
+export const defaultIncomeCategories = [
+  { id: "salary", name: "Lương", type: "income" },
+  { id: "bonus", name: "Thưởng", type: "income" },
+  { id: "investment", name: "Đầu tư", type: "income" },
+  { id: "other-income", name: "Thu nhập khác", type: "income" },
+];
+
 export const categoryTemplates = [
   {
     id: "moneyflow-style",

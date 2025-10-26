@@ -5,6 +5,7 @@ import {
   TrendingDown,
   Folder,
   Plus,
+  Edit2,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 import { formatDateForTransaction } from "../utils/dateFormatter.js";
@@ -20,13 +21,24 @@ export default function WalletScreenDesktop() {
   } = useFinance();
 
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [editingWallet, setEditingWallet] = useState(null);
+  const [modalMode, setModalMode] = useState("create");
 
-  const handleCreateWallet = () => {
+  const handleEditWallet = (wallet) => {
+    setEditingWallet(wallet);
+    setModalMode("edit");
     setShowWalletModal(true);
   };
 
-  const handleSaveWallet = (walletData) => {
-    console.log("Wallet saved:", walletData);
+  const handleCreateWallet = () => {
+    setEditingWallet(null);
+    setModalMode("create");
+    setShowWalletModal(true);
+  };
+
+  const handleSaveWallet = () => {
+    setShowWalletModal(false);
+    setEditingWallet(null);
   };
 
   return (
@@ -109,10 +121,20 @@ export default function WalletScreenDesktop() {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-800">
-                        {wallet.balance.toLocaleString()}₫
-                      </p>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-gray-800">
+                          {wallet.balance.toLocaleString()}₫
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleEditWallet(wallet)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        aria-label="Chỉnh sửa ví"
+                        title="Chỉnh sửa ví"
+                      >
+                        <Edit2 className="w-5 h-5 text-gray-500" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -207,6 +229,8 @@ export default function WalletScreenDesktop() {
           isOpen={showWalletModal}
           onClose={() => setShowWalletModal(false)}
           onSave={handleSaveWallet}
+          editWallet={editingWallet}
+          mode={modalMode}
         />
       )}
     </div>
