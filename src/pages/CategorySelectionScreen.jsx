@@ -20,20 +20,31 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
     selectedTemplate || categoryTemplates[0]
   );
 
+  // Debug logging
+  console.log("🔍 CategorySelectionScreen render:", {
+    selectedTemplate,
+    selectedCategories,
+    localTemplate,
+    categoryTemplates: categoryTemplates.length,
+  });
+
   const handleTemplateSelect = (template) => {
     setLocalTemplate(template);
     setSelectedTemplate(template);
   };
 
   const handleCategoryToggle = (groupId, categoryId) => {
+    console.log("🔄 handleCategoryToggle called:", { groupId, categoryId });
     toggleCategory(groupId, categoryId);
   };
 
   const handleSelectAll = (groupId) => {
+    console.log("🔄 handleSelectAll called:", groupId);
     selectAllCategories(groupId);
   };
 
   const handleDeselectAll = (groupId) => {
+    console.log("🔄 handleDeselectAll called:", groupId);
     deselectAllCategories(groupId);
   };
 
@@ -69,22 +80,20 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
       <div className="pt-12 pb-6 px-4">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-yellow-100 rounded-full transition-colors"
+            className="p-2 hover:bg-emerald-100 rounded-full transition-colors"
             aria-label="Quay lại"
             title="Quay lại"
           >
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-yellow-800">
-              Chọn danh mục
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Chọn danh mục</h1>
             <p className="text-sm text-gray-600">
               {getTotalSelectedCount()} danh mục đã chọn
             </p>
@@ -110,8 +119,8 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
               onClick={() => handleTemplateSelect(template)}
               className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all ${
                 localTemplate.id === template.id
-                  ? "border-yellow-400 bg-yellow-400 text-yellow-800"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-yellow-300"
+                  ? "border-emerald-500 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:shadow-md"
               }`}
             >
               <div className="text-sm font-semibold">{template.name}</div>
@@ -136,7 +145,7 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
                 {/* Group Header */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <h3 className="text-lg font-bold text-yellow-800">
+                    <h3 className="text-lg font-bold text-emerald-800">
                       {group.name}
                     </h3>
                     {group.percentage && (
@@ -154,7 +163,7 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
                         onClick={() => handleSelectAll(group.id)}
                         className={`px-2 py-1 text-xs rounded ${
                           allSelected
-                            ? "bg-yellow-100 text-yellow-700"
+                            ? "bg-emerald-100 text-emerald-700"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
@@ -189,8 +198,8 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
                         }
                         className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${
                           isSelected
-                            ? "bg-yellow-400 text-yellow-800 border-2 border-yellow-500"
-                            : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-2 border-emerald-600 shadow-md"
+                            : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 hover:shadow-sm"
                         }`}
                       >
                         <div className="flex items-center space-x-1">
@@ -211,7 +220,7 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
       <div className="px-4 pb-6 space-y-3">
         <button
           onClick={handleNext}
-          className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center space-x-2 bg-yellow-400 text-yellow-800 hover:bg-yellow-500"
+          className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl"
         >
           <span>TIẾP TỤC</span>
           <ArrowRight className="w-5 h-5" />

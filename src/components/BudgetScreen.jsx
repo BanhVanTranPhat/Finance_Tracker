@@ -12,10 +12,13 @@ import {
 import TransactionModal from "./TransactionModal.jsx";
 import CategoryDisplay from "./CategoryDisplay.jsx";
 import ZeroBasedBudgetingGuideCompact from "./ZeroBasedBudgetingGuideCompact.jsx";
+import InfoTooltip from "./InfoTooltip.jsx";
+import DatePicker from "./DatePicker.jsx";
+import FinancialGoals from "./FinancialGoals.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { formatDateForTransaction } from "../utils/dateFormatter.js";
 
 export default function BudgetScreen() {
-  const [selectedMonth] = useState("Tháng 10 2025");
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [transactionType, setTransactionType] = useState("expense");
 
@@ -24,6 +27,8 @@ export default function BudgetScreen() {
   let savingsPercentage = 0;
   let recentTransactions = [];
   let addTransaction = async (_data) => {};
+  let selectedDate = new Date();
+  let setSelectedDate = () => {};
 
   try {
     const finance = useFinance();
@@ -32,6 +37,8 @@ export default function BudgetScreen() {
     savingsPercentage = finance.savingsPercentage || 0;
     recentTransactions = finance.recentTransactions || [];
     addTransaction = finance.addTransaction || (async (_data) => {});
+    selectedDate = finance.selectedDate || new Date();
+    setSelectedDate = finance.setSelectedDate || (() => {});
   } catch (error) {
     console.error("Error accessing FinanceContext in BudgetScreen:", error);
   }
@@ -61,12 +68,10 @@ export default function BudgetScreen() {
       <div className="pt-12 pb-6 px-4">
         <div className="flex items-center justify-between mb-4">
           <Settings className="w-6 h-6 text-white" />
-          <div className="flex items-center bg-white rounded-full px-4 py-2">
-            <span className="text-emerald-600 font-medium">
-              {selectedMonth}
-            </span>
-            <ChevronDown className="w-4 h-4 text-emerald-600 ml-2" />
-          </div>
+          <DatePicker
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+          />
           <Edit3 className="w-6 h-6 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-white text-center">
@@ -82,18 +87,24 @@ export default function BudgetScreen() {
             <div className="flex-1">
               <div className="flex items-center text-gray-500 text-sm mb-2">
                 <span>Tiền đã có việc</span>
-                <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center ml-2">
-                  <span className="text-xs text-gray-600">i</span>
-                </div>
+                <InfoTooltip
+                  title="Tiền đã có việc"
+                  content="Tiền đã được bạn phân vào một mục đích cụ thể"
+                  position="right"
+                  className="ml-2"
+                />
               </div>
               <div className="text-3xl font-bold text-emerald-600 mb-4">
                 {allocatedMoney.toLocaleString()}₫
               </div>
               <div className="flex items-center text-gray-500 text-sm mb-2">
                 <span>Tiền chưa có việc</span>
-                <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center ml-2">
-                  <span className="text-xs text-gray-600">i</span>
-                </div>
+                <InfoTooltip
+                  title="Tiền chưa có việc"
+                  content="Tiền còn lại bạn chưa quyết định sẽ dùng làm gì, đang 'thất nghiệp' và chờ bạn phân bổ"
+                  position="right"
+                  className="ml-2"
+                />
               </div>
               <div className="text-3xl font-bold text-red-500">
                 {unallocatedMoney.toLocaleString()}₫
@@ -157,27 +168,8 @@ export default function BudgetScreen() {
           </button>
         </div>
 
-        {/* Financial Goals Card */}
-        <div className="bg-white rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-emerald-800">
-              Mục tiêu tài chính
-            </h3>
-            <button
-              className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center"
-              title="Thêm mục tiêu tài chính"
-              aria-label="Thêm mục tiêu tài chính"
-            >
-              <Plus className="w-5 h-5 text-white" />
-            </button>
-          </div>
-          <div className="text-center py-8">
-            <div className="text-gray-500 mb-2">Chưa có mục tiêu nào</div>
-            <div className="text-sm text-gray-400">
-              Tạo mục tiêu để theo dõi tiến độ tiết kiệm
-            </div>
-          </div>
-        </div>
+        {/* Financial Goals */}
+        <FinancialGoals />
 
         {/* Recent Transactions Card */}
         <div className="bg-white rounded-2xl p-6">
@@ -209,7 +201,7 @@ export default function BudgetScreen() {
                       {transaction.description}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {transaction.date}
+                      {formatDateForTransaction(transaction.date)}
                     </div>
                   </div>
                   <div

@@ -1,7 +1,7 @@
 export const categoryTemplates = [
   {
     id: "moneyflow-style",
-    name: "Mẫu 1: MoneyFlow Style",
+    name: "Mẫu 1: Finance Tracker Style",
     description: "Phong cách quản lý tài chính linh hoạt và hiện đại",
     groups: [
       {

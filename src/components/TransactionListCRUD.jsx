@@ -13,6 +13,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { formatDate } from "../utils/dateFormatter.js";
 import TransactionModal from "./TransactionModal.jsx";
 
 export default function TransactionListCRUD() {

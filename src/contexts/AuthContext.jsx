@@ -3,6 +3,14 @@ import { authAPI } from "../services/api.js";
 
 const AuthContext = createContext(undefined);
 
+// Helper function to clear all financial data
+const clearFinancialData = () => {
+  localStorage.removeItem("financial_goals");
+  localStorage.removeItem("wallets");
+  localStorage.removeItem("categories");
+  localStorage.removeItem("transactions");
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,36 +25,69 @@ export const AuthProvider = ({ children }) => {
           // First, set user from localStorage immediately for better UX
           const userData = JSON.parse(storedUser);
           setUser(userData);
+          console.log("🔄 InitAuth - user set from localStorage:", userData);
 
           // Then verify token with backend in background
           try {
             const response = await authAPI.getCurrentUser();
             setUser(response.user);
+            console.log(
+              "✅ InitAuth - user verified with backend:",
+              response.user
+            );
           } catch {
             // Token is invalid, clear storage
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             setUser(null);
+            console.log("❌ InitAuth - token invalid, cleared storage");
           }
         } catch {
           // Invalid user data, clear storage
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setUser(null);
+          console.log("❌ InitAuth - invalid user data, cleared storage");
         }
       }
       setIsLoading(false);
+      console.log("✅ InitAuth - isLoading set to false");
     };
 
     initAuth();
 
     // Listen for Google OAuth success
     const handleGoogleAuthSuccess = (e) => {
-      console.log("🎉 Received googleAuthSuccess event:", e.detail);
+      console.log(
+        "🎉 Received googleAuthSuccess event:",
+        e.detail,
+        "at",
+        new Date().toISOString()
+      );
       const { user, token } = e.detail;
+      console.log("🔄 Setting user and isLoading:", { user, isLoading: false });
       setUser(user);
       setIsLoading(false);
-      console.log("✅ AuthContext updated with user:", user);
+
+      // Clear any existing financial data for new user
+      clearFinancialData();
+
+      console.log(
+        "✅ AuthContext updated with user:",
+        user,
+        "isLoading: false"
+      );
+
+      // Force a re-render by dispatching a custom event only if needed
+      setTimeout(() => {
+        console.log("🔄 Dispatching forceUpdate event for ResponsiveLayout");
+        // Only dispatch if we're on desktop (width >= 1024)
+        if (window.innerWidth >= 1024) {
+          window.dispatchEvent(new CustomEvent("forceResponsiveUpdate"));
+        } else {
+          console.log("📱 Skipping forceUpdate - mobile layout detected");
+        }
+      }, 100);
     };
 
     // Listen for storage changes (for other OAuth flows)
@@ -63,14 +104,24 @@ export const AuthProvider = ({ children }) => {
             console.log("🔄 Updating user from storage:", userData);
             setUser(userData);
             setIsLoading(false);
+            console.log("✅ Storage change - user set, isLoading: false");
           } catch {
             // Invalid user data, clear storage
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             setUser(null);
+            console.log("❌ Invalid user data, cleared storage");
           }
         } else {
-          setUser(null);
+          // Only clear user if we don't have credentials and it's not an onboarding completion
+          const onboardingCompleted =
+            localStorage.getItem("onboarding_completed") === "true";
+          if (!onboardingCompleted) {
+            console.log("❌ No credentials found in storage, clearing user");
+            setUser(null);
+          } else {
+            console.log("📋 Onboarding completed, keeping user state");
+          }
         }
       }
     };
@@ -97,9 +148,30 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(userData));
-      if (!localStorage.getItem("onboarding_completed")) {
+
+      // Only set onboarding_completed to false if it doesn't exist (first time login)
+      const existingOnboardingStatus = localStorage.getItem(
+        "onboarding_completed"
+      );
+      console.log(
+        "🔍 Login - existing onboarding status:",
+        existingOnboardingStatus
+      );
+
+      if (!existingOnboardingStatus) {
         localStorage.setItem("onboarding_completed", "false");
+        console.log(
+          "🔄 Set onboarding_completed to false for first-time login"
+        );
+        // Clear any existing financial data for first-time login
+        clearFinancialData();
+      } else {
+        console.log(
+          "✅ Keep existing onboarding status:",
+          existingOnboardingStatus
+        );
       }
+      // If onboarding_completed already exists, don't change it
     } catch (error) {
       const err = error;
       // cspell:disable-next-line
@@ -120,9 +192,10 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(userData));
-      if (!localStorage.getItem("onboarding_completed")) {
-        localStorage.setItem("onboarding_completed", "false");
-      }
+      localStorage.setItem("onboarding_completed", "false");
+
+      // Clear any existing financial data for new user
+      clearFinancialData();
     } catch (error) {
       const err = error;
       // cspell:disable-next-line
@@ -134,11 +207,29 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    // Don't clear onboarding_completed - keep it for next login
+    // localStorage.removeItem("onboarding_completed");
+    // Clear all financial data
+    clearFinancialData();
+  };
+
+  const updateUserProfile = (profileData) => {
+    const updatedUser = { ...user, ...profileData };
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, login, register, logout, isLoading }}
+      value={{
+        user,
+        setUser,
+        login,
+        register,
+        logout,
+        updateUserProfile,
+        isLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>

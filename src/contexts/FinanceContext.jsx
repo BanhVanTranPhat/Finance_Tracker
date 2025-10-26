@@ -16,6 +16,7 @@ export const FinanceProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Load data from API on mount
   useEffect(() => {
@@ -225,19 +226,37 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Computed values
+  // Helper function to filter transactions by month/year
+  const filterTransactionsByDate = (transactions, targetDate) => {
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth();
+
+    return transactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.date);
+      return (
+        transactionDate.getFullYear() === targetYear &&
+        transactionDate.getMonth() === targetMonth
+      );
+    });
+  };
+
+  // Computed values - filtered by selected date
+  const filteredTransactions = filterTransactionsByDate(
+    transactions,
+    selectedDate
+  );
   const totalAssets = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
-  const totalIncome = transactions
+  const totalIncome = filteredTransactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = transactions
+  const totalExpense = filteredTransactions
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
   const savingsPercentage =
     totalIncome > 0
       ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100)
       : 0;
-  const recentTransactions = transactions.slice(0, 5);
+  const recentTransactions = filteredTransactions.slice(0, 5);
 
   const value = {
     loading,
@@ -259,6 +278,9 @@ export const FinanceProvider = ({ children }) => {
     totalExpense,
     savingsPercentage,
     recentTransactions,
+    selectedDate,
+    setSelectedDate,
+    filteredTransactions,
   };
 
   return (

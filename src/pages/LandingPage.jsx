@@ -74,7 +74,7 @@ export default function LandingPage({ onLogin, onRegister }) {
                 <Wallet className="w-7 h-7 text-white" />
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                MoneyFlow
+                Finance Tracker
               </h1>
             </div>
             <div className="flex items-center gap-3">
@@ -267,10 +267,12 @@ export default function LandingPage({ onLogin, onRegister }) {
               <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">MoneyFlow</span>
+              <span className="text-xl font-bold text-white">
+                Finance Tracker
+              </span>
             </div>
             <p className="text-gray-400">
-              © 2025 MoneyFlow. Quản lý tài chính thông minh.
+              © 2025 Finance Tracker. Quản lý tài chính thông minh.
             </p>
           </div>
         </div>

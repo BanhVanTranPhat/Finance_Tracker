@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { TransactionProvider } from "./contexts/TransactionContext.jsx";
 import { FinanceProvider } from "./contexts/FinanceContext.jsx";
+import { GoalProvider } from "./contexts/GoalContext.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -9,11 +10,16 @@ import OnboardingFlow from "./pages/OnboardingFlow.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import BudgetScreen from "./components/BudgetScreen.jsx";
+import BudgetScreenDesktop from "./components/BudgetScreenDesktop.jsx";
 import WalletScreen from "./components/WalletScreen.jsx";
+import WalletScreenDesktop from "./components/WalletScreenDesktop.jsx";
 import AnalyticsScreen from "./components/AnalyticsScreen.jsx";
 import TransactionsPage from "./pages/TransactionsPage.jsx";
 import TransactionsWithAnalytics from "./components/TransactionsWithAnalytics.jsx";
 import WalletManagementModal from "./components/WalletManagementModal.jsx";
+import SettingsScreen from "./components/SettingsScreen.jsx";
+import SettingsScreenDesktop from "./components/SettingsScreenDesktop.jsx";
+import ResponsiveLayout from "./components/ResponsiveLayout.jsx";
 
 function AppContent() {
   const { user, logout, isLoading } = useAuth();
@@ -23,6 +29,7 @@ function AppContent() {
   const [forceUpdate, setForceUpdate] = useState(0);
 
   // Debug logging
+  const onboardingStatus = localStorage.getItem("onboarding_completed");
   console.log(
     "🔍 App render - user:",
     user,
@@ -31,7 +38,11 @@ function AppContent() {
     "pathname:",
     window.location.pathname,
     "forceUpdate:",
-    forceUpdate
+    forceUpdate,
+    "onboarding_completed:",
+    onboardingStatus,
+    "shouldShowOnboarding:",
+    onboardingStatus !== "true"
   );
 
   // Check localStorage for credentials when on dashboard
@@ -60,6 +71,22 @@ function AppContent() {
       }
     }
   }, [user, isLoading, forceUpdate]);
+
+  // Check onboarding status when forceUpdate changes
+  useEffect(() => {
+    // This effect will trigger re-render when onboarding completes
+    console.log(
+      "🔄 Force update triggered:",
+      forceUpdate,
+      "at",
+      new Date().toISOString()
+    );
+
+    // Check if onboarding was just completed
+    const onboardingCompleted =
+      localStorage.getItem("onboarding_completed") === "true";
+    console.log("📋 Onboarding status:", onboardingCompleted);
+  }, [forceUpdate]);
 
   // Check if this is a Google OAuth callback
   if (window.location.pathname === "/auth/callback") {
@@ -144,7 +171,7 @@ function AppContent() {
         <OnboardingFlow
           onComplete={() => {
             // Onboarding component đã đặt localStorage; chỉ cần kích hoạt re-render
-            window.location.reload();
+            setForceUpdate((prev) => prev + 1);
           }}
         />
       );
@@ -154,62 +181,66 @@ function AppContent() {
     return (
       <FinanceProvider>
         <TransactionProvider>
-          <div className="min-h-screen">
-            {/* Main Content */}
-            {activeTab === "budget" && <BudgetScreen />}
-            {activeTab === "wallet" && <WalletScreen />}
-            {activeTab === "transactions" && <TransactionsWithAnalytics />}
-            {activeTab === "settings" && (
-              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                    Cài đặt
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    Tính năng đang phát triển
-                  </p>
-                  <button
-                    onClick={logout}
-                    className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
-                  >
-                    Đăng xuất
-                  </button>
+          <GoalProvider>
+            <div className="min-h-screen">
+              {/* Main Content */}
+              {activeTab === "budget" && <BudgetScreen />}
+              {activeTab === "wallet" && <WalletScreen />}
+              {activeTab === "transactions" && <TransactionsWithAnalytics />}
+              {activeTab === "settings" && (
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                      Cài đặt
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                      Tính năng đang phát triển
+                    </p>
+                    <button
+                      onClick={logout}
+                      className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Bottom Navigation */}
-            <BottomNav
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              onCreateWallet={() => setShowWalletModal(true)}
-            />
-
-            {/* Modals */}
-            {showWalletModal && (
-              <WalletManagementModal
-                isOpen={showWalletModal}
-                onClose={() => setShowWalletModal(false)}
-                onSave={(walletData) => {
-                  console.log("Wallet saved:", walletData);
-                }}
+              {/* Bottom Navigation */}
+              <BottomNav
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onCreateWallet={() => setShowWalletModal(true)}
               />
-            )}
-          </div>
+
+              {/* Modals */}
+              {showWalletModal && (
+                <WalletManagementModal
+                  isOpen={showWalletModal}
+                  onClose={() => setShowWalletModal(false)}
+                  onSave={(walletData) => {
+                    console.log("Wallet saved:", walletData);
+                  }}
+                />
+              )}
+            </div>
+          </GoalProvider>
         </TransactionProvider>
       </FinanceProvider>
     );
   }
 
+  // Calculate onboarding status - this will re-run when forceUpdate changes
   const shouldShowOnboarding =
     localStorage.getItem("onboarding_completed") !== "true";
 
-  if (shouldShowOnboarding) {
+  // Only show onboarding if user is authenticated and onboarding not completed
+  if (user && shouldShowOnboarding) {
     return (
       <OnboardingFlow
         onComplete={() => {
           // Onboarding component đã đặt localStorage; chỉ cần kích hoạt re-render
-          window.location.reload();
+          setForceUpdate((prev) => prev + 1);
         }}
       />
     );
@@ -227,33 +258,12 @@ function AppContent() {
   return (
     <FinanceProvider>
       <TransactionProvider>
-        <div className="min-h-screen">
-          {/* Main Content */}
-          {activeTab === "budget" && <BudgetScreen />}
-          {activeTab === "wallet" && <WalletScreen />}
-          {activeTab === "transactions" && <TransactionsWithAnalytics />}
-          {activeTab === "settings" && (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  Cài đặt
-                </h2>
-                <p className="text-gray-600 mb-6">Tính năng đang phát triển</p>
-                <button
-                  onClick={logout}
-                  className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
-                >
-                  Đăng xuất
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Bottom Navigation */}
-          <BottomNav
+        <GoalProvider>
+          <ResponsiveLayout
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onCreateWallet={handleCreateWallet}
+            forceUpdate={forceUpdate}
           />
 
           {/* Modals */}
@@ -264,7 +274,7 @@ function AppContent() {
               onSave={handleSaveWallet}
             />
           )}
-        </div>
+        </GoalProvider>
       </TransactionProvider>
     </FinanceProvider>
   );

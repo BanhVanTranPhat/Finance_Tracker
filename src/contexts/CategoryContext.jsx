@@ -16,31 +16,46 @@ export const CategoryProvider = ({ children }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   const toggleCategory = (groupId, categoryId) => {
-    if (!selectedTemplate) return;
+    console.log("🔄 toggleCategory called:", {
+      groupId,
+      categoryId,
+      selectedTemplate,
+    });
+    // Use the template from categoryTemplates if selectedTemplate is null
+    const template = selectedTemplate || categoryTemplates[0];
+    if (!template) {
+      console.log("❌ No template available");
+      return;
+    }
 
     setSelectedCategories((prev) => {
       const existingIndex = prev.findIndex((cat) => cat.id === categoryId);
 
       if (existingIndex >= 0) {
         // Remove category if already selected
+        console.log("➖ Removing category:", categoryId);
         return prev.filter((cat) => cat.id !== categoryId);
       } else {
         // Add category if not selected
-        const group = selectedTemplate.groups.find((g) => g.id === groupId);
+        const group = template.groups.find((g) => g.id === groupId);
         const category = group?.categories.find((cat) => cat.id === categoryId);
 
         if (category) {
+          console.log("➕ Adding category:", categoryId);
           return [...prev, { ...category, selected: true }];
         }
+        console.log("❌ Category not found:", categoryId);
         return prev;
       }
     });
   };
 
   const selectAllCategories = (groupId) => {
-    if (!selectedTemplate) return;
+    // Use the template from categoryTemplates if selectedTemplate is null
+    const template = selectedTemplate || categoryTemplates[0];
+    if (!template) return;
 
-    const group = selectedTemplate.groups.find((g) => g.id === groupId);
+    const group = template.groups.find((g) => g.id === groupId);
     if (!group) return;
 
     setSelectedCategories((prev) => {
@@ -56,9 +71,11 @@ export const CategoryProvider = ({ children }) => {
   };
 
   const deselectAllCategories = (groupId) => {
-    if (!selectedTemplate) return;
+    // Use the template from categoryTemplates if selectedTemplate is null
+    const template = selectedTemplate || categoryTemplates[0];
+    if (!template) return;
 
-    const group = selectedTemplate.groups.find((g) => g.id === groupId);
+    const group = template.groups.find((g) => g.id === groupId);
     if (!group) return;
 
     setSelectedCategories((prev) =>
@@ -74,9 +91,11 @@ export const CategoryProvider = ({ children }) => {
   };
 
   const getSelectedCategoriesByGroup = (groupId) => {
-    if (!selectedTemplate) return [];
+    // Use the template from categoryTemplates if selectedTemplate is null
+    const template = selectedTemplate || categoryTemplates[0];
+    if (!template) return [];
 
-    const group = selectedTemplate.groups.find((g) => g.id === groupId);
+    const group = template.groups.find((g) => g.id === groupId);
     if (!group) return [];
 
     return selectedCategories.filter((cat) =>

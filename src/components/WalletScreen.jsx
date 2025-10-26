@@ -1,5 +1,6 @@
 import { Building2, TrendingUp, TrendingDown, Folder } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { formatDateForTransaction } from "../utils/dateFormatter.js";
 
 export default function WalletScreen() {
   const {
@@ -111,7 +112,8 @@ export default function WalletScreen() {
                       {transaction.description || transaction.category}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {transaction.category} • {transaction.date}
+                      {transaction.category} •{" "}
+                      {formatDateForTransaction(transaction.date)}
                     </div>
                   </div>
                   <div
