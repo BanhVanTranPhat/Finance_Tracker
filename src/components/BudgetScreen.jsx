@@ -21,9 +21,13 @@ export default function BudgetScreen() {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [transactionType, setTransactionType] = useState("expense");
 
-  let totalIncome = 0;
-  let totalExpense = 0;
-  let savingsPercentage = 0;
+  let budgetSummary = {
+    totalIncome: 0,
+    totalBudgeted: 0,
+    totalSpent: 0,
+    remainingToBudget: 0,
+    savingsPercentage: 0,
+  };
   let recentTransactions = [];
   let addTransaction = async (_data) => {};
   let selectedDate = new Date();
@@ -31,9 +35,7 @@ export default function BudgetScreen() {
 
   try {
     const finance = useFinance();
-    totalIncome = finance.totalIncome || 0;
-    totalExpense = finance.totalExpense || 0;
-    savingsPercentage = finance.savingsPercentage || 0;
+    budgetSummary = finance.budgetSummary || budgetSummary;
     recentTransactions = finance.recentTransactions || [];
     addTransaction = finance.addTransaction || (async (_data) => {});
     selectedDate = finance.selectedDate || new Date();
@@ -42,9 +44,12 @@ export default function BudgetScreen() {
     console.error("Error accessing FinanceContext in BudgetScreen:", error);
   }
 
-  // Computed values
-  const allocatedMoney = totalIncome; // Tiền đã có việc
-  const unallocatedMoney = totalExpense; // Tiền chưa có việc
+  // Zero-Based Budgeting values
+  const totalBudgeted = budgetSummary.totalBudgeted; // Tiền đã có việc (đã lập kế hoạch)
+  const remainingToBudget = budgetSummary.remainingToBudget; // Tiền chưa có việc
+  const totalIncome = budgetSummary.totalIncome;
+  const totalSpent = budgetSummary.totalSpent;
+  const savingsPercentage = budgetSummary.savingsPercentage;
 
   const handleAddIncome = () => {
     setTransactionType("income");
@@ -94,7 +99,7 @@ export default function BudgetScreen() {
                 />
               </div>
               <div className="text-3xl font-bold text-emerald-600 mb-4">
-                {allocatedMoney.toLocaleString()}₫
+                {totalBudgeted.toLocaleString()}₫
               </div>
               <div className="flex items-center text-gray-500 text-sm mb-2">
                 <span>Tiền chưa có việc</span>
@@ -105,8 +110,8 @@ export default function BudgetScreen() {
                   className="ml-2"
                 />
               </div>
-              <div className="text-3xl font-bold text-red-500">
-                {unallocatedMoney.toLocaleString()}₫
+              <div className={`text-3xl font-bold ${remainingToBudget < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                {remainingToBudget.toLocaleString()}₫
               </div>
             </div>
             <div className="flex flex-col items-center space-y-4">
@@ -131,11 +136,11 @@ export default function BudgetScreen() {
               {totalIncome.toLocaleString()}₫
             </div>
           </div>
-          <div className="bg-emerald-500 rounded-xl p-4 text-center">
+          <div className="bg-red-500 rounded-xl p-4 text-center">
             <TrendingDown className="w-6 h-6 text-white mx-auto mb-2" />
             <div className="text-white text-sm mb-1">Chi tiêu</div>
             <div className="text-white font-bold">
-              {totalExpense.toLocaleString()}₫
+              {totalSpent.toLocaleString()}₫
             </div>
           </div>
           <div className="bg-emerald-500 rounded-xl p-4 text-center">

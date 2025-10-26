@@ -129,6 +129,14 @@ export const categoryAPI = {
     const response = await api.delete("/categories/all");
     return response.data;
   },
+
+  getBudgetSummary: async (year, month) => {
+    const params = {};
+    if (year !== undefined) params.year = year;
+    if (month !== undefined) params.month = month;
+    const response = await api.get("/categories/budget-summary", { params });
+    return response.data;
+  },
 };
 
 // Wallet API

@@ -21,9 +21,13 @@ export default function BudgetScreenDesktop() {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [transactionType, setTransactionType] = useState("expense");
 
-  let totalIncome = 0;
-  let totalExpense = 0;
-  let savingsPercentage = 0;
+  let budgetSummary = {
+    totalIncome: 0,
+    totalBudgeted: 0,
+    totalSpent: 0,
+    remainingToBudget: 0,
+    savingsPercentage: 0,
+  };
   let recentTransactions = [];
   let addTransaction = async (_data) => {};
   let selectedDate = new Date();
@@ -31,9 +35,7 @@ export default function BudgetScreenDesktop() {
 
   try {
     const finance = useFinance();
-    totalIncome = finance.totalIncome || 0;
-    totalExpense = finance.totalExpense || 0;
-    savingsPercentage = finance.savingsPercentage || 0;
+    budgetSummary = finance.budgetSummary || budgetSummary;
     recentTransactions = finance.recentTransactions || [];
     addTransaction = finance.addTransaction || (async (_data) => {});
     selectedDate = finance.selectedDate || new Date();
@@ -42,9 +44,12 @@ export default function BudgetScreenDesktop() {
     console.error("Error accessing FinanceContext in BudgetScreen:", error);
   }
 
-  // Computed values
-  const allocatedMoney = totalIncome; // Tiền đã có việc
-  const unallocatedMoney = totalExpense; // Tiền chưa có việc
+  // Zero-Based Budgeting values
+  const totalBudgeted = budgetSummary.totalBudgeted; // Tiền đã có việc (đã lập kế hoạch)
+  const remainingToBudget = budgetSummary.remainingToBudget; // Tiền chưa có việc
+  const totalIncome = budgetSummary.totalIncome;
+  const totalSpent = budgetSummary.totalSpent;
+  const savingsPercentage = budgetSummary.savingsPercentage;
 
   const handleAddIncome = () => {
     setTransactionType("income");
@@ -94,12 +99,12 @@ export default function BudgetScreenDesktop() {
                     <span className="text-gray-600">Tiền đã có việc</span>
                     <InfoTooltip
                       title="Tiền đã có việc"
-                      content="Tiền đã được bạn phân vào một mục đích cụ thể"
+                      content="Tiền đã được bạn phân vào một mục đích cụ thể (đã lập kế hoạch)"
                       position="top"
                     />
                   </div>
                   <span className="text-2xl font-bold text-emerald-600">
-                    {allocatedMoney.toLocaleString()}₫
+                    {totalBudgeted.toLocaleString()}₫
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -111,8 +116,8 @@ export default function BudgetScreenDesktop() {
                       position="top"
                     />
                   </div>
-                  <span className="text-2xl font-bold text-red-500">
-                    {unallocatedMoney.toLocaleString()}₫
+                  <span className={`text-2xl font-bold ${remainingToBudget < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                    {remainingToBudget.toLocaleString()}₫
                   </span>
                 </div>
               </div>
@@ -163,7 +168,7 @@ export default function BudgetScreenDesktop() {
                     <div>
                       <div className="text-sm opacity-90">Chi tiêu</div>
                       <div className="text-xl font-bold">
-                        {totalExpense.toLocaleString()}₫
+                        {totalSpent.toLocaleString()}₫
                       </div>
                     </div>
                   </div>

@@ -18,6 +18,11 @@ const categorySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    budgeted_amount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     isDefault: {
       type: Boolean,
       default: false,
