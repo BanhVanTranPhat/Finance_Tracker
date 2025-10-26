@@ -27,7 +27,8 @@ export const FinanceProvider = ({ children }) => {
         // Check if this is a new user (onboarding not completed) or data was manually cleared
         const onboardingCompleted =
           localStorage.getItem("onboarding_completed") === "true";
-        const dataManuallyCleared = localStorage.getItem("data_manually_cleared") === "true";
+        const dataManuallyCleared =
+          localStorage.getItem("data_manually_cleared") === "true";
         const isNewUser = !onboardingCompleted || dataManuallyCleared;
 
         console.log(
@@ -100,7 +101,7 @@ export const FinanceProvider = ({ children }) => {
         setWallets(walletsData);
         setCategories(categoriesData);
         setTransactions(transactionsData);
-        
+
         // Clear the manually cleared flag after loading data
         if (dataManuallyCleared) {
           localStorage.removeItem("data_manually_cleared");

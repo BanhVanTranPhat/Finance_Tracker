@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { dataAPI } from "../services/api.js";
 
 export default function SettingsScreen() {
   const { user, logout, updateUserProfile } = useAuth();
@@ -45,31 +46,42 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleResetData = () => {
+  const handleResetData = async () => {
     if (
       window.confirm(
         "Bạn có chắc chắn muốn xóa tất cả dữ liệu tài chính? Hành động này không thể hoàn tác!"
       )
     ) {
-      // Clear all financial data using the comprehensive function
-      localStorage.removeItem("financial_goals");
-      localStorage.removeItem("wallets");
-      localStorage.removeItem("categories");
-      localStorage.removeItem("transactions");
-      localStorage.removeItem("selected_wallet");
-      localStorage.removeItem("selected_category");
-      localStorage.removeItem("budget_data");
-      localStorage.removeItem("analytics_data");
-      localStorage.removeItem("user_preferences");
-      localStorage.removeItem("google_oauth_login");
-      
-      // Set flag to indicate data was manually cleared
-      localStorage.setItem("data_manually_cleared", "true");
+      try {
+        console.log("🧹 Starting to delete all financial data...");
+        
+        // Delete from backend database
+        await dataAPI.deleteAllData();
+        console.log("✅ Backend data deleted");
 
-      console.log("🧹 All financial data cleared from Settings");
+        // Clear all financial data from localStorage
+        localStorage.removeItem("financial_goals");
+        localStorage.removeItem("wallets");
+        localStorage.removeItem("categories");
+        localStorage.removeItem("transactions");
+        localStorage.removeItem("selected_wallet");
+        localStorage.removeItem("selected_category");
+        localStorage.removeItem("budget_data");
+        localStorage.removeItem("analytics_data");
+        localStorage.removeItem("user_preferences");
+        localStorage.removeItem("google_oauth_login");
+        
+        // Set flag to indicate data was manually cleared
+        localStorage.setItem("data_manually_cleared", "true");
 
-      // Reload the page to refresh all contexts
-      window.location.reload();
+        console.log("✅ All financial data cleared from Settings");
+
+        // Reload the page to refresh all contexts
+        window.location.reload();
+      } catch (error) {
+        console.error("Error deleting data:", error);
+        alert("Có lỗi xảy ra khi xóa dữ liệu. Vui lòng thử lại.");
+      }
     }
   };
 

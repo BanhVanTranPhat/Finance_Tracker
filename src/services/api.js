@@ -124,6 +124,11 @@ export const categoryAPI = {
     const response = await api.post("/categories/initialize", { categories });
     return response.data;
   },
+
+  deleteAllCategories: async () => {
+    const response = await api.delete("/categories/all");
+    return response.data;
+  },
 };
 
 // Wallet API
@@ -146,6 +151,29 @@ export const walletAPI = {
   deleteWallet: async (id) => {
     const response = await api.delete(`/wallets/${id}`);
     return response.data;
+  },
+
+  deleteAllWallets: async () => {
+    const response = await api.delete("/wallets/all");
+    return response.data;
+  },
+};
+
+// Data Management API
+export const dataAPI = {
+  deleteAllData: async () => {
+    try {
+      // Delete all categories, wallets, and transactions
+      await Promise.all([
+        api.delete("/categories/all").catch(() => {}),
+        api.delete("/wallets/all").catch(() => {}),
+        api.delete("/transactions/all").catch(() => {}),
+      ]);
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting all data:", error);
+      return { success: false, error };
+    }
   },
 };
 
