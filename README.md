@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="<img width="441" height="111" alt="image" src="https://github.com/user-attachments/assets/22ac371f-badb-44ab-a7cc-535fc8bfe3ca" />width="280"/>
+  <img src="https://github.com/user-attachments/assets/22ac371f-badb-44ab-a7cc-535fc8bfe3ca" alt="Finance Tracker Logo" width="280"/>
 </p>
 
 # 💰 MoneyFlow - Ứng dụng Quản lý Tài chính Cá nhân Thông minh
