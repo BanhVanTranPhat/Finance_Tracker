@@ -5,10 +5,18 @@ const AuthContext = createContext(undefined);
 
 // Helper function to clear all financial data
 const clearFinancialData = () => {
+  console.log("🧹 Clearing all financial data from localStorage");
   localStorage.removeItem("financial_goals");
   localStorage.removeItem("wallets");
   localStorage.removeItem("categories");
   localStorage.removeItem("transactions");
+  localStorage.removeItem("selected_wallet");
+  localStorage.removeItem("selected_category");
+  localStorage.removeItem("budget_data");
+  localStorage.removeItem("analytics_data");
+  localStorage.removeItem("user_preferences");
+  localStorage.removeItem("google_oauth_login");
+  console.log("✅ All financial data cleared");
 };
 
 export const AuthProvider = ({ children }) => {

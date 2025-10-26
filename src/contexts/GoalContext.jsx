@@ -40,6 +40,9 @@ export const GoalProvider = ({ children }) => {
   useEffect(() => {
     if (goals.length > 0) {
       localStorage.setItem("financial_goals", JSON.stringify(goals));
+    } else {
+      // Clear localStorage when goals is empty (for new users)
+      localStorage.removeItem("financial_goals");
     }
   }, [goals]);
 

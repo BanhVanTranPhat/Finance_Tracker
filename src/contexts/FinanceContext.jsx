@@ -24,7 +24,13 @@ export const FinanceProvider = ({ children }) => {
       try {
         setLoading(true);
 
-        // Try to load from API, fallback to sample data
+        // Check if this is a new user (onboarding not completed)
+        const onboardingCompleted = localStorage.getItem("onboarding_completed") === "true";
+        const isNewUser = !onboardingCompleted;
+
+        console.log("🔍 FinanceContext - isNewUser:", isNewUser, "onboardingCompleted:", onboardingCompleted);
+
+        // Try to load from API, fallback to sample data only for existing users
         let walletsData = [];
         let categoriesData = [];
         let transactionsData = [];
@@ -42,36 +48,44 @@ export const FinanceProvider = ({ children }) => {
           transactionsData =
             transactionsResult.transactions || transactionsResult || [];
         } catch (apiError) {
-          console.warn("API not available, using sample data:", apiError);
+          console.warn("API not available:", apiError);
 
-          // Fallback to sample data
-          walletsData = [
-            {
-              id: "sample-wallet-1",
-              name: "Ví chính",
-              balance: 0,
-              icon: "wallet",
-              color: "bg-blue-500",
-              isDefault: true,
-            },
-          ];
+          // Only use sample data for existing users, not new users
+          if (!isNewUser) {
+            console.log("📊 Using sample data for existing user");
+            walletsData = [
+              {
+                id: "sample-wallet-1",
+                name: "Ví chính",
+                balance: 0,
+                icon: "wallet",
+                color: "bg-blue-500",
+                isDefault: true,
+              },
+            ];
 
-          categoriesData = [
-            {
-              id: "sample-category-1",
-              name: "Ăn uống",
-              group: "Chi phí hàng ngày",
-              isDefault: true,
-            },
-            {
-              id: "sample-category-2",
-              name: "Tiền nhà",
-              group: "Chi phí bắt buộc",
-              isDefault: true,
-            },
-          ];
+            categoriesData = [
+              {
+                id: "sample-category-1",
+                name: "Ăn uống",
+                group: "Chi phí hàng ngày",
+                isDefault: true,
+              },
+              {
+                id: "sample-category-2",
+                name: "Tiền nhà",
+                group: "Chi phí bắt buộc",
+                isDefault: true,
+              },
+            ];
 
-          transactionsData = [];
+            transactionsData = [];
+          } else {
+            console.log("🆕 New user - starting with empty data");
+            walletsData = [];
+            categoriesData = [];
+            transactionsData = [];
+          }
         }
 
         setWallets(walletsData);
