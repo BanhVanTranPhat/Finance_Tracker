@@ -52,11 +52,19 @@ export default function SettingsScreenDesktop() {
         "Bạn có chắc chắn muốn xóa tất cả dữ liệu tài chính? Hành động này không thể hoàn tác!"
       )
     ) {
-      // Clear all financial data
+      // Clear all financial data using the comprehensive function
       localStorage.removeItem("financial_goals");
       localStorage.removeItem("wallets");
       localStorage.removeItem("categories");
       localStorage.removeItem("transactions");
+      localStorage.removeItem("selected_wallet");
+      localStorage.removeItem("selected_category");
+      localStorage.removeItem("budget_data");
+      localStorage.removeItem("analytics_data");
+      localStorage.removeItem("user_preferences");
+      localStorage.removeItem("google_oauth_login");
+
+      console.log("🧹 All financial data cleared from Settings Desktop");
 
       // Reload the page to refresh all contexts
       window.location.reload();
