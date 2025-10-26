@@ -28,34 +28,67 @@ export default function Login({ onSwitchToRegister }) {
       );
       return;
     }
-    // Removed duplicate callback definition here
-    const g = window.google?.accounts?.id;
-    const container = document.querySelector(".g_id_signin");
 
-    if (g && container) {
-      try {
-        console.log("Initializing Google Sign-In with client ID:", clientId);
-        g.initialize({
-          client_id: clientId,
-          callback: window.handleGoogleCredential, // Uses global callback
-        });
-        g.renderButton(container, {
-          theme: "outline",
-          size: "large",
-          shape: "rectangular",
-          text: "signin_with",
-          width: "400",
-        });
-        console.log("Google Sign-In button rendered successfully");
-      } catch (e) {
-        console.error("Google Sign-In initialization error:", e);
-        setError("Không thể khởi tạo Google Sign-In. Vui lòng tải lại trang.");
+    // Wait for Google Identity Services to load
+    const initializeGoogle = () => {
+      const g = window.google?.accounts?.id;
+      const container = document.querySelector(".g_id_signin");
+
+      if (g && container) {
+        try {
+          console.log("Initializing Google Sign-In with client ID:", clientId);
+          g.initialize({
+            client_id: clientId,
+            callback: window.handleGoogleCredential,
+          });
+
+          // Wait a bit for container to have proper dimensions
+          setTimeout(() => {
+            // Get container width for responsive button
+            const containerWidth = Math.max(container.offsetWidth, 300);
+
+            g.renderButton(container, {
+              theme: "outline",
+              size: "large",
+              shape: "rectangular",
+              text: "signin_with",
+              width: containerWidth,
+              logo_alignment: "left",
+            });
+            console.log(
+              "Google Sign-In button rendered successfully with width:",
+              containerWidth
+            );
+          }, 50);
+        } catch (e) {
+          console.error("Google Sign-In initialization error:", e);
+          setError(
+            "Không thể khởi tạo Google Sign-In. Vui lòng tải lại trang."
+          );
+        }
+      } else if (!g) {
+        console.error("Google Identity Services not loaded yet");
+        // Retry after a short delay
+        setTimeout(initializeGoogle, 100);
       }
-    } else if (!g) {
-      console.error("Google Identity Services not loaded");
-      setError(
-        "Google Identity Services chưa được tải. Vui lòng kiểm tra kết nối mạng."
-      );
+    };
+
+    // Try to initialize immediately, or wait for script to load
+    if (window.google?.accounts?.id) {
+      initializeGoogle();
+    } else {
+      // Wait for script to load
+      const checkInterval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(checkInterval);
+          initializeGoogle();
+        }
+      }, 100);
+
+      // Clean up interval after 5 seconds
+      setTimeout(() => clearInterval(checkInterval), 5000);
+
+      return () => clearInterval(checkInterval);
     }
   }, [clientId]);
 
@@ -153,26 +186,20 @@ export default function Login({ onSwitchToRegister }) {
         </Formik>
 
         <div className="mt-6">
-          <div
-            id="g_id_onload"
-            data-client_id={clientId}
-            data-context="signin"
-            data-ux_mode="redirect"
-            data-redirect_uri={`${window.location.origin}/auth/callback`}
-            data-auto_prompt="false"
-            className="hidden"
-          />
-          <div
-            className="g_id_signin"
-            data-client_id={clientId}
-            data-type="standard"
-            data-size="large"
-            data-shape="rectangular"
-            data-theme="outline"
-            data-text="signin_with"
-            data-logo_alignment="left"
-            data-width="100%"
-          />
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">Hoặc</span>
+            </div>
+          </div>
+
+          {/* Custom styled Google Sign-In button container */}
+          <div className="w-full google-btn-wrapper overflow-hidden">
+            <div className="g_id_signin" style={{ minHeight: "44px" }}></div>
+          </div>
         </div>
 
         <div className="mt-6 text-center">
