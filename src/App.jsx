@@ -37,10 +37,10 @@ function DashboardWithCategoryCheck({
     // Wait for data to load
     if (!loading) {
       console.log("🔍 Checking categories:", categories?.length || 0);
-      
+
       // Check if user has any categories
       const hasCategories = categories && categories.length > 0;
-      
+
       if (!hasCategories) {
         console.log("❌ No categories found - redirecting to onboarding");
         setShouldShowOnboarding(true);
@@ -76,7 +76,12 @@ function DashboardWithCategoryCheck({
           console.log("✅ Onboarding completed - refreshing");
           setShouldShowOnboarding(false);
           localStorage.setItem("onboarding_completed", "true");
-          setForceUpdate((prev) => prev + 1);
+          
+          // Force page reload to ensure categories are loaded from backend
+          console.log("🔄 Reloading page to load new categories...");
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
         }}
       />
     );
