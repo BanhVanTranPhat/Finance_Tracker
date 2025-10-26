@@ -1,17 +1,7 @@
 <p align="center">
-  <img src="./d38da7c0-9611-4e33-bcdb-d518efcd415b.png" alt="Finance Tracker Logo" width="280"/>
+  <img src="<img width="441" height="111" alt="image" src="https://github.com/user-attachments/assets/22ac371f-badb-44ab-a7cc-535fc8bfe3ca" />width="280"/>
 </p>
 
-<h1 align="center">💰 MoneyFlow - Ứng dụng Quản lý Tài chính Cá nhân Thông Minh</h1>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=white" alt="React Badge"/>
-  <img src="https://img.shields.io/badge/TypeScript-5.2.2-3178C6?logo=typescript&logoColor=white" alt="TypeScript Badge"/>
-  <img src="https://img.shields.io/badge/Node.js-Express-43853D?logo=node.js&logoColor=white" alt="Node.js Badge"/>
-  <img src="https://img.shields.io/badge/MongoDB-Database-47A248?logo=mongodb&logoColor=white" alt="MongoDB Badge"/>
-</p>
-
----
 # 💰 MoneyFlow - Ứng dụng Quản lý Tài chính Cá nhân Thông minh
 
 <p align="center">
