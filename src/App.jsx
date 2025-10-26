@@ -74,13 +74,13 @@ function DashboardWithCategoryCheck({
       <OnboardingFlow
         onComplete={async () => {
           console.log("✅ Onboarding completed - refreshing categories");
-          
+
           // Set flag first
           localStorage.setItem("onboarding_completed", "true");
-          
+
           // Wait a bit for backend to save categories
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
+          await new Promise((resolve) => setTimeout(resolve, 800));
+
           // Force state update to re-check categories
           console.log("🔄 Forcing state update to reload categories...");
           setShouldShowOnboarding(false);
