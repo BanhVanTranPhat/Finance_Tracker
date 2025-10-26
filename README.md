@@ -394,9 +394,3 @@ Xem file `LICENSE` để biết thêm chi tiết.
 ⭐ **Nếu project này hữu ích, hãy cho một star nhé!** ⭐
 
 ```
-
----
-
-Bạn có muốn mình **thêm banner logo “MoneyFlow” ở đầu file** (ảnh dạng hero như GitHub project chuyên nghiệp) không?  
-Nếu bạn gửi ảnh banner hoặc mô tả phong cách (ví dụ: “màu xanh lá, có icon tiền + biểu đồ”), mình sẽ tạo giúp 1 banner PNG đẹp chuẩn GitHub header.
-```
