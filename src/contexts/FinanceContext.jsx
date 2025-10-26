@@ -24,16 +24,19 @@ export const FinanceProvider = ({ children }) => {
       try {
         setLoading(true);
 
-        // Check if this is a new user (onboarding not completed)
+        // Check if this is a new user (onboarding not completed) or data was manually cleared
         const onboardingCompleted =
           localStorage.getItem("onboarding_completed") === "true";
-        const isNewUser = !onboardingCompleted;
+        const dataManuallyCleared = localStorage.getItem("data_manually_cleared") === "true";
+        const isNewUser = !onboardingCompleted || dataManuallyCleared;
 
         console.log(
           "🔍 FinanceContext - isNewUser:",
           isNewUser,
           "onboardingCompleted:",
-          onboardingCompleted
+          onboardingCompleted,
+          "dataManuallyCleared:",
+          dataManuallyCleared
         );
 
         // Try to load from API, fallback to sample data only for existing users
@@ -97,6 +100,12 @@ export const FinanceProvider = ({ children }) => {
         setWallets(walletsData);
         setCategories(categoriesData);
         setTransactions(transactionsData);
+        
+        // Clear the manually cleared flag after loading data
+        if (dataManuallyCleared) {
+          localStorage.removeItem("data_manually_cleared");
+          console.log("🧹 Cleared data_manually_cleared flag");
+        }
       } catch (error) {
         console.error("Error loading data:", error);
         // Set empty arrays

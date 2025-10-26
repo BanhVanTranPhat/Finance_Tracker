@@ -16,6 +16,7 @@ const clearFinancialData = () => {
   localStorage.removeItem("analytics_data");
   localStorage.removeItem("user_preferences");
   localStorage.removeItem("google_oauth_login");
+  localStorage.removeItem("data_manually_cleared");
   console.log("✅ All financial data cleared");
 };
 

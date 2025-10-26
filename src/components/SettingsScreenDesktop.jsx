@@ -63,6 +63,9 @@ export default function SettingsScreenDesktop() {
       localStorage.removeItem("analytics_data");
       localStorage.removeItem("user_preferences");
       localStorage.removeItem("google_oauth_login");
+      
+      // Set flag to indicate data was manually cleared
+      localStorage.setItem("data_manually_cleared", "true");
 
       console.log("🧹 All financial data cleared from Settings Desktop");
 
