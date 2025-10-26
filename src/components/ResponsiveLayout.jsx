@@ -82,8 +82,9 @@ export default function ResponsiveLayout({
       });
 
       // Google OAuth protection: Always prefer desktop layout for better UX
-      const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
-      
+      const isGoogleOAuth =
+        localStorage.getItem("google_oauth_login") === "true";
+
       if (isGoogleOAuth && currentWidth >= 1024) {
         console.log("🛡️ Google OAuth detected: Forcing desktop layout");
         setIsMobile(false);
@@ -140,8 +141,9 @@ export default function ResponsiveLayout({
         });
 
         // Google OAuth protection: Always prefer desktop layout for better UX
-        const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
-        
+        const isGoogleOAuth =
+          localStorage.getItem("google_oauth_login") === "true";
+
         if (isGoogleOAuth && currentWidth >= 1024) {
           console.log("🛡️ Google OAuth detected: Forcing desktop layout");
           setIsMobile(false);
@@ -191,6 +193,16 @@ export default function ResponsiveLayout({
     console.log("🛡️ Final protection: Forcing desktop layout on render");
     setIsMobile(false);
   }
+
+  // Additional Google OAuth check on every render
+  useEffect(() => {
+    const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
+    if (isGoogleOAuth && window.innerWidth >= 1024 && isMobile) {
+      console.log("🛡️ Google OAuth render check: Forcing desktop layout");
+      setIsMobile(false);
+      localStorage.removeItem("google_oauth_login");
+    }
+  });
 
   const renderContent = () => {
     switch (activeTab) {

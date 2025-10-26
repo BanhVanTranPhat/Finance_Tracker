@@ -52,8 +52,16 @@ export default function GoogleCallback() {
           data.user.onboardingCompleted ? "true" : "false"
         );
 
+        // Set Google OAuth flag for desktop layout preference
+        localStorage.setItem("google_oauth_login", "true");
+
         // Update AuthContext state immediately
         setUser(data.user);
+
+        // Dispatch Google OAuth success event for consistency
+        window.dispatchEvent(new CustomEvent("googleAuthSuccess", {
+          detail: { user: data.user, token: data.token }
+        }));
 
         // Redirect to dashboard
         navigate("/dashboard");
