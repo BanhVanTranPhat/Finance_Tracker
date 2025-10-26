@@ -186,7 +186,21 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-// Delete transaction
+// Delete all transactions for user
+router.delete("/all", auth, async (req, res) => {
+  try {
+    const result = await Transaction.deleteMany({ user: req.user.id });
+    res.json({ 
+      message: "All transactions deleted successfully",
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    console.error("Error deleting all transactions:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+// Delete single transaction
 router.delete("/:id", auth, async (req, res) => {
   try {
     const transaction = await Transaction.findOneAndDelete({

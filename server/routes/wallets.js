@@ -70,7 +70,21 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-// Delete wallet
+// Delete all wallets for user
+router.delete("/all", auth, async (req, res) => {
+  try {
+    const result = await Wallet.deleteMany({ user: req.user.id });
+    res.json({ 
+      message: "All wallets deleted successfully",
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    console.error("Error deleting all wallets:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Delete single wallet
 router.delete("/:id", auth, async (req, res) => {
   try {
     const wallet = await Wallet.findOneAndDelete({

@@ -62,7 +62,21 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-// Delete category
+// Delete all categories for user
+router.delete("/all", auth, async (req, res) => {
+  try {
+    const result = await Category.deleteMany({ user: req.user.id });
+    res.json({ 
+      message: "All categories deleted successfully",
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    console.error("Error deleting all categories:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Delete single category
 router.delete("/:id", auth, async (req, res) => {
   try {
     const category = await Category.findOneAndDelete({

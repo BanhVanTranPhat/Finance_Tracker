@@ -55,7 +55,7 @@ export default function SettingsScreenDesktop() {
     ) {
       try {
         console.log("🧹 Starting to delete all financial data...");
-        
+
         // Delete from backend database
         await dataAPI.deleteAllData();
         console.log("✅ Backend data deleted");
@@ -71,7 +71,7 @@ export default function SettingsScreenDesktop() {
         localStorage.removeItem("analytics_data");
         localStorage.removeItem("user_preferences");
         localStorage.removeItem("google_oauth_login");
-        
+
         // Set flag to indicate data was manually cleared
         localStorage.setItem("data_manually_cleared", "true");
 
