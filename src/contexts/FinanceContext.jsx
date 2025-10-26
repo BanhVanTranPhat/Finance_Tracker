@@ -25,10 +25,16 @@ export const FinanceProvider = ({ children }) => {
         setLoading(true);
 
         // Check if this is a new user (onboarding not completed)
-        const onboardingCompleted = localStorage.getItem("onboarding_completed") === "true";
+        const onboardingCompleted =
+          localStorage.getItem("onboarding_completed") === "true";
         const isNewUser = !onboardingCompleted;
 
-        console.log("🔍 FinanceContext - isNewUser:", isNewUser, "onboardingCompleted:", onboardingCompleted);
+        console.log(
+          "🔍 FinanceContext - isNewUser:",
+          isNewUser,
+          "onboardingCompleted:",
+          onboardingCompleted
+        );
 
         // Try to load from API, fallback to sample data only for existing users
         let walletsData = [];

@@ -11,10 +11,26 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useFinance } from "../contexts/FinanceContext.jsx";
 
 export default function DesktopSidebar({ activeTab, onTabChange }) {
   const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Get real financial data from FinanceContext
+  let totalIncome = 0;
+  let totalExpense = 0;
+
+  try {
+    const finance = useFinance();
+    totalIncome = finance.totalIncome || 0;
+    totalExpense = finance.totalExpense || 0;
+  } catch (error) {
+    console.error("Error accessing FinanceContext in DesktopSidebar:", error);
+    // Use default values (0) for new users
+    totalIncome = 0;
+    totalExpense = 0;
+  }
 
   const menuItems = [
     {
@@ -50,13 +66,13 @@ export default function DesktopSidebar({ activeTab, onTabChange }) {
   const quickStats = [
     {
       label: "Thu nhập tháng này",
-      value: "222.222₫",
+      value: `${totalIncome.toLocaleString()}₫`,
       icon: TrendingUp,
       color: "text-green-600",
     },
     {
       label: "Chi tiêu tháng này",
-      value: "124.444.455₫",
+      value: `${totalExpense.toLocaleString()}₫`,
       icon: TrendingDown,
       color: "text-red-600",
     },
