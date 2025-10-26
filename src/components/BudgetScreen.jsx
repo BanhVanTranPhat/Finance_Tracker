@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import TransactionModal from "./TransactionModal.jsx";
 import CategoryDisplay from "./CategoryDisplay.jsx";
-import ZeroBasedBudgetingGuideCompact from "./ZeroBasedBudgetingGuideCompact.jsx";
 import InfoTooltip from "./InfoTooltip.jsx";
 import DatePicker from "./DatePicker.jsx";
 import FinancialGoals from "./FinancialGoals.jsx";
@@ -219,11 +218,6 @@ export default function BudgetScreen() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Zero-Based Budgeting Guide */}
-      <div className="px-4 mb-6">
-        <ZeroBasedBudgetingGuideCompact />
       </div>
 
       {/* Categories Display */}
