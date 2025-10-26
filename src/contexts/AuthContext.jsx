@@ -98,23 +98,31 @@ export const AuthProvider = ({ children }) => {
         // Immediately update user state from localStorage for Google OAuth
         const token = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
-        const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
+        const isGoogleOAuth =
+          localStorage.getItem("google_oauth_login") === "true";
 
         if (token && storedUser) {
           try {
             const userData = JSON.parse(storedUser);
-            console.log("🔄 Updating user from storage:", userData, "isGoogleOAuth:", isGoogleOAuth);
+            console.log(
+              "🔄 Updating user from storage:",
+              userData,
+              "isGoogleOAuth:",
+              isGoogleOAuth
+            );
             setUser(userData);
             setIsLoading(false);
-            
+
             // If this is Google OAuth, dispatch force update event
             if (isGoogleOAuth) {
-              console.log("🔄 Google OAuth detected in storage change, dispatching forceResponsiveUpdate");
+              console.log(
+                "🔄 Google OAuth detected in storage change, dispatching forceResponsiveUpdate"
+              );
               setTimeout(() => {
                 window.dispatchEvent(new CustomEvent("forceResponsiveUpdate"));
               }, 100);
             }
-            
+
             console.log("✅ Storage change - user set, isLoading: false");
           } catch {
             // Invalid user data, clear storage

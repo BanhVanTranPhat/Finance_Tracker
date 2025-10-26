@@ -59,9 +59,11 @@ export default function GoogleCallback() {
         setUser(data.user);
 
         // Dispatch Google OAuth success event for consistency
-        window.dispatchEvent(new CustomEvent("googleAuthSuccess", {
-          detail: { user: data.user, token: data.token }
-        }));
+        window.dispatchEvent(
+          new CustomEvent("googleAuthSuccess", {
+            detail: { user: data.user, token: data.token },
+          })
+        );
 
         // Redirect to dashboard
         navigate("/dashboard");

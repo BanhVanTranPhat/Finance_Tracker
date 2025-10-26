@@ -177,53 +177,28 @@ function AppContent() {
       );
     }
 
-    // Show dashboard
+    // Show dashboard using ResponsiveLayout for proper desktop/mobile handling
     return (
       <FinanceProvider>
         <TransactionProvider>
           <GoalProvider>
-            <div className="min-h-screen">
-              {/* Main Content */}
-              {activeTab === "budget" && <BudgetScreen />}
-              {activeTab === "wallet" && <WalletScreen />}
-              {activeTab === "transactions" && <TransactionsWithAnalytics />}
-              {activeTab === "settings" && (
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                  <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                      Cài đặt
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                      Tính năng đang phát triển
-                    </p>
-                    <button
-                      onClick={logout}
-                      className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
-                    >
-                      Đăng xuất
-                    </button>
-                  </div>
-                </div>
-              )}
+            <ResponsiveLayout
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onCreateWallet={() => setShowWalletModal(true)}
+              forceUpdate={forceUpdate}
+            />
 
-              {/* Bottom Navigation */}
-              <BottomNav
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onCreateWallet={() => setShowWalletModal(true)}
+            {/* Modals */}
+            {showWalletModal && (
+              <WalletManagementModal
+                isOpen={showWalletModal}
+                onClose={() => setShowWalletModal(false)}
+                onSave={(walletData) => {
+                  console.log("Wallet saved:", walletData);
+                }}
               />
-
-              {/* Modals */}
-              {showWalletModal && (
-                <WalletManagementModal
-                  isOpen={showWalletModal}
-                  onClose={() => setShowWalletModal(false)}
-                  onSave={(walletData) => {
-                    console.log("Wallet saved:", walletData);
-                  }}
-                />
-              )}
-            </div>
+            )}
           </GoalProvider>
         </TransactionProvider>
       </FinanceProvider>
