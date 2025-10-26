@@ -81,6 +81,17 @@ export default function ResponsiveLayout({
         initialWidth: initialWidth.current,
       });
 
+      // Google OAuth protection: Always prefer desktop layout for better UX
+      const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
+      
+      if (isGoogleOAuth && currentWidth >= 1024) {
+        console.log("🛡️ Google OAuth detected: Forcing desktop layout");
+        setIsMobile(false);
+        // Clear the flag after using it
+        localStorage.removeItem("google_oauth_login");
+        return;
+      }
+
       // Protection: If we started on desktop and width hasn't changed significantly, stay desktop
       if (initialWidth.current >= 1024 && currentWidth >= 1024 && isMobile) {
         console.log(
@@ -127,6 +138,17 @@ export default function ResponsiveLayout({
           currentIsMobile: isMobile,
           initialWidth: initialWidth.current,
         });
+
+        // Google OAuth protection: Always prefer desktop layout for better UX
+        const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
+        
+        if (isGoogleOAuth && currentWidth >= 1024) {
+          console.log("🛡️ Google OAuth detected: Forcing desktop layout");
+          setIsMobile(false);
+          // Clear the flag after using it
+          localStorage.removeItem("google_oauth_login");
+          return;
+        }
 
         // Protection: If we started on desktop and width hasn't changed significantly, stay desktop
         if (initialWidth.current >= 1024 && currentWidth >= 1024 && isMobile) {

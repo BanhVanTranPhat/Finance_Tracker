@@ -72,21 +72,20 @@ export const AuthProvider = ({ children }) => {
       // Clear any existing financial data for new user
       clearFinancialData();
 
+      // Set a flag to indicate this is a Google OAuth login
+      localStorage.setItem("google_oauth_login", "true");
+
       console.log(
         "✅ AuthContext updated with user:",
         user,
         "isLoading: false"
       );
 
-      // Force a re-render by dispatching a custom event only if needed
+      // Force a re-render by dispatching a custom event for Google OAuth
+      // Always dispatch to ensure proper layout detection
       setTimeout(() => {
-        console.log("🔄 Dispatching forceUpdate event for ResponsiveLayout");
-        // Only dispatch if we're on desktop (width >= 1024)
-        if (window.innerWidth >= 1024) {
-          window.dispatchEvent(new CustomEvent("forceResponsiveUpdate"));
-        } else {
-          console.log("📱 Skipping forceUpdate - mobile layout detected");
-        }
+        console.log("🔄 Dispatching forceUpdate event for ResponsiveLayout (Google OAuth)");
+        window.dispatchEvent(new CustomEvent("forceResponsiveUpdate"));
       }, 100);
     };
 
