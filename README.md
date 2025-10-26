@@ -6,27 +6,31 @@
 
 ### 🏠 Trang chủ - Dashboard
 
-![Dashboard](https://via.placeholder.com/800x400/10b981/ffffff?text=Dashboard+Overview)
+![Dashboard](<img width="3808" height="1950" alt="image" src="https://github.com/user-attachments/assets/16c3c181-f17d-4b36-8c53-25752c930413" />)
 _Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ### 📊 Phân tích tài chính
 
-![Analytics](https://via.placeholder.com/800x400/3b82f6/ffffff?text=Analytics+Charts)
+![Analytics](<img width="3797" height="1943" alt="image" src="https://github.com/user-attachments/assets/767bad29-297d-44fe-ac06-ea0a20919f3d" />)
+
 _Biểu đồ phân tích chi tiết theo tháng và danh mục_
 
 ### 💳 Quản lý giao dịch
 
-![Transactions](https://via.placeholder.com/800x400/8b5cf6/ffffff?text=Transaction+Management)
+![Transactions](<img width="3806" height="1953" alt="image" src="https://github.com/user-attachments/assets/f0fbdbd7-e8b2-4635-b79b-e88111ec6b33" />)
 _Danh sách và quản lý các giao dịch thu chi_
 
 ### 🎯 Mục tiêu ngân sách
 
-![Budget Goals](https://via.placeholder.com/800x400/f59e0b/ffffff?text=Budget+Goals)
+![Budget Goals]<img width="1549" height="768" alt="image" src="https://github.com/user-attachments/assets/d3ba53fa-31bd-4c01-85f0-88ec334a6cbe" />
+
 _Thiết lập và theo dõi mục tiêu ngân sách_
 
 ### 🔐 Đăng nhập/Đăng ký
 
-![Authentication](https://via.placeholder.com/800x400/ef4444/ffffff?text=Login+Register)
+![Authentication](<img width="824" height="1321" alt="image" src="https://github.com/user-attachments/assets/7758c36e-be71-4965-8470-686987e0735c" />)
+<img width="840" height="1418" alt="image" src="https://github.com/user-attachments/assets/a8e12e93-41bf-4d55-be01-7b114a9104dc" />
+
 _Hệ thống xác thực với Google OAuth và tài khoản local_
 
 ## 🚀 Cài đặt và Chạy Project
@@ -387,7 +391,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 **BanhVanTranPhat**
 
 - GitHub: [@BanhVanTranPhat](https://github.com/BanhVanTranPhat)
-- Email: your.email@example.com
+- Email: phatbanh2@gmail.com
 
 ## 🙏 Acknowledgments
 
