@@ -72,16 +72,19 @@ function DashboardWithCategoryCheck({
   if (shouldShowOnboarding) {
     return (
       <OnboardingFlow
-        onComplete={() => {
-          console.log("✅ Onboarding completed - refreshing");
-          setShouldShowOnboarding(false);
+        onComplete={async () => {
+          console.log("✅ Onboarding completed - refreshing categories");
+          
+          // Set flag first
           localStorage.setItem("onboarding_completed", "true");
           
-          // Force page reload to ensure categories are loaded from backend
-          console.log("🔄 Reloading page to load new categories...");
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+          // Wait a bit for backend to save categories
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          // Force state update to re-check categories
+          console.log("🔄 Forcing state update to reload categories...");
+          setShouldShowOnboarding(false);
+          setForceUpdate((prev) => prev + 1);
         }}
       />
     );
@@ -251,7 +254,7 @@ function AppContent() {
   // If user is authenticated, show dashboard with category checking
   if (user) {
     return (
-      <FinanceProvider>
+      <FinanceProvider key={`finance-${forceUpdate}`}>
         <DashboardWithCategoryCheck
           activeTab={activeTab}
           onTabChange={setActiveTab}
