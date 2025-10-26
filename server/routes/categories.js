@@ -66,9 +66,9 @@ router.put("/:id", auth, async (req, res) => {
 router.delete("/all", auth, async (req, res) => {
   try {
     const result = await Category.deleteMany({ user: req.user.id });
-    res.json({ 
+    res.json({
       message: "All categories deleted successfully",
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount,
     });
   } catch (error) {
     console.error("Error deleting all categories:", error);
