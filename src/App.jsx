@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { TransactionProvider } from "./contexts/TransactionContext.jsx";
-import { FinanceProvider } from "./contexts/FinanceContext.jsx";
+import { FinanceProvider, useFinance } from "./contexts/FinanceContext.jsx";
 import { GoalProvider } from "./contexts/GoalContext.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import Login from "./pages/Login.jsx";
@@ -21,6 +21,93 @@ import SettingsScreen from "./components/SettingsScreen.jsx";
 import SettingsScreenDesktop from "./components/SettingsScreenDesktop.jsx";
 import ResponsiveLayout from "./components/ResponsiveLayout.jsx";
 
+// Component to check if user has categories and show onboarding if needed
+function DashboardWithCategoryCheck({
+  activeTab,
+  onTabChange,
+  showWalletModal,
+  setShowWalletModal,
+  forceUpdate,
+  setForceUpdate,
+}) {
+  const { categories, loading } = useFinance();
+  const [shouldShowOnboarding, setShouldShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Wait for data to load
+    if (!loading) {
+      console.log("🔍 Checking categories:", categories?.length || 0);
+      
+      // Check if user has any categories
+      const hasCategories = categories && categories.length > 0;
+      
+      if (!hasCategories) {
+        console.log("❌ No categories found - redirecting to onboarding");
+        setShouldShowOnboarding(true);
+      } else {
+        console.log("✅ User has categories:", categories.length);
+        setShouldShowOnboarding(false);
+        // Update localStorage to reflect that onboarding is completed
+        localStorage.setItem("onboarding_completed", "true");
+      }
+    }
+  }, [categories, loading, forceUpdate]);
+
+  // Show loading while checking
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Đang tải...
+          </h2>
+          <p className="text-gray-600">Vui lòng chờ trong giây lát</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show onboarding if no categories
+  if (shouldShowOnboarding) {
+    return (
+      <OnboardingFlow
+        onComplete={() => {
+          console.log("✅ Onboarding completed - refreshing");
+          setShouldShowOnboarding(false);
+          localStorage.setItem("onboarding_completed", "true");
+          setForceUpdate((prev) => prev + 1);
+        }}
+      />
+    );
+  }
+
+  // Show dashboard if user has categories
+  return (
+    <TransactionProvider>
+      <GoalProvider>
+        <ResponsiveLayout
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          onCreateWallet={() => setShowWalletModal(true)}
+          forceUpdate={forceUpdate}
+        />
+
+        {/* Modals */}
+        {showWalletModal && (
+          <WalletManagementModal
+            isOpen={showWalletModal}
+            onClose={() => setShowWalletModal(false)}
+            onSave={(walletData) => {
+              console.log("Wallet saved:", walletData);
+            }}
+          />
+        )}
+      </GoalProvider>
+    </TransactionProvider>
+  );
+}
+
 function AppContent() {
   const { user, logout, isLoading } = useAuth();
   const [currentPage, setCurrentPage] = useState("landing");
@@ -29,7 +116,6 @@ function AppContent() {
   const [forceUpdate, setForceUpdate] = useState(0);
 
   // Debug logging
-  const onboardingStatus = localStorage.getItem("onboarding_completed");
   console.log(
     "🔍 App render - user:",
     user,
@@ -38,11 +124,7 @@ function AppContent() {
     "pathname:",
     window.location.pathname,
     "forceUpdate:",
-    forceUpdate,
-    "onboarding_completed:",
-    onboardingStatus,
-    "shouldShowOnboarding:",
-    onboardingStatus !== "true"
+    forceUpdate
   );
 
   // Check localStorage for credentials when on dashboard
@@ -161,98 +243,24 @@ function AppContent() {
     );
   }
 
-  // If user is authenticated and on dashboard, show dashboard
-  if (user && window.location.pathname === "/dashboard") {
-    const shouldShowOnboarding =
-      localStorage.getItem("onboarding_completed") !== "true";
-
-    if (shouldShowOnboarding) {
-      return (
-        <OnboardingFlow
-          onComplete={() => {
-            // Onboarding component đã đặt localStorage; chỉ cần kích hoạt re-render
-            setForceUpdate((prev) => prev + 1);
-          }}
-        />
-      );
-    }
-
-    // Show dashboard using ResponsiveLayout for proper desktop/mobile handling
+  // If user is authenticated, show dashboard with category checking
+  if (user) {
     return (
       <FinanceProvider>
-        <TransactionProvider>
-          <GoalProvider>
-            <ResponsiveLayout
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              onCreateWallet={() => setShowWalletModal(true)}
-              forceUpdate={forceUpdate}
-            />
-
-            {/* Modals */}
-            {showWalletModal && (
-              <WalletManagementModal
-                isOpen={showWalletModal}
-                onClose={() => setShowWalletModal(false)}
-                onSave={(walletData) => {
-                  console.log("Wallet saved:", walletData);
-                }}
-              />
-            )}
-          </GoalProvider>
-        </TransactionProvider>
+        <DashboardWithCategoryCheck
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          showWalletModal={showWalletModal}
+          setShowWalletModal={setShowWalletModal}
+          forceUpdate={forceUpdate}
+          setForceUpdate={setForceUpdate}
+        />
       </FinanceProvider>
     );
   }
 
-  // Calculate onboarding status - this will re-run when forceUpdate changes
-  const shouldShowOnboarding =
-    localStorage.getItem("onboarding_completed") !== "true";
-
-  // Only show onboarding if user is authenticated and onboarding not completed
-  if (user && shouldShowOnboarding) {
-    return (
-      <OnboardingFlow
-        onComplete={() => {
-          // Onboarding component đã đặt localStorage; chỉ cần kích hoạt re-render
-          setForceUpdate((prev) => prev + 1);
-        }}
-      />
-    );
-  }
-
-  const handleCreateWallet = () => {
-    setShowWalletModal(true);
-  };
-
-  const handleSaveWallet = (walletData) => {
-    console.log("Wallet saved:", walletData);
-    // Wallet is already saved in context
-  };
-
-  return (
-    <FinanceProvider>
-      <TransactionProvider>
-        <GoalProvider>
-          <ResponsiveLayout
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onCreateWallet={handleCreateWallet}
-            forceUpdate={forceUpdate}
-          />
-
-          {/* Modals */}
-          {showWalletModal && (
-            <WalletManagementModal
-              isOpen={showWalletModal}
-              onClose={() => setShowWalletModal(false)}
-              onSave={handleSaveWallet}
-            />
-          )}
-        </GoalProvider>
-      </TransactionProvider>
-    </FinanceProvider>
-  );
+  // Default return for other cases
+  return null;
 }
 
 function App() {
