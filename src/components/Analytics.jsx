@@ -276,46 +276,6 @@ export default function Analytics() {
 
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <span className="text-gray-600 text-sm block mb-2">
-            Tỷ lệ tiết kiệm
-          </span>
-          <p
-            className={`text-2xl font-bold mb-1 ${
-              insights.savingsRate >= 20
-                ? "text-emerald-600"
-                : insights.savingsRate >= 10
-                ? "text-blue-600"
-                : "text-red-600"
-            }`}
-          >
-            {insights.savingsRate.toFixed(1)}%
-          </p>
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-            {(() => {
-              const pct = Math.round(
-                Math.min(Math.max(insights.savingsRate, 0), 100)
-              );
-              return (
-                <div
-                  className={`h-2 rounded-full ${
-                    insights.savingsRate >= 20
-                      ? "bg-emerald-500"
-                      : insights.savingsRate >= 10
-                      ? "bg-blue-500"
-                      : "bg-red-500"
-                  }`}
-                  style={{ width: `${pct}%` }}
-                  role="progressbar"
-                  aria-label={`Tỷ lệ tiết kiệm: ${insights.savingsRate.toFixed(
-                    1
-                  )}%`}
-                />
-              );
-            })()}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <span className="text-gray-600 text-sm block mb-2">
             Chi tiêu TB/ngày
           </span>
           <p className="text-2xl font-bold text-gray-900 mb-1">

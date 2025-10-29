@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// MoneyFlow - Vite Configuration
+// Finance Tracker - Vite Configuration
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],

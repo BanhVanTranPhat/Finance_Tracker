@@ -50,25 +50,38 @@ export default function CategoryStats() {
         </h3>
       </div>
 
-      {/* Tổng quan */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      {/* Tổng quan - Desktop: 3 cột, Mobile: 2 cột */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="text-center p-3 bg-blue-50 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-xl sm:text-2xl font-bold text-blue-600">
             {categories.length}
           </div>
-          <div className="text-sm text-blue-700">Danh mục</div>
+          <div className="text-xs sm:text-sm text-blue-700">Danh mục</div>
         </div>
         <div className="text-center p-3 bg-green-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-xl sm:text-2xl font-bold text-green-600">
             {totalTransactions}
           </div>
-          <div className="text-sm text-green-700">Giao dịch</div>
+          <div className="text-xs sm:text-sm text-green-700">Giao dịch</div>
         </div>
-        <div className="text-center p-3 bg-purple-50 rounded-lg">
+        {/* Desktop: Tổng thu trong grid */}
+        <div className="hidden sm:block text-center p-3 bg-purple-50 rounded-lg">
           <div className="text-2xl font-bold text-purple-600">
             {totalIncome.toLocaleString()}₫
           </div>
           <div className="text-sm text-purple-700">Tổng thu</div>
+        </div>
+      </div>
+
+      {/* Mobile: Tổng thu riêng biệt - full width */}
+      <div className="block sm:hidden mb-4">
+        <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-200">
+          <div className="text-2xl font-bold text-purple-600">
+            {totalIncome.toLocaleString()}₫
+          </div>
+          <div className="text-sm text-purple-700 font-medium mt-1">
+            Tổng thu
+          </div>
         </div>
       </div>
 

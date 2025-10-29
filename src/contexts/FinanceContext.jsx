@@ -20,7 +20,6 @@ export const FinanceProvider = ({ children }) => {
   const [budgetSummary, setBudgetSummary] = useState({
     totalIncome: 0,
     totalWalletBalance: 0,
-    availableMoney: 0,
     totalBudgeted: 0,
     totalSpent: 0,
     remainingToBudget: 0,
@@ -41,14 +40,7 @@ export const FinanceProvider = ({ children }) => {
           localStorage.getItem("data_manually_cleared") === "true";
         const isNewUser = !onboardingCompleted || dataManuallyCleared;
 
-        console.log(
-          "🔍 FinanceContext - isNewUser:",
-          isNewUser,
-          "onboardingCompleted:",
-          onboardingCompleted,
-          "dataManuallyCleared:",
-          dataManuallyCleared
-        );
+        // Debug logging removed for cleaner console
 
         // Try to load from API, fallback to sample data only for existing users
         let walletsData = [];
@@ -68,11 +60,11 @@ export const FinanceProvider = ({ children }) => {
           transactionsData =
             transactionsResult.transactions || transactionsResult || [];
         } catch (apiError) {
-          console.warn("API not available:", apiError);
+          // API not available; fall back if applicable
 
           // Only use sample data for existing users, not new users
           if (!isNewUser) {
-            console.log("📊 Using sample data for existing user");
+            // Using sample data for existing user
             walletsData = [
               {
                 id: "sample-wallet-1",
@@ -101,7 +93,7 @@ export const FinanceProvider = ({ children }) => {
 
             transactionsData = [];
           } else {
-            console.log("🆕 New user - starting with empty data");
+            // New user - starting with empty data
             walletsData = [];
             categoriesData = [];
             transactionsData = [];
@@ -115,7 +107,6 @@ export const FinanceProvider = ({ children }) => {
         // Clear the manually cleared flag after loading data
         if (dataManuallyCleared) {
           localStorage.removeItem("data_manually_cleared");
-          console.log("🧹 Cleared data_manually_cleared flag");
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -146,7 +137,6 @@ export const FinanceProvider = ({ children }) => {
         setBudgetSummary({
           totalIncome: 0,
           totalWalletBalance: 0,
-          availableMoney: 0,
           totalBudgeted: 0,
           totalSpent: 0,
           remainingToBudget: 0,
@@ -279,7 +269,9 @@ export const FinanceProvider = ({ children }) => {
 
       setTransactions((prev) =>
         prev.map((transaction) =>
-          transaction.id === id ? updatedTransaction : transaction
+          (transaction._id || transaction.id) === id
+            ? updatedTransaction
+            : transaction
         )
       );
 
@@ -296,7 +288,7 @@ export const FinanceProvider = ({ children }) => {
     try {
       await transactionAPI.deleteTransaction(id);
       setTransactions((prev) =>
-        prev.filter((transaction) => transaction.id !== id)
+        prev.filter((transaction) => (transaction._id || transaction.id) !== id)
       );
 
       // Reload wallets to get updated balance
@@ -338,7 +330,48 @@ export const FinanceProvider = ({ children }) => {
     totalIncome > 0
       ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100)
       : 0;
-  const recentTransactions = filteredTransactions.slice(0, 5);
+  const recentTransactions = filteredTransactions.slice(0, 50);
+
+  // Budget allocation functions
+  const updateCategoryBudget = async (categoryId, budgetLimit) => {
+    try {
+      const updated = await categoryAPI.updateBudgetLimit(
+        categoryId,
+        budgetLimit
+      );
+      setCategories((prev) =>
+        prev.map((cat) =>
+          (cat.id || cat._id) === categoryId ? { ...cat, budgetLimit } : cat
+        )
+      );
+      return updated;
+    } catch (error) {
+      console.error("Error updating category budget:", error);
+      throw error;
+    }
+  };
+
+  const allocateBudgets = async (allocations) => {
+    try {
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      await categoryAPI.allocateBudgets(allocations, year, month);
+
+      // Update local state
+      setCategories((prev) =>
+        prev.map((cat) => {
+          const categoryId = cat.id || cat._id;
+          if (allocations[categoryId] !== undefined) {
+            return { ...cat, budgetLimit: allocations[categoryId] };
+          }
+          return cat;
+        })
+      );
+    } catch (error) {
+      console.error("Error allocating budgets:", error);
+      throw error;
+    }
+  };
 
   const value = {
     loading,
@@ -364,6 +397,8 @@ export const FinanceProvider = ({ children }) => {
     setSelectedDate,
     filteredTransactions,
     budgetSummary,
+    updateCategoryBudget,
+    allocateBudgets,
   };
 
   return (

@@ -8,7 +8,7 @@ export const defaultIncomeCategories = [
 
 export const categoryTemplates = [
   {
-    id: "moneyflow-style",
+    id: "finance-tracker-style",
     name: "Mẫu 1: Finance Tracker Style",
     description: "Phong cách quản lý tài chính linh hoạt và hiện đại",
     groups: [

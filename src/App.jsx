@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { TransactionProvider } from "./contexts/TransactionContext.jsx";
 import { FinanceProvider, useFinance } from "./contexts/FinanceContext.jsx";
-import { GoalProvider } from "./contexts/GoalContext.jsx";
+import { CurrencyProvider } from "./contexts/CurrencyContext.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -36,16 +36,12 @@ function DashboardWithCategoryCheck({
   useEffect(() => {
     // Wait for data to load
     if (!loading) {
-      console.log("🔍 Checking categories:", categories?.length || 0);
-
       // Check if user has any categories
       const hasCategories = categories && categories.length > 0;
 
       if (!hasCategories) {
-        console.log("❌ No categories found - redirecting to onboarding");
         setShouldShowOnboarding(true);
       } else {
-        console.log("✅ User has categories:", categories.length);
         setShouldShowOnboarding(false);
         // Update localStorage to reflect that onboarding is completed
         localStorage.setItem("onboarding_completed", "true");
@@ -82,7 +78,6 @@ function DashboardWithCategoryCheck({
           await new Promise((resolve) => setTimeout(resolve, 800));
 
           // Force state update to re-check categories
-          console.log("🔄 Forcing state update to reload categories...");
           setShouldShowOnboarding(false);
           setForceUpdate((prev) => prev + 1);
         }}
@@ -93,25 +88,23 @@ function DashboardWithCategoryCheck({
   // Show dashboard if user has categories
   return (
     <TransactionProvider>
-      <GoalProvider>
-        <ResponsiveLayout
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          onCreateWallet={() => setShowWalletModal(true)}
-          forceUpdate={forceUpdate}
-        />
+      <ResponsiveLayout
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        onCreateWallet={() => setShowWalletModal(true)}
+        forceUpdate={forceUpdate}
+      />
 
-        {/* Modals */}
-        {showWalletModal && (
-          <WalletManagementModal
-            isOpen={showWalletModal}
-            onClose={() => setShowWalletModal(false)}
-            onSave={(walletData) => {
-              console.log("Wallet saved:", walletData);
-            }}
-          />
-        )}
-      </GoalProvider>
+      {/* Modals */}
+      {showWalletModal && (
+        <WalletManagementModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onSave={(walletData) => {
+            console.log("Wallet saved:", walletData);
+          }}
+        />
+      )}
     </TransactionProvider>
   );
 }
@@ -123,17 +116,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState("budget");
   const [forceUpdate, setForceUpdate] = useState(0);
 
-  // Debug logging
-  console.log(
-    "🔍 App render - user:",
-    user,
-    "isLoading:",
-    isLoading,
-    "pathname:",
-    window.location.pathname,
-    "forceUpdate:",
-    forceUpdate
-  );
+  // Debug logging removed for cleaner console
 
   // Check localStorage for credentials when on dashboard
   useEffect(() => {
@@ -142,9 +125,7 @@ function AppContent() {
       const storedUser = localStorage.getItem("user");
 
       if (token && storedUser) {
-        console.log(
-          "🔄 Found credentials in localStorage, triggering AuthContext update via useEffect"
-        );
+        // Found credentials in localStorage, triggering AuthContext update
 
         // Force a re-render by dispatching a storage event
         window.dispatchEvent(
@@ -165,17 +146,9 @@ function AppContent() {
   // Check onboarding status when forceUpdate changes
   useEffect(() => {
     // This effect will trigger re-render when onboarding completes
-    console.log(
-      "🔄 Force update triggered:",
-      forceUpdate,
-      "at",
-      new Date().toISOString()
-    );
-
     // Check if onboarding was just completed
     const onboardingCompleted =
       localStorage.getItem("onboarding_completed") === "true";
-    console.log("📋 Onboarding status:", onboardingCompleted);
   }, [forceUpdate]);
 
   // Check if this is a Google OAuth callback
@@ -189,18 +162,8 @@ function AppContent() {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
-    console.log(
-      "🔍 Dashboard check - token:",
-      !!token,
-      "storedUser:",
-      !!storedUser
-    );
-
     if (token && storedUser) {
       // We have credentials but AuthContext hasn't loaded yet, show loading
-      console.log(
-        "🔄 Found credentials in localStorage, triggering AuthContext update"
-      );
 
       // Force a re-render by dispatching a storage event
       window.dispatchEvent(
@@ -231,7 +194,6 @@ function AppContent() {
     }
 
     // No credentials, redirect to login
-    console.log("❌ No credentials found, redirecting to login");
     window.location.href = "/";
     return null;
   }
@@ -273,9 +235,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <CurrencyProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </CurrencyProvider>
   );
 }
 

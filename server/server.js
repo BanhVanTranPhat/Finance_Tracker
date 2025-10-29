@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
-// MoneyFlow Backend Server
+// Finance Tracker Backend Server
 const app = express();
 
 // Middleware
@@ -49,7 +49,7 @@ app.use("/api/wallets", require("./routes/wallets"));
 app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
-    message: "MoneyFlow API is running",
+    message: "Finance Tracker API is running",
     timestamp: new Date().toISOString(),
   });
 });

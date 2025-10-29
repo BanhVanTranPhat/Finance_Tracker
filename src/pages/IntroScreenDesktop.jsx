@@ -25,10 +25,10 @@ export default function IntroScreenDesktop({ onNext }) {
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Left Column - Zero-Based Budgeting Info */}
+          {/* Left Column - Quản lý chi tiêu thông minh Info */}
           <div className="bg-white rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              Zero-Based Budgeting
+              Quản lý chi tiêu thông minh
             </h2>
             <p className="text-gray-600 text-center mb-8">
               Phương pháp lập ngân sách dựa trên con số không
@@ -82,7 +82,7 @@ export default function IntroScreenDesktop({ onNext }) {
           {/* Right Column - Benefits */}
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-200">
             <h3 className="font-bold text-emerald-800 mb-6 text-center text-xl">
-              Lợi ích của Zero-Based Budgeting
+              Lợi ích của Quản lý chi tiêu thông minh
             </h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-3">

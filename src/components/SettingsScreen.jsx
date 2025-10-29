@@ -1,29 +1,43 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   User,
   Camera,
-  Bell,
-  Shield,
-  Palette,
-  Globe,
-  HelpCircle,
-  LogOut,
   ChevronRight,
   Edit3,
   Save,
   X,
   Trash2,
+  Wallet as WalletIcon,
+  Globe,
+  HelpCircle,
+  LogOut,
+  MessageCircle,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 import { dataAPI } from "../services/api.js";
 
 export default function SettingsScreen() {
   const { user, logout, updateUserProfile } = useAuth();
+  const { currency, setCurrency, currencies, currencyName } = useCurrency();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [profileData, setProfileData] = useState({
     name: user?.name || "Người dùng",
     email: user?.email || "user@example.com",
     avatar: user?.avatar || "",
+  });
+
+  // Language settings
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem("app_language") || "vi";
   });
 
   const handleSaveProfile = () => {
@@ -38,6 +52,33 @@ export default function SettingsScreen() {
       avatar: user?.avatar || "",
     });
     setIsEditingProfile(false);
+  };
+
+  const handleAvatarClick = () => {
+    setShowAvatarModal(true);
+  };
+
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileData({ ...profileData, avatar: reader.result });
+        setShowAvatarModal(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setProfileData({ ...profileData, avatar: "" });
+    setShowAvatarModal(false);
+  };
+
+  const handleLanguageChange = (newLanguage) => {
+    setLanguage(newLanguage);
+    localStorage.setItem("app_language", newLanguage);
+    setShowLanguageModal(false);
   };
 
   const handleLogout = () => {
@@ -85,65 +126,116 @@ export default function SettingsScreen() {
     }
   };
 
-  const settingsItems = [
+  // Settings items theo thiết kế mới
+  const accountSettings = [
     {
       icon: <User className="w-5 h-5" />,
-      title: "Hồ sơ cá nhân",
+      title: "Thông tin tài khoản",
       subtitle: "Chỉnh sửa thông tin cá nhân",
       action: () => setIsEditingProfile(true),
     },
     {
-      icon: <Bell className="w-5 h-5" />,
-      title: "Thông báo",
-      subtitle: "Cài đặt thông báo",
-      action: () => console.log("Notifications settings"),
-    },
-    {
-      icon: <Palette className="w-5 h-5" />,
-      title: "Giao diện",
-      subtitle: "Chủ đề và màu sắc",
-      action: () => console.log("Theme settings"),
-    },
-    {
-      icon: <Shield className="w-5 h-5" />,
-      title: "Bảo mật",
-      subtitle: "Mật khẩu và xác thực",
-      action: () => console.log("Security settings"),
+      icon: <WalletIcon className="w-5 h-5" />,
+      title: "Ví mặc định",
+      subtitle: currencyName,
+      action: () => setShowCurrencyModal(true),
     },
     {
       icon: <Globe className="w-5 h-5" />,
       title: "Ngôn ngữ",
-      subtitle: "Tiếng Việt",
-      action: () => console.log("Language settings"),
+      subtitle: language === "vi" ? "Tiếng Việt" : "English",
+      action: () => setShowLanguageModal(true),
+    },
+  ];
+
+  const helpSettings = [
+    {
+      icon: <MessageCircle className="w-5 h-5" />,
+      title: "Liên hệ chúng tôi",
+      subtitle: "Hỗ trợ và phản hồi",
+      action: () => setShowContactModal(true),
     },
     {
-      icon: <HelpCircle className="w-5 h-5" />,
-      title: "Trợ giúp",
-      subtitle: "FAQ và hỗ trợ",
-      action: () => console.log("Help"),
-    },
-    {
-      icon: <Trash2 className="w-5 h-5" />,
-      title: "Xóa dữ liệu",
-      subtitle: "Xóa tất cả dữ liệu tài chính",
-      action: handleResetData,
-      isDanger: true,
+      icon: <BookOpen className="w-5 h-5" />,
+      title: "Hướng dẫn sử dụng",
+      subtitle: "FAQ và tài liệu",
+      action: () => setShowHelpModal(true),
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-emerald-600 pt-12 pb-6 px-4">
-        <h1 className="text-2xl font-bold text-white text-center">Cài đặt</h1>
-      </div>
-
+    <div className="min-h-screen bg-gray-50 pb-20 pt-4">
       <div className="px-4 py-6 space-y-6">
         {/* Profile Section */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center">
+          {isEditingProfile ? (
+            <div className="space-y-4">
+              {/* Avatar with Camera Button */}
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center">
+                    {profileData.avatar ? (
+                      <img
+                        src={profileData.avatar}
+                        alt="Avatar"
+                        className="w-20 h-20 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-10 h-10 text-white" />
+                    )}
+                  </div>
+                  <button
+                    onClick={handleAvatarClick}
+                    className="absolute bottom-0 right-0 w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors shadow-lg"
+                  >
+                    <Camera className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Input Fields */}
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={profileData.name}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="Tên của bạn"
+                />
+                <input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, email: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="Email"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveProfile}
+                  className="flex-1 px-4 py-3 bg-emerald-500 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Lưu</span>
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:bg-gray-300 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Hủy</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
                 {profileData.avatar ? (
                   <img
                     src={profileData.avatar}
@@ -154,138 +246,419 @@ export default function SettingsScreen() {
                   <User className="w-8 h-8 text-white" />
                 )}
               </div>
-              {isEditingProfile && (
-                <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
-                  <Camera className="w-3 h-3 text-white" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-gray-800 truncate">
+                  {profileData.name}
+                </h3>
+                <p className="text-gray-500 text-sm truncate">
+                  {profileData.email}
+                </p>
+                <button
+                  onClick={() => setIsEditingProfile(true)}
+                  className="mt-2 text-emerald-600 text-sm font-medium flex items-center gap-1.5 hover:text-emerald-700 transition-colors"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span>Chỉnh sửa</span>
                 </button>
-              )}
+              </div>
             </div>
-            <div className="flex-1">
-              {isEditingProfile ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={profileData.name}
-                    onChange={(e) =>
-                      setProfileData({ ...profileData, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Tên của bạn"
-                  />
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) =>
-                      setProfileData({ ...profileData, email: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Email"
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={handleSaveProfile}
-                      className="px-3 py-1 bg-emerald-500 text-white text-sm rounded-lg flex items-center space-x-1"
-                    >
-                      <Save className="w-3 h-3" />
-                      <span>Lưu</span>
-                    </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-lg flex items-center space-x-1"
-                    >
-                      <X className="w-3 h-3" />
-                      <span>Hủy</span>
-                    </button>
+          )}
+        </div>
+
+        {/* Cài đặt Section */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-500 px-2 mb-3">
+            Cài đặt
+          </h2>
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {accountSettings.map((item, index) => (
+              <button
+                key={index}
+                onClick={item.action}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="text-gray-600">{item.icon}</div>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">
+                      {item.title}
+                    </div>
+                    <div className="text-sm text-gray-500">{item.subtitle}</div>
                   </div>
                 </div>
-              ) : (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {profileData.name}
-                  </h3>
-                  <p className="text-gray-500 text-sm">{profileData.email}</p>
-                  <button
-                    onClick={() => setIsEditingProfile(true)}
-                    className="mt-2 text-emerald-600 text-sm flex items-center space-x-1"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>Chỉnh sửa</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Settings List */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          {settingsItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={item.action}
-              className={`w-full flex items-center justify-between p-4 transition-colors ${
-                item.isDanger
-                  ? "hover:bg-red-50 text-red-600"
-                  : "hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <div
-                  className={item.isDanger ? "text-red-600" : "text-gray-600"}
-                >
-                  {item.icon}
-                </div>
-                <div className="text-left">
-                  <div
-                    className={`font-medium ${
-                      item.isDanger ? "text-red-800" : "text-gray-800"
-                    }`}
-                  >
-                    {item.title}
-                  </div>
-                  <div
-                    className={`text-sm ${
-                      item.isDanger ? "text-red-500" : "text-gray-500"
-                    }`}
-                  >
-                    {item.subtitle}
+        {/* Trợ giúp Section */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-500 px-2 mb-3">
+            Trợ giúp
+          </h2>
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {helpSettings.map((item, index) => (
+              <button
+                key={index}
+                onClick={item.action}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="text-gray-600">{item.icon}</div>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">
+                      {item.title}
+                    </div>
+                    <div className="text-sm text-gray-500">{item.subtitle}</div>
                   </div>
                 </div>
-              </div>
-              <ChevronRight
-                className={`w-5 h-5 ${
-                  item.isDanger ? "text-red-400" : "text-gray-400"
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-
-        {/* App Info */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <div className="w-6 h-6 bg-emerald-500 rounded"></div>
-            </div>
-            <h3 className="font-semibold text-gray-800 mb-1">
-              Finance Tracker
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">Phiên bản 1.0.0</p>
-            <div className="text-xs text-gray-400">
-              © 2025 Finance Tracker. Tất cả quyền được bảo lưu.
-            </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="w-full bg-red-500 text-white py-4 rounded-2xl font-medium flex items-center justify-center space-x-2 hover:bg-red-600 transition-colors"
+          className="w-full bg-white text-gray-700 py-4 rounded-2xl font-medium flex items-center justify-center space-x-2 hover:bg-gray-100 transition-colors shadow-sm border border-gray-200"
         >
-          <LogOut className="w-5 h-5" />
           <span>Đăng xuất</span>
         </button>
       </div>
+
+      {/* Currency Selection Modal */}
+      {showCurrencyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-[420px] rounded-2xl shadow-2xl max-h-[70vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-xl font-bold text-gray-800">Chọn tiền tệ</h2>
+              <button
+                onClick={() => setShowCurrencyModal(false)}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-2 px-6 py-4 overflow-y-auto flex-1">
+              {Object.entries(currencies).map(([code, currencyInfo]) => (
+                <button
+                  key={code}
+                  onClick={() => {
+                    setCurrency(code);
+                    setShowCurrencyModal(false);
+                  }}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
+                    currency === code
+                      ? "bg-emerald-50 border-2 border-emerald-500"
+                      : "bg-gray-50 border-2 border-transparent hover:bg-gray-100 active:bg-gray-200"
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-800">
+                      {currencyInfo.name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {currencyInfo.code} ({currencyInfo.symbol})
+                    </div>
+                  </div>
+                  {currency === code && (
+                    <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Avatar Selection Modal */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white w-full sm:w-[500px] sm:max-w-[90vw] rounded-t-3xl sm:rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-800">
+                Chọn ảnh đại diện
+              </h2>
+              <button
+                onClick={() => setShowAvatarModal(false)}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex items-center space-x-3 p-4 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors"
+              >
+                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-800">
+                    Chọn từ thư viện
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Chọn ảnh từ thiết bị của bạn
+                  </div>
+                </div>
+              </button>
+
+              {profileData.avatar && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  className="w-full flex items-center space-x-3 p-4 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                >
+                  <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+                    <Trash2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">
+                      Xóa ảnh đại diện
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Xóa ảnh hiện tại
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Language Settings Modal */}
+      {showLanguageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-xl font-bold text-gray-800">Chọn ngôn ngữ</h2>
+              <button
+                onClick={() => setShowLanguageModal(false)}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-3 px-6 py-5 overflow-y-auto flex-1">
+              <button
+                onClick={() => handleLanguageChange("vi")}
+                className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
+                  language === "vi"
+                    ? "bg-emerald-50 border-2 border-emerald-500"
+                    : "bg-gray-50 border-2 border-transparent hover:bg-gray-100 active:bg-gray-200"
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-3xl">🇻🇳</span>
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-800">
+                      Tiếng Việt
+                    </div>
+                    <div className="text-sm text-gray-500">Vietnamese</div>
+                  </div>
+                </div>
+                {language === "vi" && (
+                  <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </button>
+
+              <button
+                onClick={() => handleLanguageChange("en")}
+                className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
+                  language === "en"
+                    ? "bg-emerald-50 border-2 border-emerald-500"
+                    : "bg-gray-50 border-2 border-transparent hover:bg-gray-100 active:bg-gray-200"
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-3xl">🇬🇧</span>
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-800">English</div>
+                    <div className="text-sm text-gray-500">English</div>
+                  </div>
+                </div>
+                {language === "en" && (
+                  <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-xl font-bold text-gray-800">
+                Liên hệ chúng tôi
+              </h2>
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 overflow-y-auto flex-1">
+              <div className="space-y-3">
+                <div className="bg-emerald-50 rounded-xl p-4">
+                  <h3 className="font-semibold text-gray-800 mb-1 text-sm">
+                    Email
+                  </h3>
+                  <p className="text-gray-700 font-medium">
+                    support@financetracker.com
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h3 className="font-semibold text-gray-800 mb-1 text-sm">
+                    Hotline
+                  </h3>
+                  <p className="text-gray-700 font-medium">1900 xxxx</p>
+                </div>
+
+                <div className="bg-purple-50 rounded-xl p-4">
+                  <h3 className="font-semibold text-gray-800 mb-1 text-sm">
+                    Website
+                  </h3>
+                  <p className="text-gray-700 font-medium">
+                    www.financetracker.com
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="w-full mt-5 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 active:bg-emerald-700 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-[440px] rounded-2xl shadow-2xl max-h-[75vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-xl font-bold text-gray-800">
+                Hướng dẫn sử dụng
+              </h2>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 overflow-y-auto flex-1">
+              <div className="space-y-3">
+                <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <HelpCircle className="w-5 h-5 mr-2 text-emerald-600" />
+                    Làm thế nào để thêm giao dịch?
+                  </h3>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    Truy cập tab "Ví", chọn ví bạn muốn thêm giao dịch, sau đó
+                    nhấn vào nút "+" để thêm giao dịch mới.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <HelpCircle className="w-5 h-5 mr-2 text-blue-600" />
+                    Làm thế nào để tạo ngân sách?
+                  </h3>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    Vào tab "Ngân sách", nhấn "Thiết lập ngân sách" và chọn danh
+                    mục cùng số tiền ngân sách bạn muốn đặt.
+                  </p>
+                </div>
+
+                <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <HelpCircle className="w-5 h-5 mr-2 text-purple-600" />
+                    Tôi có thể xuất báo cáo không?
+                  </h3>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    Có, vào tab "Phân tích" để xem các biểu đồ và thống kê chi
+                    tiết về thu chi của bạn.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="w-full mt-5 bg-emerald-500 text-white py-3 rounded-xl font-semibold hover:bg-emerald-600 active:bg-emerald-700 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

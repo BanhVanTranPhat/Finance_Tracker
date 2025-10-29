@@ -13,53 +13,44 @@ export default function TransactionsPage() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-white shadow-sm">
-        <div className="pt-12 pb-6 px-4">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => window.history.back()}
-              className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
-              aria-label="Quay lại"
-              title="Quay lại"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <h1 className="text-xl font-bold text-gray-800">
-              Quản lý giao dịch
-            </h1>
-            <div className="w-10"></div>
-          </div>
-
+        <div className="pt-8 pb-6 px-4">
           {/* Stats Summary */}
           {showStats && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-green-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {totalIncome.toLocaleString()}₫
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 text-center border-2 border-green-200">
+                <div className="text-lg font-bold text-green-700 truncate">
+                  +{totalIncome.toLocaleString()}₫
                 </div>
-                <div className="text-sm text-green-700">Tổng thu</div>
+                <div className="text-xs text-green-600 font-medium mt-0.5">
+                  Tổng thu
+                </div>
               </div>
-              <div className="bg-red-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-red-600">
-                  {totalExpense.toLocaleString()}₫
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-3 text-center border-2 border-red-200">
+                <div className="text-lg font-bold text-red-700 truncate">
+                  -{totalExpense.toLocaleString()}₫
                 </div>
-                <div className="text-sm text-red-700">Tổng chi</div>
+                <div className="text-xs text-red-600 font-medium mt-0.5">
+                  Tổng chi
+                </div>
               </div>
               <div
-                className={`rounded-lg p-4 text-center ${
-                  netIncome >= 0 ? "bg-blue-50" : "bg-orange-50"
+                className={`rounded-xl p-3 text-center border-2 ${
+                  netIncome >= 0
+                    ? "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
+                    : "bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200"
                 }`}
               >
                 <div
-                  className={`text-2xl font-bold ${
-                    netIncome >= 0 ? "text-blue-600" : "text-orange-600"
+                  className={`text-lg font-bold truncate ${
+                    netIncome >= 0 ? "text-blue-700" : "text-orange-700"
                   }`}
                 >
                   {netIncome >= 0 ? "+" : ""}
                   {netIncome.toLocaleString()}₫
                 </div>
                 <div
-                  className={`text-sm ${
-                    netIncome >= 0 ? "text-blue-700" : "text-orange-700"
+                  className={`text-xs font-medium mt-0.5 ${
+                    netIncome >= 0 ? "text-blue-600" : "text-orange-600"
                   }`}
                 >
                   Số dư

@@ -1,5 +1,5 @@
 @echo off
-echo Starting MoneyFlow Application...
+echo Starting Finance Tracker Application...
 
 echo.
 echo 1. Installing dependencies...
@@ -11,12 +11,12 @@ echo Please ensure MongoDB is running on localhost:27017
 
 echo.
 echo 3. Starting server...
-start "MoneyFlow Server" cmd /k "cd server && npm run dev"
+start "Finance Tracker Server" cmd /k "cd server && npm run dev"
 
 echo.
 echo 4. Starting frontend...
 timeout /t 3 /nobreak > nul
-start "MoneyFlow Frontend" cmd /k "npm run dev"
+start "Finance Tracker Frontend" cmd /k "npm run dev"
 
 echo.
 echo Application is starting...

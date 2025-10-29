@@ -1,36 +1,10 @@
 import { useState } from "react";
-import {
-  DollarSign,
-  Wallet,
-  List,
-  Settings,
-  Target,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-  User,
-} from "lucide-react";
+import { DollarSign, Wallet, BarChart3, Settings, User } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
-import { useFinance } from "../contexts/FinanceContext.jsx";
 
 export default function DesktopSidebar({ activeTab, onTabChange }) {
   const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  // Get real financial data from FinanceContext
-  let totalIncome = 0;
-  let totalExpense = 0;
-
-  try {
-    const finance = useFinance();
-    totalIncome = finance.totalIncome || 0;
-    totalExpense = finance.totalExpense || 0;
-  } catch (error) {
-    console.error("Error accessing FinanceContext in DesktopSidebar:", error);
-    // Use default values (0) for new users
-    totalIncome = 0;
-    totalExpense = 0;
-  }
 
   const menuItems = [
     {
@@ -49,8 +23,8 @@ export default function DesktopSidebar({ activeTab, onTabChange }) {
     },
     {
       id: "transactions",
-      label: "Giao dịch",
-      icon: List,
+      label: "Phân tích",
+      icon: BarChart3,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
@@ -60,21 +34,6 @@ export default function DesktopSidebar({ activeTab, onTabChange }) {
       icon: Settings,
       color: "text-gray-600",
       bgColor: "bg-gray-50",
-    },
-  ];
-
-  const quickStats = [
-    {
-      label: "Thu nhập tháng này",
-      value: `${totalIncome.toLocaleString()}₫`,
-      icon: TrendingUp,
-      color: "text-green-600",
-    },
-    {
-      label: "Chi tiêu tháng này",
-      value: `${totalExpense.toLocaleString()}₫`,
-      icon: TrendingDown,
-      color: "text-red-600",
     },
   ];
 
@@ -96,7 +55,9 @@ export default function DesktopSidebar({ activeTab, onTabChange }) {
                 <h1 className="text-lg font-bold text-gray-800">
                   Finance Tracker
                 </h1>
-                <p className="text-xs text-gray-500">Quản lý tài chính</p>
+                <p className="text-xs text-gray-500">
+                  Quản lý chi tiêu cá nhân
+                </p>
               </div>
             </div>
           )}
@@ -159,37 +120,6 @@ export default function DesktopSidebar({ activeTab, onTabChange }) {
           })}
         </ul>
       </nav>
-
-      {/* Quick Stats */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-gray-200">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Thống kê nhanh
-          </h3>
-          <div className="space-y-3">
-            {quickStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-gray-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 truncate">
-                      {stat.label}
-                    </p>
-                    <p
-                      className={`text-sm font-semibold ${stat.color} truncate`}
-                    >
-                      {stat.value}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-200">

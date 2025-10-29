@@ -1,251 +1,403 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
-  Settings,
   ChevronDown,
-  Edit3,
-  Plus,
   TrendingUp,
   TrendingDown,
   Wallet,
-  Folder,
+  BarChart3,
+  User,
+  Edit,
+  Settings,
 } from "lucide-react";
-import TransactionModal from "./TransactionModal.jsx";
-import CategoryDisplay from "./CategoryDisplay.jsx";
-import InfoTooltip from "./InfoTooltip.jsx";
+import {
+  PieChart as RechartsP,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+} from "recharts";
+import TransactionListCRUD from "./TransactionListCRUD.jsx";
 import DatePicker from "./DatePicker.jsx";
-import FinancialGoals from "./FinancialGoals.jsx";
+import BudgetAllocationModal from "./BudgetAllocationModal.jsx";
+import EditCategoryBudgetModal from "./EditCategoryBudgetModal.jsx";
+import BudgetCategoryList from "./BudgetCategoryList.jsx";
+import CategoryGroupManager from "./CategoryGroupManager.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
-import { formatDateForTransaction } from "../utils/dateFormatter.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
+
+const COLORS = [
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+];
 
 export default function BudgetScreen() {
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [transactionType, setTransactionType] = useState("expense");
+  const [showCharts, setShowCharts] = useState(false);
+  const [showBudgetAllocation, setShowBudgetAllocation] = useState(false);
+  const [showEditBudget, setShowEditBudget] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+
+  const { user } = useAuth();
 
   let budgetSummary = {
     totalIncome: 0,
     totalWalletBalance: 0,
-    availableMoney: 0,
     totalBudgeted: 0,
     totalSpent: 0,
     remainingToBudget: 0,
     savingsPercentage: 0,
   };
-  let recentTransactions = [];
+  let transactions = [];
+  let categories = [];
   let addTransaction = async (_data) => {};
   let selectedDate = new Date();
   let setSelectedDate = () => {};
+  let updateCategoryBudget = async (_id, _budget) => {};
+  let allocateBudgets = async (_allocations) => {};
 
   try {
     const finance = useFinance();
     budgetSummary = finance.budgetSummary || budgetSummary;
-    recentTransactions = finance.recentTransactions || [];
+    transactions = finance.transactions || [];
+    categories = finance.categories || [];
     addTransaction = finance.addTransaction || (async (_data) => {});
     selectedDate = finance.selectedDate || new Date();
     setSelectedDate = finance.setSelectedDate || (() => {});
+    updateCategoryBudget =
+      finance.updateCategoryBudget || (async (_id, _budget) => {});
+    allocateBudgets = finance.allocateBudgets || (async (_allocations) => {});
   } catch (error) {
     console.error("Error accessing FinanceContext in BudgetScreen:", error);
   }
 
-  // Zero-Based Budgeting values
-  const totalBudgeted = budgetSummary.totalBudgeted; // Tiền đã có việc (đã lập kế hoạch)
-  const remainingToBudget = budgetSummary.remainingToBudget; // Tiền chưa có việc
   const totalIncome = budgetSummary.totalIncome;
   const totalSpent = budgetSummary.totalSpent;
   const savingsPercentage = budgetSummary.savingsPercentage;
+  const totalSavings = totalIncome - totalSpent;
 
-  const handleAddIncome = () => {
-    setTransactionType("income");
-    setShowTransactionModal(true);
+  // Prepare chart data for expenses by category
+  const expensesByCategoryData = useMemo(() => {
+    const expenseCategories = categories.filter((c) => c.type === "expense");
+    const categoryTotals = expenseCategories
+      .map((cat) => {
+        const total = transactions
+          .filter((t) => t.type === "expense" && t.category === cat.name)
+          .reduce((sum, t) => sum + t.amount, 0);
+        return {
+          name: cat.name,
+          value: total,
+        };
+      })
+      .filter((item) => item.value > 0);
+
+    return categoryTotals;
+  }, [transactions, categories]);
+
+  // Prepare chart data for income vs expenses (last 6 months)
+  const incomeVsExpensesData = useMemo(() => {
+    const monthsData = [];
+    const currentDate = new Date(selectedDate);
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - i,
+        1
+      );
+      const monthName = date.toLocaleDateString("vi-VN", {
+        month: "short",
+        year: "numeric",
+      });
+
+      const monthTransactions = transactions.filter((t) => {
+        const tDate = new Date(t.date);
+        return (
+          tDate.getMonth() === date.getMonth() &&
+          tDate.getFullYear() === date.getFullYear()
+        );
+      });
+
+      const income = monthTransactions
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const expense = monthTransactions
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      monthsData.push({
+        month: monthName,
+        "Thu nhập": income,
+        "Chi tiêu": expense,
+      });
+    }
+
+    return monthsData;
+  }, [transactions, selectedDate]);
+
+  const handleSaveBudgetAllocation = async (allocations) => {
+    try {
+      await allocateBudgets(allocations);
+      alert("Phân bổ ngân sách thành công!");
+    } catch (error) {
+      console.error("Error saving budget allocation:", error);
+      alert("Có lỗi xảy ra khi lưu phân bổ ngân sách");
+    }
   };
 
-  const handleAddExpense = () => {
-    setTransactionType("expense");
-    setShowTransactionModal(true);
+  const handleSaveCategoryBudget = async (categoryId, budgetLimit) => {
+    try {
+      await updateCategoryBudget(categoryId, budgetLimit);
+      alert("Cập nhật ngân sách thành công!");
+    } catch (error) {
+      console.error("Error saving category budget:", error);
+      alert("Có lỗi xảy ra khi cập nhật ngân sách");
+    }
   };
 
-  const handleSaveTransaction = async (transactionData) => {
-    console.log("Saving transaction:", transactionData);
-    await addTransaction(transactionData);
+  const handleEditCategory = (category) => {
+    setSelectedCategory(category);
+    setShowEditBudget(true);
   };
+
+  // Get current month budget allocations
+  const currentAllocations = categories.reduce((acc, cat) => {
+    const catId = cat.id || cat._id;
+    acc[catId] = cat.budgetLimit || 0;
+    return acc;
+  }, {});
 
   return (
-    <div className="min-h-screen bg-emerald-600 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-500 to-blue-500 pb-20">
       {/* Header */}
       <div className="pt-12 pb-6 px-4">
-        <div className="flex items-center justify-between mb-4">
-          <Settings className="w-6 h-6 text-white" />
-          <DatePicker
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-          />
-          <Edit3 className="w-6 h-6 text-white" />
+        {/* Top Bar with Date Picker and Edit Button */}
+        <div className="relative flex items-center justify-between mb-6">
+          {/* User Name - Left */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <User className="w-5 h-5 text-white" />
+            <span className="text-white text-sm font-medium truncate">
+              {user?.name || "User"}
+            </span>
+          </div>
+
+          {/* Date Picker - Center (Absolute positioning for perfect centering) */}
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <DatePicker
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+            />
+          </div>
+
+          {/* Edit Budget Button - Right */}
+          <button
+            onClick={() => setShowBudgetAllocation(true)}
+            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm flex-shrink-0"
+            title="Chỉnh sửa phân bổ ngân sách"
+          >
+            <Edit className="w-5 h-5 text-white" />
+          </button>
         </div>
-        <h1 className="text-3xl font-bold text-white text-center">
-          Ngân sách tháng
-        </h1>
+
+        {/* Title Section */}
+        <div className="text-center mb-1">
+          <h1 className="text-3xl font-bold text-white">Quản lý chi tiêu</h1>
+          <p className="text-white/80 text-sm mt-2">Theo dõi thu chi cá nhân</p>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="px-4 space-y-6">
-        {/* Budget Summary Card */}
-        <div className="bg-white rounded-2xl p-6">
+      <div className="px-4 space-y-4">
+        {/* Financial Overview Cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white rounded-xl p-4 shadow-lg">
+            <TrendingUp className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+            <div className="text-gray-600 text-xs mb-1 text-center">
+              Thu nhập
+            </div>
+            <div className="text-emerald-600 font-bold text-sm text-center">
+              {(totalIncome / 1000).toFixed(0)}K₫
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-lg">
+            <TrendingDown className="w-6 h-6 text-red-500 mx-auto mb-2" />
+            <div className="text-gray-600 text-xs mb-1 text-center">
+              Chi tiêu
+            </div>
+            <div className="text-red-500 font-bold text-sm text-center">
+              {(totalSpent / 1000).toFixed(0)}K₫
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-lg">
+            <Wallet className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+            <div className="text-gray-600 text-xs mb-1 text-center">
+              Tiết kiệm
+            </div>
+            <div className="text-blue-500 font-bold text-sm text-center">
+              {totalSavings.toLocaleString()}₫
+            </div>
+          </div>
+        </div>
+
+        {/* Savings Summary */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
           <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center text-gray-500 text-sm mb-2">
-                <span>Tiền đã có việc</span>
-                <InfoTooltip
-                  title="Tiền đã có việc"
-                  content="Tiền đã được bạn phân vào một mục đích cụ thể"
-                  position="right"
-                  className="ml-2"
-                />
-              </div>
-              <div className="text-3xl font-bold text-emerald-600 mb-4">
-                {totalBudgeted.toLocaleString()}₫
-              </div>
-              <div className="flex items-center text-gray-500 text-sm mb-2">
-                <span>Tiền chưa có việc</span>
-                <InfoTooltip
-                  title="Tiền chưa có việc"
-                  content="Tiền còn lại bạn chưa quyết định sẽ dùng làm gì, đang 'thất nghiệp' và chờ bạn phân bổ"
-                  position="right"
-                  className="ml-2"
-                />
+            <div>
+              <div className="text-gray-500 text-sm mb-1">
+                Số tiền tiết kiệm
               </div>
               <div
                 className={`text-3xl font-bold ${
-                  remainingToBudget < 0 ? "text-red-500" : "text-emerald-600"
+                  totalSavings >= 0 ? "text-emerald-600" : "text-red-500"
                 }`}
               >
-                {remainingToBudget.toLocaleString()}₫
+                {totalSavings.toLocaleString()}₫
+              </div>
+              <div className="text-gray-400 text-xs mt-1">
+                = Thu nhập - Chi tiêu
               </div>
             </div>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-16 h-16 bg-amber-200 rounded-2xl flex items-center justify-center">
-                <div className="w-8 h-8 bg-amber-400 rounded-full" />
-              </div>
-              <div className="w-16 h-16 bg-yellow-400 rounded-2xl flex items-center justify-center">
-                <div className="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">$</span>
-                </div>
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-blue-100 rounded-2xl flex items-center justify-center">
+              <Wallet className="w-8 h-8 text-emerald-600" />
             </div>
           </div>
         </div>
 
-        {/* Financial Overview Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-emerald-500 rounded-xl p-4 text-center">
-            <TrendingUp className="w-6 h-6 text-white mx-auto mb-2" />
-            <div className="text-white text-sm mb-1">Thu nhập</div>
-            <div className="text-white font-bold">
-              {totalIncome.toLocaleString()}₫
-            </div>
-          </div>
-          <div className="bg-red-500 rounded-xl p-4 text-center">
-            <TrendingDown className="w-6 h-6 text-white mx-auto mb-2" />
-            <div className="text-white text-sm mb-1">Chi tiêu</div>
-            <div className="text-white font-bold">
-              {totalSpent.toLocaleString()}₫
-            </div>
-          </div>
-          <div className="bg-emerald-500 rounded-xl p-4 text-center">
-            <Wallet className="w-6 h-6 text-white mx-auto mb-2" />
-            <div className="text-white text-sm mb-1">Tiết kiệm</div>
-            <div className="text-white font-bold">{savingsPercentage}%</div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Charts Section */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
           <button
-            onClick={handleAddIncome}
-            className="bg-yellow-400 text-white font-medium py-4 rounded-xl flex items-center justify-center hover:bg-yellow-500 transition-colors"
+            onClick={() => setShowCharts(!showCharts)}
+            className="w-full flex items-center justify-between mb-4"
           >
-            <span>Thêm thu nhập</span>
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center ml-2">
-              <span className="text-yellow-400 text-xs">$</span>
-            </div>
-          </button>
-          <button
-            onClick={handleAddExpense}
-            className="bg-white text-emerald-600 font-medium py-4 rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            <span>Thêm chi tiêu</span>
-            <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center ml-2">
-              <span className="text-white text-xs">₫</span>
-            </div>
-          </button>
-        </div>
-
-        {/* Financial Goals */}
-        <FinancialGoals />
-
-        {/* Recent Transactions Card */}
-        <div className="bg-white rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-emerald-800">
-              Giao dịch gần đây
+            <h3 className="text-lg font-bold text-gray-800 flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2 text-emerald-600" />
+              Biểu đồ thống kê
             </h3>
-            <button className="text-gray-500 text-sm">Xem tất cả →</button>
-          </div>
-          {recentTransactions.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-gray-400 text-sm">Chưa có giao dịch nào</div>
-              <div className="text-gray-300 text-xs mt-1">
-                Thêm giao dịch để xem lịch sử
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center space-x-3"
-                >
-                  <div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center">
-                    <Folder className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-800">
-                      {transaction.description}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {formatDateForTransaction(transaction.date)}
-                    </div>
-                  </div>
-                  <div
-                    className={`font-bold ${
-                      transaction.type === "income"
-                        ? "text-green-600"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {transaction.type === "income" ? "+" : "-"}
-                    {transaction.amount.toLocaleString()}₫
-                  </div>
+            <ChevronDown
+              className={`w-5 h-5 text-gray-400 transition-transform ${
+                showCharts ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showCharts && (
+            <div className="space-y-6 mt-4">
+              {/* Pie Chart - Expenses by Category */}
+              {expensesByCategoryData.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Chi tiêu theo danh mục
+                  </h4>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <RechartsP>
+                      <Pie
+                        data={expensesByCategoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {expensesByCategoryData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => `${value.toLocaleString()}₫`}
+                      />
+                      <Legend
+                        wrapperStyle={{ fontSize: "12px" }}
+                        formatter={(value) => value}
+                      />
+                    </RechartsP>
+                  </ResponsiveContainer>
                 </div>
-              ))}
+              )}
+
+              {/* Bar Chart - Income vs Expenses */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  Thu chi 6 tháng gần đây
+                </h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={incomeVsExpensesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" style={{ fontSize: "10px" }} />
+                    <YAxis style={{ fontSize: "10px" }} />
+                    <RechartsTooltip
+                      formatter={(value) => `${value.toLocaleString()}₫`}
+                    />
+                    <RechartsLegend wrapperStyle={{ fontSize: "12px" }} />
+                    <Bar dataKey="Thu nhập" fill="#10b981" />
+                    <Bar dataKey="Chi tiêu" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Transaction List - CRUD */}
+        <TransactionListCRUD />
       </div>
 
-      {/* Categories Display */}
-      <div className="px-4 mb-6">
-        <CategoryDisplay />
+      {/* Budget Category List */}
+      <div className="px-4 mt-6 mb-6">
+        <div className="mb-4">
+          <button
+            onClick={() => setShowCategoryManager(true)}
+            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+          >
+            <Settings className="w-5 h-5" />
+            Quản lý nhóm danh mục
+          </button>
+        </div>
+        <BudgetCategoryList onEditCategory={handleEditCategory} />
       </div>
 
-      {/* Transaction Modal */}
-      {showTransactionModal && (
-        <TransactionModal
-          isOpen={showTransactionModal}
-          onClose={() => setShowTransactionModal(false)}
-          onSave={handleSaveTransaction}
-          initialType={transactionType}
-          mode="add"
-        />
-      )}
+      {/* Budget Allocation Modal */}
+      <BudgetAllocationModal
+        isOpen={showBudgetAllocation}
+        onClose={() => setShowBudgetAllocation(false)}
+        categories={categories.filter((c) => c.type === "expense")}
+        onSave={handleSaveBudgetAllocation}
+        currentAllocations={currentAllocations}
+        availableBalance={budgetSummary.totalWalletBalance || 0}
+      />
+
+      {/* Edit Category Budget Modal */}
+      <EditCategoryBudgetModal
+        isOpen={showEditBudget}
+        onClose={() => setShowEditBudget(false)}
+        category={selectedCategory}
+        onSave={handleSaveCategoryBudget}
+      />
+
+      {/* Category Group Manager */}
+      <CategoryGroupManager
+        isOpen={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
+      />
     </div>
   );
 }

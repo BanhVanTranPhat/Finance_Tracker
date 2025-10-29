@@ -88,9 +88,9 @@ export default function DatePicker({
       {/* Selected Date Display */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-white text-gray-800 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl flex items-center space-x-2 sm:space-x-3 transition-all shadow-sm border border-white hover:shadow-md sm:hover:bg-gray-50 sm:border-gray-100"
+        className="bg-white text-emerald-700 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl flex items-center justify-center space-x-1.5 sm:space-x-2 transition-all shadow-md hover:shadow-lg border-2 border-yellow-400 hover:border-yellow-500 active:scale-95 font-medium"
       >
-        <span className="font-semibold text-sm sm:text-base">
+        <span className="font-bold text-sm sm:text-base whitespace-nowrap">
           {formatDisplayDate(selectedDate)}
         </span>
         <ChevronDown
