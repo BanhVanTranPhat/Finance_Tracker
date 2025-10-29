@@ -2,7 +2,7 @@
   <img src="https://github.com/user-attachments/assets/22ac371f-badb-44ab-a7cc-535fc8bfe3ca" alt="Finance Tracker Logo" width="280"/>
 </p>
 
-# 💰 MoneyFlow - Ứng dụng Quản lý Tài chính Cá nhân Thông minh
+# 💰 Finance Tracker - Ứng dụng Quản lý Tài chính Cá nhân Thông minh
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=white" />
@@ -17,30 +17,35 @@
 ## 📸 Ảnh màn hình
 
 ### 🏠 Trang chủ - Dashboard
+
 ![Dashboard](https://github.com/user-attachments/assets/16c3c181-f17d-4b36-8c53-25752c930413)  
 _Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ---
 
 ### 📊 Phân tích tài chính
+
 ![Analytics](https://github.com/user-attachments/assets/767bad29-297d-44fe-ac06-ea0a20919f3d)  
 _Biểu đồ phân tích chi tiết theo tháng và danh mục_
 
 ---
 
 ### 💳 Quản lý giao dịch
+
 ![Transactions](https://github.com/user-attachments/assets/f0fbdbd7-e8b2-4635-b79b-e88111ec6b33)  
 _Danh sách và quản lý các giao dịch thu chi_
 
 ---
 
 ### 🎯 Mục tiêu ngân sách
+
 ![Budget Goals](https://github.com/user-attachments/assets/d3ba53fa-31bd-4c01-85f0-88ec334a6cbe)  
 _Thiết lập và theo dõi mục tiêu ngân sách_
 
 ---
 
 ### 🔐 Đăng nhập / Đăng ký
+
 ![Login](https://github.com/user-attachments/assets/7758c36e-be71-4965-8470-686987e0735c)
 ![Register](https://github.com/user-attachments/assets/a8e12e93-41bf-4d55-be01-7b114a9104dc)  
 _Hệ thống xác thực với Google OAuth và tài khoản local_
@@ -50,18 +55,20 @@ _Hệ thống xác thực với Google OAuth và tài khoản local_
 ## 🚀 Cài đặt và Chạy Project
 
 ### 📋 Yêu cầu hệ thống
-- **Node.js** ≥ 16  
-- **MongoDB** (local hoặc MongoDB Atlas)  
-- **npm** hoặc **yarn**  
+
+- **Node.js** ≥ 16
+- **MongoDB** (local hoặc MongoDB Atlas)
+- **npm** hoặc **yarn**
 - **Git**
 
 ---
 
 ### 🔧 Bước 1: Clone Repository
+
 ```bash
 git clone https://github.com/BanhVanTranPhat/Finance_Tracker.git
 cd Finance_Tracker
-````
+```
 
 ---
 
@@ -154,9 +161,9 @@ npm run dev
 
 ### 🌐 Truy cập Ứng dụng
 
-* **Frontend:** [http://localhost:5173](http://localhost:5173)
-* **Backend API:** [http://localhost:5000/api](http://localhost:5000/api)
-* **Health Check:** [http://localhost:5000/api/health](http://localhost:5000/api/health)
+- **Frontend:** [http://localhost:5173](http://localhost:5173)
+- **Backend API:** [http://localhost:5000/api](http://localhost:5000/api)
+- **Health Check:** [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
 ---
 
@@ -165,7 +172,7 @@ npm run dev
 1. Truy cập [Google Cloud Console](https://console.cloud.google.com/)
 2. Tạo project mới hoặc chọn project có sẵn
 3. Kích hoạt **Google+ API**
-4. Tạo **OAuth 2.0 Client ID** → Loại *Web application*
+4. Tạo **OAuth 2.0 Client ID** → Loại _Web application_
 5. Thêm URI hợp lệ:
 
    ```
@@ -173,6 +180,7 @@ npm run dev
    http://localhost:5173
    http://127.0.0.1:5173
    ```
+
 6. Sao chép Client ID vào `.env` và `server/.env`
 
 ---
@@ -181,38 +189,38 @@ npm run dev
 
 ### 🔐 Xác thực & Bảo mật
 
-* ✅ Đăng ký / Đăng nhập
-* ✅ Google OAuth
-* ✅ JWT Authentication
-* ✅ Password Hashing
-* ✅ Session Management
+- ✅ Đăng ký / Đăng nhập
+- ✅ Google OAuth
+- ✅ JWT Authentication
+- ✅ Password Hashing
+- ✅ Session Management
 
 ### 💰 Quản lý Giao dịch
 
-* ✅ CRUD giao dịch
-* ✅ Phân loại danh mục
-* ✅ Tìm kiếm / Lọc
-* ✅ Xuất CSV
-* ✅ Ghi chú giao dịch
+- ✅ CRUD giao dịch
+- ✅ Phân loại danh mục
+- ✅ Tìm kiếm / Lọc
+- ✅ Xuất CSV
+- ✅ Ghi chú giao dịch
 
 ### 📊 Phân tích & Báo cáo
 
-* ✅ Dashboard tổng quan
-* ✅ Biểu đồ thu chi / danh mục / xu hướng
-* ✅ Thống kê ngày / tuần / tháng
+- ✅ Dashboard tổng quan
+- ✅ Biểu đồ thu chi / danh mục / xu hướng
+- ✅ Thống kê ngày / tuần / tháng
 
 ### 🎯 Ngân sách & Mục tiêu
 
-* ✅ Thiết lập mục tiêu
-* ✅ Theo dõi tiến độ
-* ✅ Cảnh báo vượt ngân sách
+- ✅ Thiết lập mục tiêu
+- ✅ Theo dõi tiến độ
+- ✅ Cảnh báo vượt ngân sách
 
 ### 📱 Giao diện & Trải nghiệm
 
-* ✅ Responsive Design
-* ✅ Dark / Light Mode
-* ✅ Onboarding Flow
-* ✅ Loading & Error Handling
+- ✅ Responsive Design
+- ✅ Dark / Light Mode
+- ✅ Onboarding Flow
+- ✅ Loading & Error Handling
 
 ---
 
@@ -224,7 +232,7 @@ npm run dev
 | -------------------------- | ----------------- |
 | ⚛️ **React 18.3.1**        | UI Framework      |
 | 🟦 **TypeScript 5.2.2**    | Type Safety       |
-| ⚡ **Vite 5.3.1**           | Build Tool        |
+| ⚡ **Vite 5.3.1**          | Build Tool        |
 | 🎨 **Tailwind CSS 3.4.4**  | Styling           |
 | 🧩 **Radix UI**            | Component Library |
 | 📊 **Chart.js / Recharts** | Biểu đồ           |
@@ -295,8 +303,8 @@ Finance_Tracker/
 
 ### Backend
 
-* Dùng **MongoDB Atlas**
-* Deploy lên **Railway**, **Render**, hoặc **Vercel**
+- Dùng **MongoDB Atlas**
+- Deploy lên **Railway**, **Render**, hoặc **Vercel**
 
 ### Frontend
 
@@ -375,22 +383,24 @@ Xem file `LICENSE` để biết thêm chi tiết.
 
 **BanhVanTranPhat**
 
-* 🌐 GitHub: [@BanhVanTranPhat](https://github.com/BanhVanTranPhat)
-* ✉️ Email: [phatbanh2@gmail.com](mailto:phatbanh2@gmail.com)
+- 🌐 GitHub: [@BanhVanTranPhat](https://github.com/BanhVanTranPhat)
+- ✉️ Email: [phatbanh2@gmail.com](mailto:phatbanh2@gmail.com)
 
 ---
 
 ## 🙏 Acknowledgments
 
-* [React](https://reactjs.org/)
-* [Express.js](https://expressjs.com/)
-* [MongoDB](https://www.mongodb.com/)
-* [Tailwind CSS](https://tailwindcss.com/)
-* [Chart.js](https://www.chartjs.org/)
-* [Google OAuth](https://developers.google.com/identity)
+- [React](https://reactjs.org/)
+- [Express.js](https://expressjs.com/)
+- [MongoDB](https://www.mongodb.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Chart.js](https://www.chartjs.org/)
+- [Google OAuth](https://developers.google.com/identity)
 
 ---
 
 ⭐ **Nếu project này hữu ích, hãy cho một star nhé!** ⭐
+
+```
 
 ```

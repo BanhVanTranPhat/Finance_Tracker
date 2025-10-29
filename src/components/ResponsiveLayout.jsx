@@ -8,6 +8,10 @@ import WalletScreenDesktop from "./WalletScreenDesktop.jsx";
 import SettingsScreen from "./SettingsScreen.jsx";
 import SettingsScreenDesktop from "./SettingsScreenDesktop.jsx";
 import TransactionsWithAnalytics from "./TransactionsWithAnalytics.jsx";
+import WalletPromptModal from "./WalletPromptModal.jsx";
+import TransactionModal from "./TransactionModal.jsx";
+import WalletManagementModal from "./WalletManagementModal.jsx";
+import { useFinance } from "../contexts/FinanceContext.jsx";
 
 export default function ResponsiveLayout({
   activeTab,
@@ -15,16 +19,16 @@ export default function ResponsiveLayout({
   onCreateWallet,
   forceUpdate = 0,
 }) {
+  const { wallets, addTransaction } = useFinance();
+  const [showWalletPrompt, setShowWalletPrompt] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+
   // Store initial window width to prevent unwanted mobile switching
   const initialWidth = useRef(window.innerWidth);
   const [isMobile, setIsMobile] = useState(() => {
     // Use the same breakpoint as Tailwind CSS lg: (1024px)
     const initialIsMobile = window.innerWidth < 1024;
-    console.log("🔍 ResponsiveLayout initial state:", {
-      width: window.innerWidth,
-      isMobile: initialIsMobile,
-      initialWidth: initialWidth.current,
-    });
     return initialIsMobile;
   });
 
@@ -32,17 +36,7 @@ export default function ResponsiveLayout({
   useEffect(() => {
     const handleResize = () => {
       const newIsMobile = window.innerWidth < 1024;
-      console.log("🔄 ResponsiveLayout resize:", {
-        width: window.innerWidth,
-        isMobile: newIsMobile,
-      });
       if (newIsMobile !== isMobile) {
-        console.log(
-          "🔄 isMobile state changing from",
-          isMobile,
-          "to",
-          newIsMobile
-        );
         setIsMobile(newIsMobile);
       }
     };
@@ -50,17 +44,7 @@ export default function ResponsiveLayout({
     // Initial check to ensure correct state
     const initialCheck = () => {
       const newIsMobile = window.innerWidth < 1024;
-      console.log("🔍 ResponsiveLayout initial check:", {
-        width: window.innerWidth,
-        isMobile: newIsMobile,
-      });
       if (newIsMobile !== isMobile) {
-        console.log(
-          "🔄 isMobile state changing from",
-          isMobile,
-          "to",
-          newIsMobile
-        );
         setIsMobile(newIsMobile);
       }
     };
@@ -70,23 +54,14 @@ export default function ResponsiveLayout({
 
     // Listen for custom force update event
     const handleForceUpdate = () => {
-      console.log("🔄 Received forceResponsiveUpdate event");
       const currentWidth = window.innerWidth;
       const newIsMobile = currentWidth < 1024;
-
-      console.log("🔍 Force update check:", {
-        width: currentWidth,
-        isMobile: newIsMobile,
-        currentIsMobile: isMobile,
-        initialWidth: initialWidth.current,
-      });
 
       // Google OAuth protection: Always prefer desktop layout for better UX
       const isGoogleOAuth =
         localStorage.getItem("google_oauth_login") === "true";
 
       if (isGoogleOAuth && currentWidth >= 1024) {
-        console.log("🛡️ Google OAuth detected: Forcing desktop layout");
         setIsMobile(false);
         // Clear the flag after using it
         localStorage.removeItem("google_oauth_login");
@@ -95,23 +70,12 @@ export default function ResponsiveLayout({
 
       // Protection: If we started on desktop and width hasn't changed significantly, stay desktop
       if (initialWidth.current >= 1024 && currentWidth >= 1024 && isMobile) {
-        console.log(
-          "🛡️ Protection: Forcing desktop layout (was mobile, should be desktop)"
-        );
         setIsMobile(false);
         return;
       }
 
       if (newIsMobile !== isMobile) {
-        console.log(
-          "🔄 isMobile state changing from",
-          isMobile,
-          "to",
-          newIsMobile
-        );
         setIsMobile(newIsMobile);
-      } else {
-        console.log("✅ isMobile state is correct:", newIsMobile);
       }
     };
 
@@ -127,25 +91,16 @@ export default function ResponsiveLayout({
   // Re-check when forceUpdate changes (e.g., after Google login)
   useEffect(() => {
     if (forceUpdate > 0) {
-      console.log("🔄 ResponsiveLayout forceUpdate triggered:", forceUpdate);
-
       // Force re-check with a small delay to ensure window is ready
       const timeoutId = setTimeout(() => {
         const currentWidth = window.innerWidth;
         const newIsMobile = currentWidth < 1024;
-        console.log("🔍 ResponsiveLayout forceUpdate check (delayed):", {
-          width: currentWidth,
-          isMobile: newIsMobile,
-          currentIsMobile: isMobile,
-          initialWidth: initialWidth.current,
-        });
 
         // Google OAuth protection: Always prefer desktop layout for better UX
         const isGoogleOAuth =
           localStorage.getItem("google_oauth_login") === "true";
 
         if (isGoogleOAuth && currentWidth >= 1024) {
-          console.log("🛡️ Google OAuth detected: Forcing desktop layout");
           setIsMobile(false);
           // Clear the flag after using it
           localStorage.removeItem("google_oauth_login");
@@ -154,24 +109,13 @@ export default function ResponsiveLayout({
 
         // Protection: If we started on desktop and width hasn't changed significantly, stay desktop
         if (initialWidth.current >= 1024 && currentWidth >= 1024 && isMobile) {
-          console.log(
-            "🛡️ Protection: Forcing desktop layout (was mobile, should be desktop)"
-          );
           setIsMobile(false);
           return;
         }
 
         // Only update if the state actually needs to change
         if (newIsMobile !== isMobile) {
-          console.log(
-            "🔄 isMobile state changing from",
-            isMobile,
-            "to",
-            newIsMobile
-          );
           setIsMobile(newIsMobile);
-        } else {
-          console.log("✅ isMobile state is correct:", newIsMobile);
         }
       }, 50);
 
@@ -179,18 +123,10 @@ export default function ResponsiveLayout({
     }
   }, [forceUpdate]); // Remove isMobile dependency to prevent infinite loop
 
-  console.log("🔍 ResponsiveLayout render:", {
-    isMobile,
-    width: window.innerWidth,
-    activeTab,
-    forceUpdate,
-    initialWidth: initialWidth.current,
-    timestamp: new Date().toISOString(),
-  });
+  // Debug logging removed for cleaner console
 
   // Final protection: If we're on desktop but isMobile is true, force correct it
   if (window.innerWidth >= 1024 && isMobile) {
-    console.log("🛡️ Final protection: Forcing desktop layout on render");
     setIsMobile(false);
   }
 
@@ -198,11 +134,26 @@ export default function ResponsiveLayout({
   useEffect(() => {
     const isGoogleOAuth = localStorage.getItem("google_oauth_login") === "true";
     if (isGoogleOAuth && window.innerWidth >= 1024 && isMobile) {
-      console.log("🛡️ Google OAuth render check: Forcing desktop layout");
       setIsMobile(false);
       localStorage.removeItem("google_oauth_login");
     }
   });
+
+  // Handle wallet creation from prompt
+  const handleCreateWalletFromPrompt = () => {
+    setShowWalletPrompt(false);
+    setShowWalletModal(true);
+  };
+
+  // Handle transaction save
+  const handleTransactionSave = async (transactionData) => {
+    try {
+      await addTransaction(transactionData);
+      setShowTransactionModal(false);
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -221,21 +172,49 @@ export default function ResponsiveLayout({
 
   if (isMobile) {
     // Mobile layout - keep existing design
-    console.log("📱 Rendering mobile layout");
     return (
       <div className="min-h-screen">
         {renderContent()}
         <BottomNav
           activeTab={activeTab}
           onTabChange={onTabChange}
-          onCreateWallet={onCreateWallet}
+          onCreateWallet={() => setShowWalletPrompt(true)}
+          onAddTransaction={() => setShowTransactionModal(true)}
         />
+
+        {/* Wallet Prompt Modal */}
+        <WalletPromptModal
+          isOpen={showWalletPrompt}
+          onClose={() => setShowWalletPrompt(false)}
+          onCreateWallet={handleCreateWalletFromPrompt}
+        />
+
+        {/* Transaction Modal */}
+        {showTransactionModal && (
+          <TransactionModal
+            isOpen={showTransactionModal}
+            onClose={() => setShowTransactionModal(false)}
+            onSave={handleTransactionSave}
+            mode="add"
+          />
+        )}
+
+        {/* Wallet Management Modal */}
+        {showWalletModal && (
+          <WalletManagementModal
+            isOpen={showWalletModal}
+            onClose={() => setShowWalletModal(false)}
+            onSave={() => {
+              setShowWalletModal(false);
+            }}
+            mode="create"
+          />
+        )}
       </div>
     );
   }
 
   // Desktop layout
-  console.log("🖥️ Rendering desktop layout");
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}

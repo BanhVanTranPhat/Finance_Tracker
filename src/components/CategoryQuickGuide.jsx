@@ -19,7 +19,7 @@ export default function CategoryQuickGuide() {
               💡 Mẹo tạo danh mục hiệu quả
             </h3>
             <p className="text-xs text-gray-600">
-              Hướng dẫn tạo danh mục phù hợp với Zero-Based Budgeting
+              Hướng dẫn tạo danh mục để quản lý chi tiêu hiệu quả
             </p>
           </div>
         </div>

@@ -23,6 +23,10 @@ const categorySchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    icon: {
+      type: String,
+      default: "📚",
+    },
     isDefault: {
       type: Boolean,
       default: false,
@@ -35,6 +39,14 @@ const categorySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        ret.id = ret._id;
+        ret.budgetLimit = ret.budgeted_amount;
+        return ret;
+      },
+    },
   }
 );
 

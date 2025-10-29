@@ -34,47 +34,35 @@ export const AuthProvider = ({ children }) => {
           // First, set user from localStorage immediately for better UX
           const userData = JSON.parse(storedUser);
           setUser(userData);
-          console.log("🔄 InitAuth - user set from localStorage:", userData);
 
           // Then verify token with backend in background
           try {
             const response = await authAPI.getCurrentUser();
             setUser(response.user);
-            console.log(
-              "✅ InitAuth - user verified with backend:",
-              response.user
-            );
           } catch {
             // Token is invalid, clear storage
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             setUser(null);
-            console.log("❌ InitAuth - token invalid, cleared storage");
+            // token invalid
           }
         } catch {
           // Invalid user data, clear storage
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setUser(null);
-          console.log("❌ InitAuth - invalid user data, cleared storage");
+          // invalid user data
         }
       }
       setIsLoading(false);
-      console.log("✅ InitAuth - isLoading set to false");
+      // done init
     };
 
     initAuth();
 
     // Listen for Google OAuth success
     const handleGoogleAuthSuccess = (e) => {
-      console.log(
-        "🎉 Received googleAuthSuccess event:",
-        e.detail,
-        "at",
-        new Date().toISOString()
-      );
       const { user, token } = e.detail;
-      console.log("🔄 Setting user and isLoading:", { user, isLoading: false });
       setUser(user);
       setIsLoading(false);
 
@@ -84,25 +72,15 @@ export const AuthProvider = ({ children }) => {
       // Set a flag to indicate this is a Google OAuth login
       localStorage.setItem("google_oauth_login", "true");
 
-      console.log(
-        "✅ AuthContext updated with user:",
-        user,
-        "isLoading: false"
-      );
-
       // Force a re-render by dispatching a custom event for Google OAuth
       // Always dispatch to ensure proper layout detection
       setTimeout(() => {
-        console.log(
-          "🔄 Dispatching forceUpdate event for ResponsiveLayout (Google OAuth)"
-        );
         window.dispatchEvent(new CustomEvent("forceResponsiveUpdate"));
       }, 100);
     };
 
     // Listen for storage changes (for other OAuth flows)
     const handleStorageChange = (e) => {
-      console.log("📦 Storage event received:", e.key, e.newValue);
       if (e.key === "token" || e.key === "user") {
         // Immediately update user state from localStorage for Google OAuth
         const token = localStorage.getItem("token");
@@ -113,42 +91,31 @@ export const AuthProvider = ({ children }) => {
         if (token && storedUser) {
           try {
             const userData = JSON.parse(storedUser);
-            console.log(
-              "🔄 Updating user from storage:",
-              userData,
-              "isGoogleOAuth:",
-              isGoogleOAuth
-            );
-            setUser(userData);
-            setIsLoading(false);
+            // Defer state updates to avoid setState during another tree render
+            setTimeout(() => {
+              setUser(userData);
+              setIsLoading(false);
+            }, 0);
 
             // If this is Google OAuth, dispatch force update event
             if (isGoogleOAuth) {
-              console.log(
-                "🔄 Google OAuth detected in storage change, dispatching forceResponsiveUpdate"
-              );
               setTimeout(() => {
                 window.dispatchEvent(new CustomEvent("forceResponsiveUpdate"));
               }, 100);
             }
-
-            console.log("✅ Storage change - user set, isLoading: false");
           } catch {
             // Invalid user data, clear storage
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             setUser(null);
-            console.log("❌ Invalid user data, cleared storage");
           }
         } else {
           // Only clear user if we don't have credentials and it's not an onboarding completion
           const onboardingCompleted =
             localStorage.getItem("onboarding_completed") === "true";
           if (!onboardingCompleted) {
-            console.log("❌ No credentials found in storage, clearing user");
             setUser(null);
           } else {
-            console.log("📋 Onboarding completed, keeping user state");
           }
         }
       }
@@ -177,27 +144,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // Only set onboarding_completed to false if it doesn't exist (first time login)
+      // Ensure onboarding flag is correct per user
       const existingOnboardingStatus = localStorage.getItem(
         "onboarding_completed"
       );
-      console.log(
-        "🔍 Login - existing onboarding status:",
-        existingOnboardingStatus
-      );
+      const previousUserRaw = localStorage.getItem("user");
+      const previousUserId = previousUserRaw
+        ? JSON.parse(previousUserRaw).id
+        : null;
+      const isDifferentUser = previousUserId && previousUserId !== userData.id;
 
-      if (!existingOnboardingStatus) {
+      if (!existingOnboardingStatus || isDifferentUser) {
+        // New browser or different user: reset onboarding and clear cached finance data
         localStorage.setItem("onboarding_completed", "false");
-        console.log(
-          "🔄 Set onboarding_completed to false for first-time login"
-        );
-        // Clear any existing financial data for first-time login
         clearFinancialData();
-      } else {
-        console.log(
-          "✅ Keep existing onboarding status:",
-          existingOnboardingStatus
-        );
       }
       // If onboarding_completed already exists, don't change it
     } catch (error) {

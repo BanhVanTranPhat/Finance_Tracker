@@ -13,7 +13,7 @@ export default function IntroScreen({ onNext }) {
             Chào mừng đến với Finance Tracker
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Ứng dụng quản lý tài chính cá nhân thông minh
+            Ứng dụng quản lý chi tiêu cá nhân thông minh
           </p>
         </div>
       </div>
@@ -22,10 +22,10 @@ export default function IntroScreen({ onNext }) {
       <div className="flex-1 px-6">
         <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-            Zero-Based Budgeting
+            Quản lý chi tiêu thông minh
           </h2>
           <p className="text-gray-600 text-center mb-6">
-            Phương pháp lập ngân sách dựa trên con số không
+            Theo dõi và phân tích thu chi một cách dễ dàng
           </p>
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
@@ -34,11 +34,11 @@ export default function IntroScreen({ onNext }) {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">
-                  Thu Nhập - Chi Tiêu = 0
+                  Nhập thu nhập và chi tiêu
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Mọi đồng tiền kiếm được đều phải được "giao việc" trước khi
-                  bạn thực sự tiêu nó.
+                  Ghi lại tất cả các khoản thu chi hàng ngày để biết bạn đang
+                  tiêu tiền vào đâu.
                 </p>
               </div>
             </div>
@@ -48,11 +48,11 @@ export default function IntroScreen({ onNext }) {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">
-                  Tạo các "Phong bì"
+                  Phân loại theo danh mục
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Chia tiền vào các danh mục cụ thể như Ăn uống, Đi lại, Tiết
-                  kiệm...
+                  Chia tiền vào các danh mục cụ thể như Ăn uống, Đi lại, Giải
+                  trí...
                 </p>
               </div>
             </div>
@@ -62,10 +62,10 @@ export default function IntroScreen({ onNext }) {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">
-                  Kiểm soát hoàn toàn
+                  Xem biểu đồ và thống kê
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Bạn biết chính xác tiền đi đâu và có thể điều chỉnh linh hoạt.
+                  Phân tích chi tiêu qua biểu đồ trực quan, dễ hiểu.
                 </p>
               </div>
             </div>
@@ -74,24 +74,24 @@ export default function IntroScreen({ onNext }) {
 
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
           <h3 className="font-semibold text-emerald-800 mb-3 text-center">
-            Lợi ích của Zero-Based Budgeting
+            Tính năng chính
           </h3>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              <span>Kiểm soát chi tiêu tốt hơn</span>
+              <span>Quản lý thu chi đơn giản</span>
             </li>
             <li className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              <span>Tiết kiệm nhiều hơn</span>
+              <span>Biểu đồ trực quan, dễ hiểu</span>
             </li>
             <li className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              <span>Đạt được mục tiêu tài chính</span>
+              <span>Lọc và sắp xếp giao dịch</span>
             </li>
             <li className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-              <span>Giảm stress về tiền bạc</span>
+              <span>Quản lý nhiều ví tiền</span>
             </li>
           </ul>
         </div>

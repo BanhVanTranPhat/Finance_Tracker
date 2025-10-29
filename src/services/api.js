@@ -137,6 +137,22 @@ export const categoryAPI = {
     const response = await api.get("/categories/budget-summary", { params });
     return response.data;
   },
+
+  updateBudgetLimit: async (categoryId, budgetLimit) => {
+    const response = await api.put(`/categories/${categoryId}/budget`, {
+      budgetLimit,
+    });
+    return response.data;
+  },
+
+  allocateBudgets: async (allocations, year, month) => {
+    const response = await api.post("/categories/allocate-budgets", {
+      allocations,
+      year,
+      month,
+    });
+    return response.data;
+  },
 };
 
 // Wallet API

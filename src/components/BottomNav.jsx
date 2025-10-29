@@ -6,12 +6,20 @@ import {
   List,
   Settings,
 } from "lucide-react";
+import { useFinance } from "../contexts/FinanceContext.jsx";
 
-export default function BottomNav({ activeTab, onTabChange, onCreateWallet }) {
+export default function BottomNav({
+  activeTab,
+  onTabChange,
+  onCreateWallet,
+  onAddTransaction,
+}) {
+  const { wallets } = useFinance();
+  const hasWallets = wallets && wallets.length > 0;
   const navItems = [
     { id: "budget", icon: DollarSign, label: "Ngân sách" },
     { id: "wallet", icon: Wallet, label: "Ví" },
-    { id: "transactions", icon: List, label: "Giao dịch" },
+    { id: "transactions", icon: BarChart3, label: "Phân tích" },
     { id: "settings", icon: Settings, label: "Cài đặt" },
   ];
 
@@ -49,12 +57,12 @@ export default function BottomNav({ activeTab, onTabChange, onCreateWallet }) {
           );
         })}
 
-        {/* Central Create Wallet Button */}
+        {/* Central Action Button - Create Wallet or Add Transaction */}
         <button
-          onClick={onCreateWallet}
+          onClick={hasWallets ? onAddTransaction : onCreateWallet}
           className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors"
-          aria-label="Tạo ví mới"
-          title="Tạo ví mới"
+          aria-label={hasWallets ? "Thêm giao dịch" : "Tạo ví mới"}
+          title={hasWallets ? "Thêm giao dịch" : "Tạo ví mới"}
         >
           <Plus className="w-6 h-6 text-white" />
         </button>

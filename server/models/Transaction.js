@@ -43,6 +43,13 @@ const transactionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        ret.id = ret._id;
+        return ret;
+      },
+    },
   }
 );
 

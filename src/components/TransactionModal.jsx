@@ -119,6 +119,13 @@ export default function TransactionModal({
     }
   };
 
+  // Handle direct input from keyboard
+  const handleAmountChange = (e) => {
+    // Remove all non-digit characters including commas from formatted display
+    const value = e.target.value.replace(/[^\d]/g, "");
+    setAmount(value || "0");
+  };
+
   const handleSave = () => {
     if (!selectedWallet || !selectedCategory || parseFloat(amount) <= 0) {
       alert("Vui lòng điền đầy đủ thông tin");
@@ -135,7 +142,8 @@ export default function TransactionModal({
     };
 
     if (mode === "edit" && editTransaction) {
-      onUpdate?.(editTransaction.id, transactionData);
+      const transactionId = editTransaction._id || editTransaction.id;
+      onUpdate?.(transactionId, transactionData);
     } else {
       onSave(transactionData);
     }
@@ -144,7 +152,8 @@ export default function TransactionModal({
 
   const handleDelete = () => {
     if (mode === "edit" && editTransaction && onDelete) {
-      onDelete(editTransaction.id);
+      const transactionId = editTransaction._id || editTransaction.id;
+      onDelete(transactionId);
       onClose();
     }
   };
@@ -182,9 +191,9 @@ export default function TransactionModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-yellow-50 w-full sm:w-[600px] sm:max-w-[90vw] h-[90vh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl sm:rounded-2xl p-6 overflow-y-auto">
+      <div className="bg-yellow-50 w-full sm:w-[600px] sm:max-w-[90vw] h-[95vh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl sm:rounded-2xl p-5 overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-800">
             {mode === "edit" ? "Chỉnh sửa giao dịch" : "Thêm giao dịch"}
           </h2>
@@ -211,7 +220,7 @@ export default function TransactionModal({
         </div>
 
         {/* Transaction Type Toggle */}
-        <div className="flex bg-white rounded-full p-1 mb-6 shadow-sm">
+        <div className="flex bg-white rounded-full p-1 mb-4 shadow-sm">
           <button
             onClick={() => setType("income")}
             className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-full font-semibold transition-all text-sm sm:text-base ${
@@ -241,19 +250,48 @@ export default function TransactionModal({
         </div>
 
         {/* Amount Display */}
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-5 sm:p-6 mb-6 text-center shadow-sm border border-gray-100">
-          <div className="text-3xl sm:text-4xl font-bold text-emerald-800 mb-2">
-            {parseFloat(amount).toLocaleString()}₫
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 sm:p-6 mb-4 text-center shadow-sm border border-gray-100">
+          {/* Desktop: Input field */}
+          <div className="hidden sm:block">
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={parseFloat(amount).toLocaleString()}
+                onChange={handleAmountChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSave();
+                  }
+                }}
+                className="w-full text-3xl sm:text-4xl font-bold text-emerald-800 text-center bg-transparent border-b-2 border-emerald-200 focus:border-emerald-500 outline-none transition-colors px-4 py-2"
+                placeholder="Nhập số tiền"
+                autoFocus
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl font-bold text-emerald-600">
+                ₫
+              </div>
+            </div>
+            <div className="text-xs sm:text-sm text-gray-500 font-medium mt-3">
+              {type === "income" ? "Thu nhập" : "Chi tiêu"}
+            </div>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500 font-medium">
-            {type === "income" ? "Thu nhập" : "Chi tiêu"}
+
+          {/* Mobile: Display only */}
+          <div className="block sm:hidden">
+            <div className="text-3xl sm:text-4xl font-bold text-emerald-800 mb-2">
+              {parseFloat(amount).toLocaleString()}₫
+            </div>
+            <div className="text-xs sm:text-sm text-gray-500 font-medium">
+              {type === "income" ? "Thu nhập" : "Chi tiêu"}
+            </div>
           </div>
         </div>
 
         {/* Form Fields */}
-        <div className="space-y-3 sm:space-y-4 mb-6">
+        <div className="space-y-2.5 sm:space-y-4 mb-4">
           {/* Wallet Selection */}
-          <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
             <button
               onClick={() => setShowWalletSelector(!showWalletSelector)}
               className="w-full flex items-center justify-between hover:bg-gray-50 -m-1 p-1 rounded-lg transition-colors"
@@ -301,7 +339,7 @@ export default function TransactionModal({
           </div>
 
           {/* Category Selection */}
-          <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
             <button
               onClick={() => setShowCategorySelector(!showCategorySelector)}
               className="w-full flex items-center justify-between hover:bg-gray-50 -m-1 p-1 rounded-lg transition-colors"
@@ -354,7 +392,7 @@ export default function TransactionModal({
           </div>
 
           {/* Date Selection */}
-          <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
             <button
               onClick={() => setShowDatePicker(!showDatePicker)}
               className="w-full flex items-center justify-between hover:bg-gray-50 -m-1 p-1 rounded-lg transition-colors"
@@ -389,7 +427,7 @@ export default function TransactionModal({
           </div>
 
           {/* Description */}
-          <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
             <div className="flex items-center space-x-2.5 sm:space-x-3 mb-3">
               <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
               <span className="text-gray-700 text-sm sm:text-base font-medium">
@@ -408,21 +446,21 @@ export default function TransactionModal({
           </div>
         </div>
 
-        {/* Number Pad */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        {/* Number Pad - Mobile only */}
+        <div className="grid grid-cols-4 gap-2 mb-3 sm:hidden">
           {/* Row 1 */}
           {["1", "2", "3"].map((num) => (
             <button
               key={num}
               onClick={() => handleNumberPress(num)}
-              className="bg-white rounded-xl p-3 sm:p-4 text-xl sm:text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+              className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
             >
               {num}
             </button>
           ))}
           <button
             onClick={handleBackspace}
-            className="bg-white rounded-xl p-3 sm:p-4 text-xl sm:text-2xl font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm"
+            className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm"
           >
             ⌫
           </button>
@@ -432,16 +470,16 @@ export default function TransactionModal({
             <button
               key={num}
               onClick={() => handleNumberPress(num)}
-              className="bg-white rounded-xl p-3 sm:p-4 text-xl sm:text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+              className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
             >
               {num}
             </button>
           ))}
           <button
             onClick={handleClear}
-            className="bg-white rounded-xl p-3 sm:p-4 text-lg sm:text-xl font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm"
+            className="bg-white rounded-xl p-2.5 text-[11px] font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm leading-tight"
           >
-            C
+            Xóa hết
           </button>
 
           {/* Row 3 */}
@@ -449,44 +487,37 @@ export default function TransactionModal({
             <button
               key={num}
               onClick={() => handleNumberPress(num)}
-              className="bg-white rounded-xl p-3 sm:p-4 text-xl sm:text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+              className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
             >
               {num}
             </button>
           ))}
           <button
             onClick={() => handleNumberPress("0")}
-            className="bg-white rounded-xl p-3 sm:p-4 text-xl sm:text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+            className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
           >
             0
           </button>
 
-          {/* Row 4 */}
-          <button
-            onClick={() => handleNumberPress("000")}
-            className="bg-white rounded-xl p-3 sm:p-4 text-base sm:text-lg font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
-          >
-            000
-          </button>
-          <button
-            onClick={() => handleNumberPress("000000")}
-            className="bg-white rounded-xl p-3 sm:p-4 text-xs sm:text-sm font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
-          >
-            000K
-          </button>
-          <button
-            onClick={() => handleNumberPress("0000000")}
-            className="bg-white rounded-xl p-3 sm:p-4 text-xs sm:text-sm font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
-          >
-            000M
-          </button>
+          {/* Row 4 - Save button only */}
           <button
             onClick={handleSave}
-            className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white font-bold hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all flex items-center justify-center space-x-1.5 sm:space-x-2 shadow-md"
+            className="col-span-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-3.5 text-white font-bold hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
           >
-            <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-xs sm:text-sm">
-              {mode === "edit" ? "Cập nhật" : "Lưu"}
+            <Check className="w-5 h-5" />
+            <span>{mode === "edit" ? "Cập nhật" : "Lưu"}</span>
+          </button>
+        </div>
+
+        {/* Desktop - Save button */}
+        <div className="hidden sm:block">
+          <button
+            onClick={handleSave}
+            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-4 text-white font-bold text-lg hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
+          >
+            <Check className="w-5 h-5" />
+            <span>
+              {mode === "edit" ? "Cập nhật giao dịch" : "Lưu giao dịch"}
             </span>
           </button>
         </div>

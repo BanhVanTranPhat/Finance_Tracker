@@ -12,7 +12,39 @@ router.get("/", auth, async (req, res) => {
     const categories = await Category.find({ user: req.user.id }).sort({
       createdAt: -1,
     });
-    res.json(categories);
+
+    // Calculate spent for each category in current month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59
+    );
+
+    const transactions = await Transaction.find({
+      user: req.user.id,
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+      type: "expense",
+    });
+
+    // Add spent amount to each category
+    const categoriesWithSpent = categories.map((category) => {
+      const categoryTransactions = transactions.filter(
+        (t) => t.category === category.name
+      );
+      const spent = categoryTransactions.reduce((sum, t) => sum + t.amount, 0);
+
+      return {
+        ...category.toJSON(),
+        spent: spent,
+      };
+    });
+
+    res.json(categoriesWithSpent);
   } catch (error) {
     console.error("Error fetching categories:", error);
     res.status(500).json({ message: "Server error" });
@@ -139,6 +171,73 @@ router.post("/initialize", auth, async (req, res) => {
   }
 });
 
+// Update budget limit for a single category
+router.put("/:id/budget", auth, async (req, res) => {
+  try {
+    const { budgetLimit } = req.body;
+
+    if (budgetLimit === undefined || budgetLimit < 0) {
+      return res
+        .status(400)
+        .json({ message: "Valid budget limit is required" });
+    }
+
+    const category = await Category.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      { budgeted_amount: budgetLimit },
+      { new: true }
+    );
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    res.json(category);
+  } catch (error) {
+    console.error("Error updating budget limit:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Allocate budgets for multiple categories
+router.post("/allocate-budgets", auth, async (req, res) => {
+  try {
+    const { allocations, year, month } = req.body;
+
+    if (!allocations || typeof allocations !== "object") {
+      return res
+        .status(400)
+        .json({ message: "Allocations object is required" });
+    }
+
+    // Update each category with new budget allocation
+    const updatePromises = Object.entries(allocations).map(
+      ([categoryId, amount]) => {
+        return Category.findOneAndUpdate(
+          { _id: categoryId, user: req.user.id },
+          { budgeted_amount: amount },
+          { new: true }
+        );
+      }
+    );
+
+    const updatedCategories = await Promise.all(updatePromises);
+
+    // Filter out null values (categories not found or not belonging to user)
+    const validCategories = updatedCategories.filter((cat) => cat !== null);
+
+    res.json({
+      message: "Budget allocations updated successfully",
+      categories: validCategories,
+      year,
+      month,
+    });
+  } catch (error) {
+    console.error("Error allocating budgets:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Get budget summary for Zero-Based Budgeting
 router.get("/budget-summary", auth, async (req, res) => {
   try {
@@ -165,13 +264,6 @@ router.get("/budget-summary", auth, async (req, res) => {
       59
     );
 
-    // Calculate totalBudgeted (SUM of budgeted_amount from all categories)
-    const categories = await Category.find({ user: req.user.id });
-    const totalBudgeted = categories.reduce(
-      (sum, cat) => sum + (cat.budgeted_amount || 0),
-      0
-    );
-
     // Calculate totalIncome and totalSpent from transactions in the month
     const transactions = await Transaction.find({
       user: req.user.id,
@@ -186,6 +278,9 @@ router.get("/budget-summary", auth, async (req, res) => {
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
+    // "Tiền đã có việc" = Tổng chi tiêu thực tế (Cách đơn giản)
+    const totalBudgeted = totalSpent;
+
     // Calculate total wallet balance
     const wallets = await Wallet.find({ user: req.user.id });
     const totalWalletBalance = wallets.reduce(
@@ -194,14 +289,13 @@ router.get("/budget-summary", auth, async (req, res) => {
     );
 
     // Calculate remaining to budget
-    // Tiền chưa có việc = (Thu nhập + Tổng số dư ví) - Tiền đã lập kế hoạch
-    const availableMoney = totalIncome + totalWalletBalance;
-    const remainingToBudget = availableMoney - totalBudgeted;
+    // Tiền chưa có việc = Tổng số dư ví - Tiền đã lập kế hoạch
+    // (Số dư ví đã bao gồm thu nhập rồi vì khi thêm thu nhập, ví tự động tăng)
+    const remainingToBudget = totalWalletBalance - totalBudgeted;
 
     res.json({
       totalIncome,
       totalWalletBalance,
-      availableMoney,
       totalBudgeted,
       totalSpent,
       remainingToBudget,
