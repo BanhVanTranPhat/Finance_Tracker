@@ -10,6 +10,8 @@ import SettingsScreenDesktop from "./SettingsScreenDesktop.jsx";
 import TransactionsWithAnalytics from "./TransactionsWithAnalytics.jsx";
 import WalletPromptModal from "./WalletPromptModal.jsx";
 import TransactionModal from "./TransactionModal.jsx";
+import TransferMoneyModal from "./TransferMoneyModal.jsx";
+import QuickActionModal from "./QuickActionModal.jsx";
 import WalletManagementModal from "./WalletManagementModal.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 
@@ -22,6 +24,9 @@ export default function ResponsiveLayout({
   const { wallets, addTransaction } = useFinance();
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showTypedTransaction, setShowTypedTransaction] = useState(false);
+  const [initialTransactionType, setInitialTransactionType] = useState("expense");
+  const [showTransferModal, setShowTransferModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
 
   // Store initial window width to prevent unwanted mobile switching
@@ -179,7 +184,7 @@ export default function ResponsiveLayout({
           activeTab={activeTab}
           onTabChange={onTabChange}
           onCreateWallet={() => setShowWalletPrompt(true)}
-          onAddTransaction={() => setShowTransactionModal(true)}
+          onCentralAction={() => setShowTransactionModal(true)}
         />
 
         {/* Wallet Prompt Modal */}
@@ -189,15 +194,35 @@ export default function ResponsiveLayout({
           onCreateWallet={handleCreateWalletFromPrompt}
         />
 
-        {/* Transaction Modal */}
-        {showTransactionModal && (
+        {/* Quick Action then Transaction/Transfer */}
+        <QuickActionModal
+          isOpen={showTransactionModal}
+          onClose={() => setShowTransactionModal(false)}
+          onPick={(action) => {
+            setShowTransactionModal(false);
+            if (action === "transfer") {
+              setShowTransferModal(true);
+            } else {
+              setInitialTransactionType(action);
+              setShowTypedTransaction(true);
+            }
+          }}
+        />
+
+        {showTypedTransaction && (
           <TransactionModal
-            isOpen={showTransactionModal}
-            onClose={() => setShowTransactionModal(false)}
+            isOpen={showTypedTransaction}
+            onClose={() => setShowTypedTransaction(false)}
             onSave={handleTransactionSave}
+            initialType={initialTransactionType}
             mode="add"
           />
         )}
+
+        <TransferMoneyModal
+          isOpen={showTransferModal}
+          onClose={() => setShowTransferModal(false)}
+        />
 
         {/* Wallet Management Modal */}
         {showWalletModal && (
@@ -218,7 +243,11 @@ export default function ResponsiveLayout({
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <DesktopSidebar activeTab={activeTab} onTabChange={onTabChange} />
+      <DesktopSidebar
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        onAddTransaction={() => setShowTransactionModal(true)}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -229,6 +258,36 @@ export default function ResponsiveLayout({
           <div className="p-6">{renderContent()}</div>
         </div>
       </div>
+
+      {/* Quick Action then Transaction/Transfer for Desktop */}
+      <QuickActionModal
+        isOpen={showTransactionModal}
+        onClose={() => setShowTransactionModal(false)}
+        onPick={(action) => {
+          setShowTransactionModal(false);
+          if (action === "transfer") {
+            setShowTransferModal(true);
+          } else {
+            setInitialTransactionType(action);
+            setShowTypedTransaction(true);
+          }
+        }}
+      />
+
+      {showTypedTransaction && (
+        <TransactionModal
+          isOpen={showTypedTransaction}
+          onClose={() => setShowTypedTransaction(false)}
+          onSave={handleTransactionSave}
+          initialType={initialTransactionType}
+          mode="add"
+        />
+      )}
+
+      <TransferMoneyModal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+      />
     </div>
   );
 }

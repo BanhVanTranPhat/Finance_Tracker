@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DollarSign, Wallet, BarChart3, Settings, User } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
-export default function DesktopSidebar({ activeTab, onTabChange }) {
+export default function DesktopSidebar({ activeTab, onTabChange, onAddTransaction }) {
   const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -90,6 +90,13 @@ export default function DesktopSidebar({ activeTab, onTabChange }) {
               </p>
             </div>
           </div>
+          {/* Add Transaction Button */}
+          <button
+            onClick={onAddTransaction}
+            className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 rounded-lg shadow"
+          >
+            + Thêm giao dịch
+          </button>
         </div>
       )}
 

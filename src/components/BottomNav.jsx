@@ -12,7 +12,7 @@ export default function BottomNav({
   activeTab,
   onTabChange,
   onCreateWallet,
-  onAddTransaction,
+  onCentralAction,
 }) {
   const { wallets } = useFinance();
   const hasWallets = wallets && wallets.length > 0;
@@ -57,9 +57,9 @@ export default function BottomNav({
           );
         })}
 
-        {/* Central Action Button - Create Wallet or Add Transaction */}
+        {/* Central Action Button - Create Wallet or open Quick Action */}
         <button
-          onClick={hasWallets ? onAddTransaction : onCreateWallet}
+          onClick={hasWallets ? onCentralAction : onCreateWallet}
           className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors"
           aria-label={hasWallets ? "Thêm giao dịch" : "Tạo ví mới"}
           title={hasWallets ? "Thêm giao dịch" : "Tạo ví mới"}

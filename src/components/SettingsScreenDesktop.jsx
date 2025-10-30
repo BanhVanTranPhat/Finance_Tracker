@@ -17,9 +17,11 @@ import {
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useCurrency } from "../contexts/CurrencyContext.jsx";
 import { dataAPI } from "../services/api.js";
+import { useFinance } from "../contexts/FinanceContext.jsx";
 
 export default function SettingsScreenDesktop() {
   const { user, logout, updateUserProfile } = useAuth();
+  const { wallets, categories, transactions } = useFinance();
   const { currency, setCurrency, currencies, currencyName } = useCurrency();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
@@ -149,6 +151,52 @@ export default function SettingsScreenDesktop() {
       action: () => setShowHelpModal(true),
     },
   ];
+
+  const exportCSV = (rows, filename) => {
+    if (!rows || rows.length === 0) {
+      alert("Không có dữ liệu để xuất");
+      return;
+    }
+    const headers = Object.keys(rows[0]);
+    const csv = [headers.join(",")].concat(
+      rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? "")).join(","))
+    );
+    const blob = new Blob(["\uFEFF" + csv.join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Date range for report
+  const [reportPreset, setReportPreset] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const filterByPreset = (list) => {
+    const now = new Date();
+    let start = null;
+    let end = null;
+    if (reportPreset === "month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    } else if (reportPreset === "year") {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+    } else if (reportPreset === "custom" && fromDate && toDate) {
+      start = new Date(fromDate);
+      end = new Date(new Date(toDate).setHours(23, 59, 59, 999));
+    }
+    if (!start || !end) return list;
+    return list.filter((t) => {
+      const d = new Date(t.date);
+      return d >= start && d <= end;
+    });
+  };
 
   return (
     <div className="space-y-6 pt-4">
@@ -321,6 +369,117 @@ export default function SettingsScreenDesktop() {
             >
               <span>Đăng xuất</span>
             </button>
+          </div>
+        </div>
+
+        {/* Export Section */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800">Xuất dữ liệu</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <select
+                value={reportPreset}
+                onChange={(e) => setReportPreset(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="all">Toàn bộ</option>
+                <option value="month">Tháng này</option>
+                <option value="year">Năm nay</option>
+                <option value="custom">Tùy chọn</option>
+              </select>
+              {reportPreset === "custom" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                  />
+                  <span className="text-sm text-gray-500">đến</span>
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <button
+              onClick={() =>
+                exportCSV(
+                  transactions.map((t) => ({
+                    id: t.id || t._id,
+                    type: t.type,
+                    amount: t.amount,
+                    date: t.date,
+                    category: t.category,
+                    wallet: t.wallet,
+                    note: t.note || "",
+                  })),
+                  "transactions.csv"
+                )
+              }
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-3 rounded-xl"
+            >
+              Xuất giao dịch (CSV)
+            </button>
+            <button
+              onClick={() =>
+                exportCSV(
+                  categories.map((c) => ({
+                    id: c.id || c._id,
+                    name: c.name,
+                    type: c.type,
+                    group: c.group,
+                    budgetLimit: c.budgetLimit || 0,
+                    spent: c.spent || 0,
+                  })),
+                  "categories.csv"
+                )
+              }
+              className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-3 rounded-xl"
+            >
+              Xuất danh mục (CSV)
+            </button>
+            <button
+              onClick={() =>
+                exportCSV(
+                  wallets.map((w) => ({
+                    id: w.id || w._id,
+                    name: w.name,
+                    balance: w.balance,
+                    icon: w.icon,
+                  })),
+                  "wallets.csv"
+                )
+              }
+              className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-3 rounded-xl"
+            >
+              Xuất ví (CSV)
+            </button>
+            <button
+              onClick={() => {
+                const tx = filterByPreset(transactions);
+                const join = tx.map((t) => ({
+                  Ngay: new Date(t.date).toISOString().slice(0, 10),
+                  SoTien: t.amount,
+                  Loai: t.type === "income" ? "Thu nhập" : t.type === "expense" ? "Chi tiêu" : t.type,
+                  DanhMuc: t.category,
+                  Vi: t.wallet,
+                  GhiChu: t.note || "",
+                }));
+                exportCSV(join, "report.csv");
+              }}
+              className="bg-purple-500 hover:bg-purple-600 text-white font-medium px-4 py-3 rounded-xl"
+            >
+              Xuất báo cáo đơn giản
+            </button>
+            </div>
           </div>
         </div>
       </div>

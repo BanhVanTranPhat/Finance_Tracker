@@ -225,14 +225,14 @@ export default function BudgetScreen() {
       {/* Main Content */}
       <div className="px-4 space-y-4">
         {/* Financial Overview Cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-white rounded-xl p-4 shadow-lg">
             <TrendingUp className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
             <div className="text-gray-600 text-xs mb-1 text-center">
               Thu nhập
             </div>
             <div className="text-emerald-600 font-bold text-sm text-center">
-              {(totalIncome / 1000).toFixed(0)}K₫
+              {Math.round(totalIncome / 1000).toLocaleString()}K₫
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg">
@@ -241,7 +241,7 @@ export default function BudgetScreen() {
               Chi tiêu
             </div>
             <div className="text-red-500 font-bold text-sm text-center">
-              {(totalSpent / 1000).toFixed(0)}K₫
+              {Math.round(totalSpent / 1000).toLocaleString()}K₫
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg">
@@ -253,31 +253,18 @@ export default function BudgetScreen() {
               {totalSavings.toLocaleString()}₫
             </div>
           </div>
-        </div>
-
-        {/* Savings Summary */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-gray-500 text-sm mb-1">
-                Số tiền tiết kiệm
-              </div>
-              <div
-                className={`text-3xl font-bold ${
-                  totalSavings >= 0 ? "text-emerald-600" : "text-red-500"
-                }`}
-              >
-                {totalSavings.toLocaleString()}₫
-              </div>
-              <div className="text-gray-400 text-xs mt-1">
-                = Thu nhập - Chi tiêu
-              </div>
+          <div className="bg-white rounded-xl p-4 shadow-lg">
+            <BarChart3 className="w-6 h-6 text-indigo-500 mx-auto mb-2" />
+            <div className="text-gray-600 text-xs mb-1 text-center">
+              Tỷ lệ tiết kiệm
             </div>
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-blue-100 rounded-2xl flex items-center justify-center">
-              <Wallet className="w-8 h-8 text-emerald-600" />
+            <div className="text-indigo-600 font-bold text-sm text-center">
+              {savingsPercentage}%
             </div>
           </div>
         </div>
+
+        {/* End of old Savings Summary - replaced by percentage card above */}
 
         {/* Charts Section */}
         <div className="bg-white rounded-2xl p-6 shadow-lg">
