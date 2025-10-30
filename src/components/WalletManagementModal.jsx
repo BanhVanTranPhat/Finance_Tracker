@@ -19,6 +19,15 @@ const walletIcons = [
   { id: "calendar", icon: Calendar, color: "bg-green-500" },
 ];
 
+const defaultNameByIcon = {
+  "money-bag": "Tiền mặt",
+  "credit-card": "Thẻ ngân hàng",
+  bank: "Ví điện tử",
+  coins: "Vàng",
+  target: "Thẻ tín dụng",
+  calendar: "Các khoản vay",
+};
+
 export default function WalletManagementModal({
   isOpen,
   onClose,
@@ -152,7 +161,16 @@ export default function WalletManagementModal({
             return (
               <button
                 key={iconData.id}
-                onClick={() => setSelectedIcon(iconData.id)}
+                onClick={() => {
+                  const prev = selectedIcon;
+                  setSelectedIcon(iconData.id);
+                  // Auto-fill name if empty or matching the previous default
+                  const currentName = walletName.trim();
+                  const prevDefault = defaultNameByIcon[prev] || "";
+                  if (currentName === "" || currentName === prevDefault) {
+                    setWalletName(defaultNameByIcon[iconData.id] || "");
+                  }
+                }}
                 className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center transition-all ${
                   isSelected
                     ? "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-200 scale-105"
@@ -180,7 +198,7 @@ export default function WalletManagementModal({
             type="text"
             value={walletName}
             onChange={(e) => setWalletName(e.target.value)}
-            placeholder="Tiền mặt"
+            placeholder={defaultNameByIcon[selectedIcon] || "Tiền mặt"}
             className="w-full px-4 py-3 sm:py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm sm:text-base"
           />
         </div>

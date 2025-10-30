@@ -12,24 +12,24 @@ Tài liệu này chứa các sơ đồ UML cho hệ thống Finance Tracker, s�
 Biểu đồ use case mô tả các chức năng chính mà người dùng có thể thực hiện với hệ thống.
 
 ```mermaid
-usecaseDiagram
-    actor User as "Người dùng"
-    rectangle "Finance Tracker" {
-        (Đăng ký/Đăng nhập)
-        (Đăng nhập Google)
-        (Quản lý ví)
-        (Quản lý danh mục)
-        (Ghi chép giao dịch)
-        (Phân bổ ngân sách)
-        (Xem phân tích)
-    }
-    User -->(Đăng ký/Đăng nhập)
-    User -->(Đăng nhập Google)
-    User -->(Quản lý ví)
-    User -->(Quản lý danh mục)
-    User -->(Ghi chép giao dịch)
-    User -->(Phân bổ ngân sách)
-    User -->(Xem phân tích)
+flowchart LR
+    User["Người dùng"]
+    subgraph FT["Finance Tracker"]
+        UC1((Đăng ký/Đăng nhập))
+        UC2((Đăng nhập Google))
+        UC3((Quản lý ví))
+        UC4((Quản lý danh mục))
+        UC5((Ghi chép giao dịch))
+        UC6((Phân bổ ngân sách))
+        UC7((Xem phân tích))
+    end
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
 ```
 
 ## 2. Activity Diagram – Thêm giao dịch và cập nhật số dư ví

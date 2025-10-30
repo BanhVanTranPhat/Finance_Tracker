@@ -10,6 +10,7 @@ import {
   TrendingDown,
   Folder,
   Edit2,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -32,6 +33,19 @@ const iconMapping = {
   calendar: Calendar,
 };
 
+// Determine wallet type for subtitle based on chosen icon
+const getWalletTypeLabel = (iconId) => {
+  const map = {
+    "money-bag": "Tiền mặt",
+    "credit-card": "Thẻ ngân hàng",
+    bank: "Ví điện tử",
+    coins: "Vàng",
+    target: "Thẻ tín dụng",
+    calendar: "Các khoản vay",
+  };
+  return map[iconId] || "Tiền mặt";
+};
+
 export default function WalletScreen() {
   const {
     wallets,
@@ -39,6 +53,7 @@ export default function WalletScreen() {
     totalIncome,
     totalExpense,
     recentTransactions,
+    deleteWallet,
   } = useFinance();
 
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -66,6 +81,18 @@ export default function WalletScreen() {
     setEditingWallet(null);
   };
 
+  const handleDeleteWallet = async (wallet) => {
+    const ok = window.confirm(
+      `Xóa ví "${wallet.name}"? Hành động này không thể hoàn tác.`
+    );
+    if (!ok) return;
+    try {
+      await deleteWallet(wallet.id);
+    } catch (e) {
+      alert("Không thể xóa ví. Vui lòng thử lại.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
@@ -75,28 +102,28 @@ export default function WalletScreen() {
 
       {/* Total Assets Card */}
       <div className="px-4 mb-6">
-        <div className="bg-gray-800 rounded-2xl p-6">
-          <div className="text-white text-sm mb-2 flex items-center">
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+          <div className="text-gray-600 text-sm mb-2 flex items-center">
             <span>Tổng tài sản</span>
           </div>
-          <div className="text-3xl font-bold text-white mb-4">
+          <div className="text-3xl font-bold text-gray-900 mb-4">
             {totalAssets.toLocaleString()}₫
           </div>
-          <div className="flex items-center justify-between text-sm text-white">
+          <div className="flex items-center justify-between text-sm text-gray-700">
             <div className="flex items-center">
-              <TrendingUp className="w-4 h-4 mr-1" />
+              <TrendingUp className="w-4 h-4 mr-1 text-emerald-600" />
               <span>Thanh toán</span>
             </div>
-            <div className="text-lg font-bold">
+            <div className="text-lg font-bold text-gray-900">
               {totalAssets.toLocaleString()}₫
             </div>
           </div>
-          <div className="flex items-center justify-between text-sm text-white mt-2">
+          <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
             <div className="flex items-center">
-              <TrendingDown className="w-4 h-4 mr-1" />
+              <TrendingDown className="w-4 h-4 mr-1 text-red-600" />
               <span>Theo dõi</span>
             </div>
-            <div className="text-lg font-bold">0₫</div>
+            <div className="text-lg font-bold text-gray-900">0₫</div>
           </div>
         </div>
       </div>
@@ -184,7 +211,7 @@ export default function WalletScreen() {
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">Tiền mặt</div>
+                      <div className="text-sm text-gray-500">{getWalletTypeLabel(wallet.icon)}</div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div
@@ -201,6 +228,14 @@ export default function WalletScreen() {
                         title="Chỉnh sửa ví"
                       >
                         <Edit2 className="w-5 h-5 text-gray-400" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteWallet(wallet)}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                        aria-label="Xóa ví"
+                        title="Xóa ví"
+                      >
+                        <Trash2 className="w-5 h-5 text-red-500" />
                       </button>
                     </div>
                   </div>

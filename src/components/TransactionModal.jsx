@@ -44,6 +44,8 @@ export default function TransactionModal({
   const [showWalletSelector, setShowWalletSelector] = useState(false);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [repeatFrequency, setRepeatFrequency] = useState("none"); // none|daily|weekly|monthly
+  const [saveAsRecurring, setSaveAsRecurring] = useState(false);
 
   // Filter categories based on transaction type
   const filteredCategories = categories.filter((category) => {
@@ -147,7 +149,31 @@ export default function TransactionModal({
     } else {
       onSave(transactionData);
     }
+
+    // Save recurring rule locally if chosen
+    if (saveAsRecurring && repeatFrequency !== "none") {
+      const rules = JSON.parse(localStorage.getItem("recurring_transactions") || "[]");
+      const nextDate = computeNextDate(new Date(date), repeatFrequency);
+      rules.push({
+        type,
+        amount: parseFloat(amount),
+        wallet: selectedWallet,
+        category: selectedCategory,
+        description: description.trim() || undefined,
+        frequency: repeatFrequency,
+        nextDate: nextDate.toISOString(),
+      });
+      localStorage.setItem("recurring_transactions", JSON.stringify(rules));
+    }
     onClose();
+  };
+
+  const computeNextDate = (d, freq) => {
+    const nd = new Date(d.getTime());
+    if (freq === "daily") nd.setDate(nd.getDate() + 1);
+    else if (freq === "weekly") nd.setDate(nd.getDate() + 7);
+    else if (freq === "monthly") nd.setMonth(nd.getMonth() + 1);
+    return nd;
   };
 
   const handleDelete = () => {
@@ -521,6 +547,31 @@ export default function TransactionModal({
             </span>
           </button>
         </div>
+      </div>
+
+      {/* Recurring Options */}
+      <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-gray-700 text-sm sm:text-base font-medium">Lặp lại</span>
+          <select
+            value={repeatFrequency}
+            onChange={(e) => setRepeatFrequency(e.target.value)}
+            className="text-sm sm:text-base text-gray-800 bg-transparent focus:outline-none"
+          >
+            <option value="none">Không</option>
+            <option value="daily">Hàng ngày</option>
+            <option value="weekly">Hàng tuần</option>
+            <option value="monthly">Hàng tháng</option>
+          </select>
+        </div>
+        <label className="flex items-center space-x-2 text-sm text-gray-600">
+          <input
+            type="checkbox"
+            checked={saveAsRecurring}
+            onChange={(e) => setSaveAsRecurring(e.target.checked)}
+          />
+          <span>Lưu thành giao dịch lặp lại</span>
+        </label>
       </div>
     </div>
   );

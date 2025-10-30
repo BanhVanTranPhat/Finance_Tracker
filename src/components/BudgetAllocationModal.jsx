@@ -13,12 +13,24 @@ export default function BudgetAllocationModal({
   const { formatCurrency } = useCurrency();
   const [allocations, setAllocations] = useState({});
   const [totalAllocated, setTotalAllocated] = useState(0);
+  const [displayValues, setDisplayValues] = useState({});
+
+  // Helper to format number with thousand separators using dots
+  const formatNumber = (value) => {
+    const digitsOnly = String(value).replace(/\D/g, "");
+    return digitsOnly.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
 
   useEffect(() => {
     if (isOpen) {
       // Initialize with current allocations
       setAllocations(currentAllocations);
       calculateTotal(currentAllocations);
+      // Prepare display values
+      const initialDisplay = Object.fromEntries(
+        Object.entries(currentAllocations).map(([k, v]) => [k, formatNumber(v || 0)])
+      );
+      setDisplayValues(initialDisplay);
     }
   }, [isOpen, currentAllocations]);
 
@@ -31,12 +43,15 @@ export default function BudgetAllocationModal({
   };
 
   const handleAllocationChange = (categoryId, value) => {
-    const numValue = Number(value) || 0;
+    const raw = String(value);
+    const numericStr = raw.replace(/\./g, "").replace(/\D/g, "");
+    const numValue = Number(numericStr) || 0;
     const newAllocations = {
       ...allocations,
       [categoryId]: numValue,
     };
     setAllocations(newAllocations);
+    setDisplayValues((prev) => ({ ...prev, [categoryId]: formatNumber(numericStr) }));
     calculateTotal(newAllocations);
   };
 
@@ -150,17 +165,20 @@ export default function BudgetAllocationModal({
                         </button>
 
                         <div className="flex-1">
-                          <input
-                            type="number"
-                            value={allocated || ""}
-                            onChange={(e) =>
-                              handleAllocationChange(categoryId, e.target.value)
-                            }
-                            placeholder="0"
-                            className="w-full px-4 py-3 border-2 border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-center font-semibold text-lg"
-                          />
-                          <div className="text-xs text-center text-gray-500 mt-0">
-                            đ
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={displayValues[categoryId] ?? ""}
+                              onChange={(e) =>
+                                handleAllocationChange(categoryId, e.target.value)
+                              }
+                              inputMode="numeric"
+                              placeholder="0"
+                              className="w-full pr-8 pl-4 py-3 border-2 border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-center font-semibold text-lg"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                              đ
+                            </span>
                           </div>
                         </div>
 

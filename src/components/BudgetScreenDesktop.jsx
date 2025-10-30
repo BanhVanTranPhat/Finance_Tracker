@@ -253,6 +253,18 @@ export default function BudgetScreenDesktop() {
             </div>
           </div>
         </div>
+
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm opacity-90">Tỷ lệ tiết kiệm</div>
+              <div className="text-3xl font-bold">{budgetSummary.savingsPercentage}%</div>
+            </div>
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Charts Section */}

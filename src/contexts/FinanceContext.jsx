@@ -122,6 +122,52 @@ export const FinanceProvider = ({ children }) => {
     loadData();
   }, []);
 
+  // Process recurring transactions saved in localStorage
+  useEffect(() => {
+    const processRecurring = async () => {
+      try {
+        const rules = JSON.parse(
+          localStorage.getItem("recurring_transactions") || "[]"
+        );
+        if (!Array.isArray(rules) || rules.length === 0) return;
+        const now = new Date();
+        let changed = false;
+        const updated = [];
+        for (const rule of rules) {
+          let nextDate = new Date(rule.nextDate);
+          while (!isNaN(nextDate) && nextDate <= now) {
+            await addTransaction({
+              type: rule.type,
+              amount: rule.amount,
+              date: nextDate.toISOString(),
+              category: rule.category,
+              wallet: rule.wallet,
+              description: rule.description,
+            });
+            changed = true;
+            // advance
+            const nd = new Date(nextDate.getTime());
+            if (rule.frequency === "daily") nd.setDate(nd.getDate() + 1);
+            else if (rule.frequency === "weekly") nd.setDate(nd.getDate() + 7);
+            else if (rule.frequency === "monthly") nd.setMonth(nd.getMonth() + 1);
+            nextDate = nd;
+          }
+          updated.push({ ...rule, nextDate: nextDate.toISOString() });
+        }
+        if (changed || updated.length === rules.length) {
+          localStorage.setItem(
+            "recurring_transactions",
+            JSON.stringify(updated)
+          );
+        }
+      } catch (e) {
+        console.error("Recurring processing error", e);
+      }
+    };
+
+    processRecurring();
+  }, []);
+
   // Load budget summary when selectedDate changes
   useEffect(() => {
     const loadBudgetSummary = async () => {
@@ -250,6 +296,10 @@ export const FinanceProvider = ({ children }) => {
       // Reload wallets to get updated balance
       const updatedWallets = await walletAPI.getWallets();
       setWallets(updatedWallets || []);
+
+      // Reload categories to refresh monthly "spent" amounts
+      const updatedCategories = await categoryAPI.getCategories();
+      setCategories(updatedCategories || []);
     } catch (error) {
       console.error("Error creating transaction:", error);
       throw error;
@@ -278,6 +328,10 @@ export const FinanceProvider = ({ children }) => {
       // Reload wallets to get updated balance
       const updatedWallets = await walletAPI.getWallets();
       setWallets(updatedWallets || []);
+
+      // Reload categories to refresh monthly "spent" amounts
+      const updatedCategories = await categoryAPI.getCategories();
+      setCategories(updatedCategories || []);
     } catch (error) {
       console.error("Error updating transaction:", error);
       throw error;
@@ -294,6 +348,10 @@ export const FinanceProvider = ({ children }) => {
       // Reload wallets to get updated balance
       const updatedWallets = await walletAPI.getWallets();
       setWallets(updatedWallets || []);
+
+      // Reload categories to refresh monthly "spent" amounts
+      const updatedCategories = await categoryAPI.getCategories();
+      setCategories(updatedCategories || []);
     } catch (error) {
       console.error("Error deleting transaction:", error);
       throw error;
