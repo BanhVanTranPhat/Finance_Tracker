@@ -241,7 +241,7 @@ export default function ResponsiveLayout({
 
   // Desktop layout
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#F8F9FA] flex">
       {/* Sidebar */}
       <DesktopSidebar
         activeTab={activeTab}
@@ -253,8 +253,8 @@ export default function ResponsiveLayout({
       <div className="flex-1 flex flex-col">
         {/* Top Bar - Hidden for cleaner desktop layout */}
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Content Area - let the whole page scroll to avoid static sidebar feel */}
+        <div className="flex-1">
           <div className="p-6">{renderContent()}</div>
         </div>
       </div>

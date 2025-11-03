@@ -3,49 +3,52 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+// Load and validate configuration
+const config = require("./config");
+const { apiLimiter } = require("./middleware/rateLimiter");
+const logger = require("./utils/logger");
+
 // Finance Tracker Backend Server
 const app = express();
 
 // Middleware
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:4173",
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:4173",
-      "http://127.0.0.1:5173",
-      "http://127.0.0.1:5174",
-      "http://127.0.0.1:5175",
-    ],
+    origin: config.corsOrigins,
     credentials: true,
   })
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// MongoDB Connection
-const mongoURI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/finance-tracker";
+// Request logging middleware (only log errors/warnings in development to reduce noise)
+app.use((req, res, next) => {
+  // Skip logging for health check in all environments
+  if (req.path === "/api/health") {
+    return next();
+  }
 
+  const startTime = Date.now();
+
+  // Log when response finishes
+  res.on("finish", () => {
+    const responseTime = Date.now() - startTime;
+    logger.logRequest(req, res, responseTime);
+  });
+
+  next();
+});
+
+// MongoDB Connection
 mongoose
-  .connect(mongoURI)
-  .then(() => console.log("✅ MongoDB connected successfully"))
+  .connect(config.mongoURI)
+  .then(() => logger.info("✅ MongoDB connected successfully"))
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
+    logger.error("❌ MongoDB connection error", { error: err.message, stack: err.stack });
     process.exit(1);
   });
 
-// Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/transactions", require("./routes/transactions"));
-app.use("/api/categories", require("./routes/categories"));
-app.use("/api/wallets", require("./routes/wallets"));
-
-// Health check endpoint
+// Health check endpoint (no rate limiting - must be before rate limiter)
 app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
@@ -54,20 +57,46 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Apply rate limiting to all API routes (except health check which is above)
+app.use("/api", apiLimiter);
+
+// Routes
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/transactions", require("./routes/transactions"));
+app.use("/api/categories", require("./routes/categories"));
+app.use("/api/wallets", require("./routes/wallets"));
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error("Error:", err);
-  res.status(500).json({ message: "Lỗi server nội bộ" });
+  logger.logError(err, {
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    body: req.body,
+  });
+
+  // Don't expose error details in production
+  const isDevelopment = process.env.NODE_ENV !== "production";
+  const errorMessage = isDevelopment
+    ? err.message || "Lỗi server nội bộ"
+    : "Lỗi server nội bộ";
+
+  res.status(err.statusCode || 500).json({
+    message: errorMessage,
+    ...(isDevelopment && { stack: err.stack }),
+  });
 });
 
 // 404 handler
 app.use((req, res) => {
+  logger.warn(`404 - Endpoint not found: ${req.method} ${req.url}`, {
+    ip: req.ip,
+  });
   res.status(404).json({ message: "API endpoint không tồn tại" });
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+app.listen(config.port, () => {
+  logger.info(`🚀 Server running on port ${config.port}`);
+  logger.info(`📊 Health check: http://localhost:${config.port}/api/health`);
+  logger.info(`🌍 Environment: ${config.nodeEnv}`);
 });

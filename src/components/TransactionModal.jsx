@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { translateCategoryName } from "../utils/translateCategoryName.js";
 import {
   X,
   ArrowUp,
@@ -24,6 +26,7 @@ export default function TransactionModal({
   editTransaction,
   mode = "add",
 }) {
+  const { t } = useLanguage();
   let wallets = [];
   let categories = [];
   try {
@@ -44,7 +47,7 @@ export default function TransactionModal({
   const [showWalletSelector, setShowWalletSelector] = useState(false);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [repeatFrequency, setRepeatFrequency] = useState("none"); // none|daily|weekly|monthly
+  const [repeatFrequency, setRepeatFrequency] = useState("none"); // none|daily|weekly|monthly|yearly
   const [saveAsRecurring, setSaveAsRecurring] = useState(false);
 
   // Filter categories based on transaction type
@@ -67,7 +70,7 @@ export default function TransactionModal({
         setSelectedCategory(filteredCategories[0].name);
       }
     } else {
-      setSelectedCategory("Chọn danh mục");
+      setSelectedCategory(t("selectCategory"));
     }
   }, [type, filteredCategories, selectedCategory]);
 
@@ -84,7 +87,7 @@ export default function TransactionModal({
       // Reset form for add mode
       setType(initialType);
       setAmount("0");
-      setSelectedWallet(wallets.length > 0 ? wallets[0].name : "Chọn ví");
+      setSelectedWallet(wallets.length > 0 ? wallets[0].name : t("selectWallet"));
       // Set default category based on type
       const defaultCategories = categories.filter((cat) =>
         initialType === "income"
@@ -94,7 +97,7 @@ export default function TransactionModal({
       setSelectedCategory(
         defaultCategories.length > 0
           ? defaultCategories[0].name
-          : "Chọn danh mục"
+          : t("selectCategory")
       );
       setDate(new Date().toISOString().split("T")[0]);
       setDescription("");
@@ -173,6 +176,7 @@ export default function TransactionModal({
     if (freq === "daily") nd.setDate(nd.getDate() + 1);
     else if (freq === "weekly") nd.setDate(nd.getDate() + 7);
     else if (freq === "monthly") nd.setMonth(nd.getMonth() + 1);
+    else if (freq === "yearly") nd.setFullYear(nd.getFullYear() + 1);
     return nd;
   };
 
@@ -197,16 +201,16 @@ export default function TransactionModal({
                 <Wallet className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-600" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-                Đang tải dữ liệu...
+                {t("loadingData")}
               </h3>
               <p className="text-gray-600 mb-4 text-sm sm:text-base">
-                Vui lòng tạo ví và danh mục trước khi thêm giao dịch
+                {t("pleaseCreateWalletAndCategory")}
               </p>
               <button
                 onClick={onClose}
                 className="px-6 py-2.5 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors font-medium"
               >
-                Đóng
+                {t("close")}
               </button>
             </div>
           </div>
@@ -228,8 +232,8 @@ export default function TransactionModal({
               <button
                 onClick={handleDelete}
                 className="w-9 h-9 sm:w-10 sm:h-10 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-colors"
-                aria-label="Xóa giao dịch"
-                title="Xóa giao dịch"
+                aria-label={t("deleteTransaction")}
+                title={t("deleteTransaction")}
               >
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
               </button>
@@ -237,8 +241,8 @@ export default function TransactionModal({
             <button
               onClick={onClose}
               className="w-9 h-9 sm:w-10 sm:h-10 bg-yellow-100 hover:bg-yellow-200 rounded-full flex items-center justify-center transition-colors"
-              aria-label="Đóng modal"
-              title="Đóng modal"
+              aria-label={t("close")}
+              title={t("close")}
             >
               <X className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-800" />
             </button>
@@ -291,7 +295,7 @@ export default function TransactionModal({
                   }
                 }}
                 className="w-full text-3xl sm:text-4xl font-bold text-emerald-800 text-center bg-transparent border-b-2 border-emerald-200 focus:border-emerald-500 outline-none transition-colors px-4 py-2"
-                placeholder="Nhập số tiền"
+                placeholder={t("enterAmount")}
                 autoFocus
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl font-bold text-emerald-600">
@@ -299,7 +303,7 @@ export default function TransactionModal({
               </div>
             </div>
             <div className="text-xs sm:text-sm text-gray-500 font-medium mt-3">
-              {type === "income" ? "Thu nhập" : "Chi tiêu"}
+              {type === "income" ? t("income") : t("expense")}
             </div>
           </div>
 
@@ -309,7 +313,7 @@ export default function TransactionModal({
               {parseFloat(amount).toLocaleString()}₫
             </div>
             <div className="text-xs sm:text-sm text-gray-500 font-medium">
-              {type === "income" ? "Thu nhập" : "Chi tiêu"}
+              {type === "income" ? t("income") : t("expense")}
             </div>
           </div>
         </div>
@@ -325,7 +329,7 @@ export default function TransactionModal({
               <div className="flex items-center space-x-2.5 sm:space-x-3">
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                 <span className="text-gray-700 text-sm sm:text-base font-medium">
-                  {selectedWallet || "Chọn ví"}
+                  {selectedWallet || t("selectWallet")}
                 </span>
               </div>
               <ChevronDown
@@ -373,7 +377,7 @@ export default function TransactionModal({
               <div className="flex items-center space-x-2.5 sm:space-x-3">
                 <Folder className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                 <span className="text-gray-700 text-sm sm:text-base font-medium">
-                  {selectedCategory || "Chọn danh mục"}
+                  {selectedCategory || t("selectCategory")}
                 </span>
               </div>
               <ChevronDown
@@ -386,8 +390,7 @@ export default function TransactionModal({
               <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
                 {filteredCategories.length === 0 ? (
                   <div className="text-center py-4 text-gray-500">
-                    Chưa có danh mục{" "}
-                    {type === "income" ? "thu nhập" : "chi tiêu"}
+                    {t("noCategoriesCreated")} {type === "income" ? t("income").toLowerCase() : t("expense").toLowerCase()}
                   </div>
                 ) : (
                   filteredCategories.map((category) => (
@@ -405,7 +408,7 @@ export default function TransactionModal({
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span>{category.name}</span>
+                        <span>{translateCategoryName(category.name, language)}</span>
                         <span className="text-sm text-gray-500">
                           {category.group}
                         </span>
@@ -457,36 +460,36 @@ export default function TransactionModal({
             <div className="flex items-center space-x-2.5 sm:space-x-3 mb-3">
               <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
               <span className="text-gray-700 text-sm sm:text-base font-medium">
-                Ghi chú
+                {t("note")}
               </span>
             </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Thêm ghi chú cho giao dịch..."
+              placeholder={t("addNoteForTransaction")}
               className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all text-sm sm:text-base"
               rows={3}
-              aria-label="Ghi chú giao dịch"
-              title="Ghi chú giao dịch"
+              aria-label={t("note")}
+              title={t("note")}
             />
           </div>
         </div>
 
         {/* Number Pad - Mobile only */}
-        <div className="grid grid-cols-4 gap-2 mb-3 sm:hidden">
+        <div className="grid grid-cols-4 gap-3 mb-3 sm:hidden">
           {/* Row 1 */}
           {["1", "2", "3"].map((num) => (
             <button
               key={num}
               onClick={() => handleNumberPress(num)}
-              className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+              className="bg-white rounded-xl p-3.5 text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm h-14"
             >
               {num}
             </button>
           ))}
           <button
             onClick={handleBackspace}
-            className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm"
+            className="bg-white rounded-xl p-3.5 text-base font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm h-14"
           >
             ⌫
           </button>
@@ -496,16 +499,16 @@ export default function TransactionModal({
             <button
               key={num}
               onClick={() => handleNumberPress(num)}
-              className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+              className="bg-white rounded-xl p-3.5 text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm h-14"
             >
               {num}
             </button>
           ))}
           <button
             onClick={handleClear}
-            className="bg-white rounded-xl p-2.5 text-[11px] font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm leading-tight"
+            className="bg-white rounded-xl p-3.5 text-sm font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm leading-tight h-14"
           >
-            Xóa hết
+            {t("clearAll")}
           </button>
 
           {/* Row 3 */}
@@ -513,14 +516,14 @@ export default function TransactionModal({
             <button
               key={num}
               onClick={() => handleNumberPress(num)}
-              className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+              className="bg-white rounded-xl p-3.5 text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm h-14"
             >
               {num}
             </button>
           ))}
           <button
             onClick={() => handleNumberPress("0")}
-            className="bg-white rounded-xl p-2.5 text-xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+            className="bg-white rounded-xl p-3.5 text-2xl font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm h-14"
           >
             0
           </button>
@@ -531,7 +534,7 @@ export default function TransactionModal({
             className="col-span-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-3.5 text-white font-bold hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
           >
             <Check className="w-5 h-5" />
-            <span>{mode === "edit" ? "Cập nhật" : "Lưu"}</span>
+            <span>{mode === "edit" ? t("update") : t("save")}</span>
           </button>
         </div>
 
@@ -543,36 +546,13 @@ export default function TransactionModal({
           >
             <Check className="w-5 h-5" />
             <span>
-              {mode === "edit" ? "Cập nhật giao dịch" : "Lưu giao dịch"}
+              {mode === "edit" ? t("updateTransaction") : t("saveTransaction")}
             </span>
           </button>
         </div>
       </div>
 
-      {/* Recurring Options */}
-      <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-700 text-sm sm:text-base font-medium">Lặp lại</span>
-          <select
-            value={repeatFrequency}
-            onChange={(e) => setRepeatFrequency(e.target.value)}
-            className="text-sm sm:text-base text-gray-800 bg-transparent focus:outline-none"
-          >
-            <option value="none">Không</option>
-            <option value="daily">Hàng ngày</option>
-            <option value="weekly">Hàng tuần</option>
-            <option value="monthly">Hàng tháng</option>
-          </select>
-        </div>
-        <label className="flex items-center space-x-2 text-sm text-gray-600">
-          <input
-            type="checkbox"
-            checked={saveAsRecurring}
-            onChange={(e) => setSaveAsRecurring(e.target.checked)}
-          />
-          <span>Lưu thành giao dịch lặp lại</span>
-        </label>
-      </div>
+      {/* Recurring UI has been moved to AddTransactionSheet for a cleaner mobile UX */}
     </div>
   );
 }

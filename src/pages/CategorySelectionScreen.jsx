@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useCategory } from "../contexts/CategoryContext.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 import {
-  categoryTemplates,
-  defaultIncomeCategories,
-} from "../data/categoryTemplates.js";
+  getLocalizedCategoryTemplates,
+  getLocalizedIncomeCategories,
+} from "../utils/getLocalizedCategoryTemplates.js";
 
 export default function CategorySelectionScreen({ onBack, onNext }) {
   const {
@@ -18,21 +19,34 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
     getSelectedCategoriesByGroup,
   } = useCategory();
   const { initializeCategories } = useFinance();
+  const { t, language } = useLanguage();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const [localTemplate, setLocalTemplate] = useState(
-    selectedTemplate || categoryTemplates[0]
+  const localizedTemplates = useMemo(
+    () => getLocalizedCategoryTemplates(t),
+    [t]
   );
 
-  // Debug logging
-  console.log("🔍 CategorySelectionScreen render:", {
-    selectedTemplate,
-    selectedCategories,
-    localTemplate,
-    categoryTemplates: categoryTemplates.length,
-  });
+  const [localTemplate, setLocalTemplate] = useState(null);
+
+  // Update localTemplate when templates are localized or selectedTemplate changes
+  useEffect(() => {
+    if (selectedTemplate) {
+      // Find matching template in localized templates
+      const matched = localizedTemplates.find(
+        (t) => t.id === selectedTemplate.id
+      );
+      if (matched) {
+        setLocalTemplate(matched);
+      }
+    } else if (localizedTemplates.length > 0) {
+      setLocalTemplate(localizedTemplates[0]);
+    }
+  }, [selectedTemplate, localizedTemplates]);
 
   const handleTemplateSelect = (template) => {
     setLocalTemplate(template);
+    // Store original template reference (will use for CategoryContext)
     setSelectedTemplate(template);
   };
 
@@ -64,41 +78,69 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
   };
 
   const handleNext = async () => {
-    // Chuyển đổi selectedCategories (chi tiêu) thành format cho FinanceContext
-    const expenseCategories = selectedCategories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      type: "expense",
-      group:
-        selectedTemplate?.groups.find((g) =>
+    // Prevent multiple clicks
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      
+      // Chuyển đổi selectedCategories (chi tiêu) thành format cho FinanceContext
+      const expenseCategories = selectedCategories.map((category) => {
+        const group = localTemplate?.groups.find((g) =>
           g.categories.some((c) => c.id === category.id)
-        )?.name || "Khác",
-      isDefault: false,
-    }));
+        );
+        const categoryInGroup = group?.categories.find((c) => c.id === category.id);
+        const icon = categoryInGroup?.icon || "folder";
+        // Ensure icon is a string, not emoji
+        const cleanIcon = typeof icon === "string" && icon.length > 0 ? icon : "folder";
+        // Don't send 'id' field to API - let MongoDB create it
+        return {
+          name: category.name.trim(),
+          type: "expense",
+          group: (group?.name || t("other")).trim(),
+          icon: cleanIcon,
+          isDefault: false,
+        };
+      });
 
-    // Thêm danh mục thu nhập mặc định
-    const incomeCategories = defaultIncomeCategories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      type: "income",
-      group: "Thu nhập",
-      isDefault: true,
-    }));
+      // Thêm danh mục thu nhập mặc định (localized)
+      const localizedIncomeCategories = getLocalizedIncomeCategories(t);
+      const incomeCategories = localizedIncomeCategories.map((category) => {
+        // Ensure icon is a string, not emoji
+        const cleanIcon = typeof category.icon === "string" && category.icon.length > 0 
+          ? category.icon 
+          : "dollar-sign";
+        // Don't send 'id' field to API - let MongoDB create it
+        return {
+          name: category.name.trim(),
+          type: "income",
+          group: t("groupIncome").trim(),
+          icon: cleanIcon,
+          isDefault: true,
+        };
+      });
 
-    // Kết hợp cả thu nhập và chi tiêu
-    const allCategories = [...incomeCategories, ...expenseCategories];
+      // Kết hợp cả thu nhập và chi tiêu
+      const allCategories = [...incomeCategories, ...expenseCategories];
 
-    console.log("📝 Initializing categories:", {
-      income: incomeCategories.length,
-      expense: expenseCategories.length,
-      total: allCategories.length,
-    });
+      console.log("📝 Initializing categories:", {
+        income: incomeCategories.length,
+        expense: expenseCategories.length,
+        total: allCategories.length,
+      });
 
-    // Khởi tạo danh mục trong FinanceContext
-    await initializeCategories(allCategories);
+      // Khởi tạo danh mục trong FinanceContext
+      await initializeCategories(allCategories);
 
-    // Chuyển sang bước tiếp theo
-    onNext();
+      // Chuyển sang bước tiếp theo
+      onNext();
+    } catch (error) {
+      console.error("Error initializing categories:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || t("initializeCategoriesError");
+      alert(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -109,30 +151,30 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
           <button
             onClick={onBack}
             className="p-2 hover:bg-emerald-100 rounded-full transition-colors"
-            aria-label="Quay lại"
-            title="Quay lại"
+            aria-label={t("goBack")}
+            title={t("goBack")}
           >
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900">
-              Chọn danh mục chi tiêu
+              {t("selectExpenseCategories")}
             </h1>
             <p className="text-sm text-gray-600">
-              {getTotalSelectedCount()} danh mục đã chọn
+              {getTotalSelectedCount()} {t("categoriesSelected")}
             </p>
           </div>
           <div className="w-10"></div>
         </div>
         <div className="text-center mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-2">
-            Chọn danh mục chi tiêu của bạn
+            {t("selectYourExpenseCategories")}
           </h2>
           <p className="text-sm text-gray-600">
-            Danh mục thu nhập (Lương, Thưởng, Đầu tư...) sẽ được tạo tự động.
+            {t("incomeCategoriesAutoCreated")}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Bạn có thể chỉnh sửa bất kì lúc nào sau này.
+            {t("canEditLater")}
           </p>
         </div>
       </div>
@@ -140,12 +182,12 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
       {/* Template Selection */}
       <div className="px-4 mb-6">
         <div className="flex space-x-3">
-          {categoryTemplates.map((template) => (
+          {localizedTemplates.map((template) => (
             <button
               key={template.id}
               onClick={() => handleTemplateSelect(template)}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all ${
-                localTemplate.id === template.id
+                className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all ${
+                localTemplate?.id === template.id
                   ? "border-emerald-500 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
                   : "border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:shadow-md"
               }`}
@@ -160,7 +202,7 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
       {/* Category Groups */}
       <div className="px-4 mb-6">
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          {localTemplate.groups.map((group) => {
+          {localTemplate?.groups?.map((group) => {
             const selectedCount = getSelectedCountForGroup(group.id);
             const totalCount = group.categories.length;
             const allSelected = selectedCount === totalCount;
@@ -194,7 +236,7 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
-                        Tất cả
+                        {t("selectAll")}
                       </button>
                       <button
                         onClick={() => handleDeselectAll(group.id)}
@@ -204,7 +246,7 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
                             : "bg-red-100 text-red-600 hover:bg-red-200"
                         }`}
                       >
-                        Bỏ chọn
+                        {t("deselectAll")}
                       </button>
                     </div>
                   </div>
@@ -247,14 +289,26 @@ export default function CategorySelectionScreen({ onBack, onNext }) {
       <div className="px-4 pb-6 space-y-3">
         <button
           onClick={handleNext}
-          className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl"
+          disabled={isProcessing}
+          className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl ${
+            isProcessing ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          <span>TIẾP TỤC</span>
-          <ArrowRight className="w-5 h-5" />
+          {isProcessing ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <span>{t("loading") || "Loading..."}</span>
+            </>
+          ) : (
+            <>
+              <span>{t("continueButton")}</span>
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </button>
         {getTotalSelectedCount() === 0 && (
           <p className="text-center text-sm text-gray-500">
-            Bạn có thể bỏ qua bước này và tạo danh mục sau trong ứng dụng
+            {t("skipStepHint")}
           </p>
         )}
       </div>

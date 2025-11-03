@@ -2,6 +2,8 @@ const express = require("express");
 const Transaction = require("../models/Transaction");
 const Wallet = require("../models/Wallet");
 const auth = require("../middleware/auth");
+const { validateTransaction } = require("../middleware/validation");
+const logger = require("../utils/logger");
 
 const router = express.Router();
 
@@ -75,7 +77,7 @@ router.get("/", auth, async (req, res) => {
       sortOrder: sortDir === 1 ? "asc" : "desc",
     });
   } catch (error) {
-    console.error("Get transactions error:", error);
+    logger.logError(error, { action: "getTransactions", userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -94,13 +96,13 @@ router.get("/:id", auth, async (req, res) => {
 
     res.json({ transaction });
   } catch (error) {
-    console.error("Get transaction error:", error);
+    logger.logError(error, { action: "getTransaction", transactionId: req.params.id, userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
 
 // Create new transaction
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, validateTransaction, async (req, res) => {
   try {
     const { type, amount, currency, date, category, wallet, note } = req.body;
 
@@ -162,7 +164,7 @@ router.post("/", auth, async (req, res) => {
       transaction,
     });
   } catch (error) {
-    console.error("Create transaction error:", error);
+    logger.logError(error, { action: "createTransaction", userId: req.user?.id });
     if (error.name === "ValidationError") {
       return res.status(400).json({
         message: "Dữ liệu không hợp lệ",
@@ -239,7 +241,7 @@ router.put("/:id", auth, async (req, res) => {
       transaction,
     });
   } catch (error) {
-    console.error("Update transaction error:", error);
+    logger.logError(error, { action: "updateTransaction", transactionId: req.params.id, userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -253,7 +255,7 @@ router.delete("/all", auth, async (req, res) => {
       deletedCount: result.deletedCount,
     });
   } catch (error) {
-    console.error("Error deleting all transactions:", error);
+    logger.logError(error, { action: "deleteAllTransactions", userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -289,7 +291,7 @@ router.delete("/:id", auth, async (req, res) => {
 
     res.json({ message: "Xóa giao dịch thành công" });
   } catch (error) {
-    console.error("Delete transaction error:", error);
+    logger.logError(error, { action: "deleteTransaction", transactionId: req.params.id, userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -336,7 +338,7 @@ router.get("/stats/summary", auth, async (req, res) => {
       expenseCount: expense.count,
     });
   } catch (error) {
-    console.error("Get stats error:", error);
+    logger.logError(error, { action: "getStats", userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });

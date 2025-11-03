@@ -6,6 +6,7 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
   Edit,
+  Settings,
 } from "lucide-react";
 import {
   PieChart,
@@ -29,7 +30,10 @@ import DatePicker from "./DatePicker.jsx";
 import BudgetAllocationModal from "./BudgetAllocationModal.jsx";
 import EditCategoryBudgetModal from "./EditCategoryBudgetModal.jsx";
 import BudgetCategoryList from "./BudgetCategoryList.jsx";
+import CategoryGroupManager from "./CategoryGroupManager.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 
 const COLORS = [
   "#10b981",
@@ -43,9 +47,12 @@ const COLORS = [
 ];
 
 export default function BudgetScreenDesktop() {
+  const { t, language } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [showBudgetAllocation, setShowBudgetAllocation] = useState(false);
   const [showEditBudget, setShowEditBudget] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   let budgetSummary = {
     totalIncome: 0,
@@ -112,10 +119,13 @@ export default function BudgetScreenDesktop() {
         currentDate.getMonth() - i,
         1
       );
-      const monthName = date.toLocaleDateString("vi-VN", {
-        month: "short",
-        year: "numeric",
-      });
+      const monthName = date.toLocaleDateString(
+        language === "vi" ? "vi-VN" : "en-US",
+        {
+          month: "short",
+          year: "numeric",
+        }
+      );
 
       const monthTransactions = transactions.filter((t) => {
         const tDate = new Date(t.date);
@@ -135,13 +145,13 @@ export default function BudgetScreenDesktop() {
 
       monthsData.push({
         month: monthName,
-        "Thu nhập": income,
-        "Chi tiêu": expense,
+        [t("income")]: income,
+        [t("expense")]: expense,
       });
     }
 
     return monthsData;
-  }, [transactions, selectedDate]);
+  }, [transactions, selectedDate, t, language]);
 
   const handleSaveBudgetAllocation = async (allocations) => {
     try {
@@ -182,10 +192,10 @@ export default function BudgetScreenDesktop() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
-              Quản lý chi tiêu cá nhân
+              {t("personalSpendingManagement")}
             </h1>
             <p className="text-gray-600 mt-1">
-              Theo dõi và phân tích thu chi hàng tháng
+              {t("trackAndAnalyzeMonthly")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -204,65 +214,37 @@ export default function BudgetScreenDesktop() {
         </div>
       </div>
 
-      {/* Financial Overview */}
+      {/* Financial Overview - white cards with colored accents */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm opacity-90">Thu nhập</div>
-              <div className="text-3xl font-bold">
-                {totalIncome.toLocaleString()}₫
-              </div>
-            </div>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6" />
-            </div>
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="text-sm text-[#6B7785]">{t("income")}</div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="text-3xl font-bold text-[#1B2733]">{formatCurrency(totalIncome)}</div>
+            <TrendingUp className="w-6 h-6 text-[#1ABC9C]" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm opacity-90">Chi tiêu</div>
-              <div className="text-3xl font-bold">
-                {totalSpent.toLocaleString()}₫
-              </div>
-            </div>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <TrendingDown className="w-6 h-6" />
-            </div>
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="text-sm text-[#6B7785]">{t("expense")}</div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="text-3xl font-bold text-[#1B2733]">{formatCurrency(totalSpent)}</div>
+            <TrendingDown className="w-6 h-6 text-[#F2745A]" />
           </div>
         </div>
 
-        <div
-          className={`bg-gradient-to-br ${
-            totalSavings >= 0
-              ? "from-blue-500 to-blue-600"
-              : "from-orange-500 to-orange-600"
-          } rounded-xl p-6 text-white shadow-lg`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm opacity-90">Tiết kiệm</div>
-              <div className="text-3xl font-bold">
-                {totalSavings.toLocaleString()}₫
-              </div>
-            </div>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <Wallet className="w-6 h-6" />
-            </div>
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="text-sm text-[#6B7785]">{t("savings")}</div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="text-3xl font-bold text-[#1B2733]">{formatCurrency(totalSavings)}</div>
+            <Wallet className="w-6 h-6 text-[#5DADE2]" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm opacity-90">Tỷ lệ tiết kiệm</div>
-              <div className="text-3xl font-bold">{budgetSummary.savingsPercentage}%</div>
-            </div>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <BarChart3 className="w-6 h-6" />
-            </div>
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="text-sm text-[#6B7785]">{t("savingsRate")}</div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="text-3xl font-bold text-[#1B2733]">{budgetSummary.savingsPercentage}%</div>
+            <BarChart3 className="w-6 h-6 text-[#5DADE2]" />
           </div>
         </div>
       </div>
@@ -273,7 +255,7 @@ export default function BudgetScreenDesktop() {
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <PieChartIcon className="w-5 h-5 mr-2 text-emerald-600" />
-            Chi tiêu theo danh mục
+            {t("expensesByCategory")}
           </h3>
           {expensesByCategoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -294,13 +276,13 @@ export default function BudgetScreenDesktop() {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `${value.toLocaleString()}₫`} />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-[300px] flex items-center justify-center text-gray-400">
-              Chưa có dữ liệu chi tiêu
+              {t("noExpenseData")}
             </div>
           )}
         </div>
@@ -309,7 +291,7 @@ export default function BudgetScreenDesktop() {
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <BarChart3 className="w-5 h-5 mr-2 text-emerald-600" />
-            Thu chi 6 tháng gần đây
+            {t("incomeAndExpensesLast6Months")}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={incomeVsExpensesData}>
@@ -317,11 +299,11 @@ export default function BudgetScreenDesktop() {
               <XAxis dataKey="month" />
               <YAxis />
               <RechartsTooltip
-                formatter={(value) => `${value.toLocaleString()}₫`}
+                formatter={(value) => formatCurrency(value)}
               />
               <RechartsLegend />
-              <Bar dataKey="Thu nhập" fill="#10b981" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="Chi tiêu" fill="#ef4444" radius={[8, 8, 0, 0]} />
+              <Bar dataKey={t("income")} fill="#1ABC9C" radius={[8, 8, 0, 0]} />
+              <Bar dataKey={t("expense")} fill="#F2745A" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -334,6 +316,16 @@ export default function BudgetScreenDesktop() {
 
       {/* Budget Category List */}
       <div>
+        <div className="mb-4">
+          <button
+            onClick={() => setShowCategoryManager(true)}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition-colors"
+            data-tour="manage-groups-btn"
+          >
+            <Settings className="w-5 h-5" />
+            {t("manageCategoryGroups")}
+          </button>
+        </div>
         <BudgetCategoryList onEditCategory={handleEditCategory} />
       </div>
 
@@ -353,6 +345,12 @@ export default function BudgetScreenDesktop() {
         onClose={() => setShowEditBudget(false)}
         category={selectedCategory}
         onSave={handleSaveCategoryBudget}
+      />
+
+      {/* Category Group Manager */}
+      <CategoryGroupManager
+        isOpen={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
       />
     </div>
   );

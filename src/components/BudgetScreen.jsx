@@ -34,6 +34,8 @@ import BudgetCategoryList from "./BudgetCategoryList.jsx";
 import CategoryGroupManager from "./CategoryGroupManager.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 
 const COLORS = [
   "#10b981",
@@ -54,6 +56,8 @@ export default function BudgetScreen() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   const { user } = useAuth();
+  const { t, language } = useLanguage();
+  const { formatCurrency } = useCurrency();
 
   let budgetSummary = {
     totalIncome: 0,
@@ -120,10 +124,13 @@ export default function BudgetScreen() {
         currentDate.getMonth() - i,
         1
       );
-      const monthName = date.toLocaleDateString("vi-VN", {
-        month: "short",
-        year: "numeric",
-      });
+      const monthName = date.toLocaleDateString(
+        language === "vi" ? "vi-VN" : "en-US",
+        {
+          month: "short",
+          year: "numeric",
+        }
+      );
 
       const monthTransactions = transactions.filter((t) => {
         const tDate = new Date(t.date);
@@ -143,31 +150,31 @@ export default function BudgetScreen() {
 
       monthsData.push({
         month: monthName,
-        "Thu nhập": income,
-        "Chi tiêu": expense,
+        [t("income")]: income,
+        [t("expense")]: expense,
       });
     }
 
     return monthsData;
-  }, [transactions, selectedDate]);
+  }, [transactions, selectedDate, t, language]);
 
   const handleSaveBudgetAllocation = async (allocations) => {
     try {
       await allocateBudgets(allocations);
-      alert("Phân bổ ngân sách thành công!");
+      alert(t("budgetAllocationSuccess"));
     } catch (error) {
       console.error("Error saving budget allocation:", error);
-      alert("Có lỗi xảy ra khi lưu phân bổ ngân sách");
+      alert(t("budgetAllocationError"));
     }
   };
 
   const handleSaveCategoryBudget = async (categoryId, budgetLimit) => {
     try {
       await updateCategoryBudget(categoryId, budgetLimit);
-      alert("Cập nhật ngân sách thành công!");
+      alert(t("updateBudgetSuccess"));
     } catch (error) {
       console.error("Error saving category budget:", error);
-      alert("Có lỗi xảy ra khi cập nhật ngân sách");
+      alert(t("updateBudgetError"));
     }
   };
 
@@ -193,7 +200,15 @@ export default function BudgetScreen() {
           <div className="flex items-center space-x-2 flex-shrink-0">
             <User className="w-5 h-5 text-white" />
             <span className="text-white text-sm font-medium truncate">
-              {user?.name || "User"}
+              {(() => {
+                const fullName = user?.name || "User";
+                const nameParts = fullName.trim().split(/\s+/);
+                // If name has more than 2 parts, show only last 2 words
+                if (nameParts.length > 2) {
+                  return nameParts.slice(-2).join(" ");
+                }
+                return fullName;
+              })()}
             </span>
           </div>
 
@@ -209,7 +224,7 @@ export default function BudgetScreen() {
           <button
             onClick={() => setShowBudgetAllocation(true)}
             className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm flex-shrink-0"
-            title="Chỉnh sửa phân bổ ngân sách"
+            title={t("editBudgetAllocation")}
           >
             <Edit className="w-5 h-5 text-white" />
           </button>
@@ -217,8 +232,8 @@ export default function BudgetScreen() {
 
         {/* Title Section */}
         <div className="text-center mb-1">
-          <h1 className="text-3xl font-bold text-white">Quản lý chi tiêu</h1>
-          <p className="text-white/80 text-sm mt-2">Theo dõi thu chi cá nhân</p>
+          <h1 className="text-3xl font-bold text-white">{t("expenseManagement")}</h1>
+          <p className="text-white/80 text-sm mt-2">{t("trackPersonalIncomeExpenses")}</p>
         </div>
       </div>
 
@@ -229,34 +244,34 @@ export default function BudgetScreen() {
           <div className="bg-white rounded-xl p-4 shadow-lg">
             <TrendingUp className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
             <div className="text-gray-600 text-xs mb-1 text-center">
-              Thu nhập
+              {t("income")}
             </div>
             <div className="text-emerald-600 font-bold text-sm text-center">
-              {Math.round(totalIncome / 1000).toLocaleString()}K₫
+              {formatCurrency(totalIncome)}
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg">
             <TrendingDown className="w-6 h-6 text-red-500 mx-auto mb-2" />
             <div className="text-gray-600 text-xs mb-1 text-center">
-              Chi tiêu
+              {t("expense")}
             </div>
             <div className="text-red-500 font-bold text-sm text-center">
-              {Math.round(totalSpent / 1000).toLocaleString()}K₫
+              {formatCurrency(totalSpent)}
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg">
             <Wallet className="w-6 h-6 text-blue-500 mx-auto mb-2" />
             <div className="text-gray-600 text-xs mb-1 text-center">
-              Tiết kiệm
+              {t("savings")}
             </div>
             <div className="text-blue-500 font-bold text-sm text-center">
-              {totalSavings.toLocaleString()}₫
+              {formatCurrency(totalSavings)}
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg">
             <BarChart3 className="w-6 h-6 text-indigo-500 mx-auto mb-2" />
             <div className="text-gray-600 text-xs mb-1 text-center">
-              Tỷ lệ tiết kiệm
+              {t("savingsRate")}
             </div>
             <div className="text-indigo-600 font-bold text-sm text-center">
               {savingsPercentage}%
@@ -274,7 +289,7 @@ export default function BudgetScreen() {
           >
             <h3 className="text-lg font-bold text-gray-800 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2 text-emerald-600" />
-              Biểu đồ thống kê
+              {t("statisticalChart")}
             </h3>
             <ChevronDown
               className={`w-5 h-5 text-gray-400 transition-transform ${
@@ -289,7 +304,7 @@ export default function BudgetScreen() {
               {expensesByCategoryData.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                    Chi tiêu theo danh mục
+                    {t("expensesByCategory")}
                   </h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <RechartsP>
@@ -310,7 +325,7 @@ export default function BudgetScreen() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value) => `${value.toLocaleString()}₫`}
+                        formatter={(value) => formatCurrency(value)}
                       />
                       <Legend
                         wrapperStyle={{ fontSize: "12px" }}
@@ -324,7 +339,7 @@ export default function BudgetScreen() {
               {/* Bar Chart - Income vs Expenses */}
               <div>
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                  Thu chi 6 tháng gần đây
+                  {t("incomeAndExpensesLast6Months")}
                 </h4>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={incomeVsExpensesData}>
@@ -332,11 +347,11 @@ export default function BudgetScreen() {
                     <XAxis dataKey="month" style={{ fontSize: "10px" }} />
                     <YAxis style={{ fontSize: "10px" }} />
                     <RechartsTooltip
-                      formatter={(value) => `${value.toLocaleString()}₫`}
+                      formatter={(value) => formatCurrency(value)}
                     />
                     <RechartsLegend wrapperStyle={{ fontSize: "12px" }} />
-                    <Bar dataKey="Thu nhập" fill="#10b981" />
-                    <Bar dataKey="Chi tiêu" fill="#ef4444" />
+                    <Bar dataKey={t("income")} fill="#1ABC9C" />
+                    <Bar dataKey={t("expense")} fill="#F2745A" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -353,10 +368,11 @@ export default function BudgetScreen() {
         <div className="mb-4">
           <button
             onClick={() => setShowCategoryManager(true)}
-            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition-colors"
+            data-tour="manage-groups-btn"
           >
             <Settings className="w-5 h-5" />
-            Quản lý nhóm danh mục
+            {t("manageCategoryGroups")}
           </button>
         </div>
         <BudgetCategoryList onEditCategory={handleEditCategory} />

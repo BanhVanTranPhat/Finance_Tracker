@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { categoryAPI, walletAPI, transactionAPI } from "../services/api.js";
 
 const FinanceContext = createContext(undefined);
@@ -56,19 +56,81 @@ export const FinanceProvider = ({ children }) => {
             ]);
 
           walletsData = walletsResult || [];
-          categoriesData = categoriesResult || [];
+          categoriesData = (categoriesResult || []).map((cat) => {
+            const name = (cat.name || "").toLowerCase();
+            const id = (cat.id || cat._id || cat.slug || "").toString();
+            // Prefer mapping by stable id when available, then by Vietnamese name
+            const idMap = {
+              // expense ids from templates
+              rent: "home",
+              bills: "receipt",
+              food: "utensils",
+              transportation: "bus",
+              children: "baby",
+              pets: "paw-print",
+              debt: "credit-card",
+              healthcare: "pill",
+              insurance: "shield-check",
+              "car-maintenance": "car",
+              gifts: "gift",
+              education: "graduation-cap",
+              shopping: "shopping-bag",
+              massage: "sparkles",
+              spa: "sparkles",
+              "home-decoration": "sofa",
+              "short-trips": "plane",
+              "buy-house": "house",
+              "buy-car": "car",
+              "home-repair": "wrench",
+              "equipment-upgrade": "wrench",
+              // income ids
+              salary: "dollar-sign",
+              bonus: "gift",
+              investment: "line-chart",
+              "other-income": "coins",
+            };
+            const nameMap = {
+              "tiền nhà": "home",
+              "nhà ở": "home",
+              "mua nhà": "house",
+              "mua xe": "car",
+              "sửa nhà": "wrench",
+              "nâng cấp thiết bị": "toolbox",
+              "ăn uống": "utensils",
+              "ăn uống hằng ngày": "utensils",
+              "đi lại": "bus",
+              "khám bệnh/thuốc men": "pill",
+              "bảo hiểm": "shield-check",
+              "bảo hiểm nhân thọ": "shield-check",
+              "quà tặng": "gift",
+              "học phí": "graduation-cap",
+              shopping: "shopping-bag",
+              spa: "sparkles",
+              massage: "sparkles",
+              "du lịch": "plane",
+              "trả nợ": "credit-card",
+              lương: "dollar-sign",
+              thưởng: "gift",
+              "đầu tư": "line-chart",
+              "thu nhập khác": "coins",
+            };
+            const resolved = cat.icon || idMap[id] || nameMap[name] || "folder";
+            return { ...cat, icon: resolved };
+          });
           transactionsData =
             transactionsResult.transactions || transactionsResult || [];
-        } catch (apiError) {
+        } catch {
           // API not available; fall back if applicable
 
           // Only use sample data for existing users, not new users
           if (!isNewUser) {
             // Using sample data for existing user
+            // Note: This is fallback sample data, should not be used in production
+            // Real wallets come from API and should have translated names
             walletsData = [
               {
                 id: "sample-wallet-1",
-                name: "Ví chính",
+                name: "Main Wallet", // Using English as default for sample data
                 balance: 0,
                 icon: "wallet",
                 color: "bg-blue-500",
@@ -149,7 +211,10 @@ export const FinanceProvider = ({ children }) => {
             const nd = new Date(nextDate.getTime());
             if (rule.frequency === "daily") nd.setDate(nd.getDate() + 1);
             else if (rule.frequency === "weekly") nd.setDate(nd.getDate() + 7);
-            else if (rule.frequency === "monthly") nd.setMonth(nd.getMonth() + 1);
+            else if (rule.frequency === "monthly")
+              nd.setMonth(nd.getMonth() + 1);
+            else if (rule.frequency === "yearly")
+              nd.setFullYear(nd.getFullYear() + 1);
             nextDate = nd;
           }
           updated.push({ ...rule, nextDate: nextDate.toISOString() });
@@ -259,9 +324,48 @@ export const FinanceProvider = ({ children }) => {
   const deleteCategory = async (id) => {
     try {
       await categoryAPI.deleteCategory(id);
-      setCategories((prev) => prev.filter((category) => category.id !== id));
+      // Remove from state - handle both id and _id formats
+      setCategories((prev) =>
+        prev.filter((category) => {
+          const catId = category.id || category._id;
+          return String(catId) !== String(id);
+        })
+      );
+
+      // Reload from API to ensure consistency with backend
+      const updatedCategories = await categoryAPI.getCategories();
+      setCategories(updatedCategories || []);
     } catch (error) {
       console.error("Error deleting category:", error);
+      throw error;
+    }
+  };
+
+  // Merge-import categories (does NOT wipe existing categories)
+  const importCategories = async (categoriesToImport) => {
+    try {
+      const existingNames = new Set(
+        (categories || []).map((c) =>
+          (c.name || "").toString().trim().toLowerCase()
+        )
+      );
+      const toCreate = (categoriesToImport || []).filter((c) => {
+        const name = (c.name || "").toString().trim().toLowerCase();
+        return name && !existingNames.has(name);
+      });
+
+      if (toCreate.length === 0) return [];
+
+      // Create sequentially to keep API simple; could be batched in API later
+      const created = [];
+      for (const cat of toCreate) {
+        const newCat = await categoryAPI.createCategory(cat);
+        created.push(newCat);
+      }
+      setCategories((prev) => [...prev, ...created]);
+      return created;
+    } catch (error) {
+      console.error("Error importing categories:", error);
       throw error;
     }
   };
@@ -439,6 +543,7 @@ export const FinanceProvider = ({ children }) => {
     deleteWallet,
     categories,
     addCategory,
+    importCategories,
     updateCategory,
     deleteCategory,
     initializeCategories,

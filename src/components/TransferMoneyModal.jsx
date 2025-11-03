@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
-import { X, ArrowRight, Check } from "lucide-react";
+import { X, ArrowRight, ArrowUpDown, Check } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 
 export default function TransferMoneyModal({ isOpen, onClose }) {
   const { wallets, updateWallet, addTransaction } = useFinance();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [fromWallet, setFromWallet] = useState("");
   const [toWallet, setToWallet] = useState("");
   const [amount, setAmount] = useState("0");
@@ -39,21 +43,29 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
     setAmount("0");
   };
 
+  const handleSwapWallets = () => {
+    setFromWallet((prevFrom) => {
+      const prevTo = toWallet;
+      setToWallet(prevFrom);
+      return prevTo;
+    });
+  };
+
   const handleTransfer = async () => {
     const transferAmount = parseFloat(amount);
 
     if (transferAmount <= 0) {
-      alert("Vui lòng nhập số tiền hợp lệ");
+      alert(t("invalidAmount"));
       return;
     }
 
     if (!fromWallet || !toWallet) {
-      alert("Vui lòng chọn ví");
+      alert(t("pleaseSelectWallet"));
       return;
     }
 
     if (fromWallet === toWallet) {
-      alert("Không thể chuyển tiền cho chính ví đó");
+      alert(t("cannotTransferToSameWallet"));
       return;
     }
 
@@ -61,7 +73,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
     const toWalletObj = wallets.find((w) => w.name === toWallet);
 
     if (fromWalletObj.balance < transferAmount) {
-      alert("Số dư ví không đủ");
+      alert(t("insufficientBalance"));
       return;
     }
 
@@ -88,7 +100,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
         date: date,
       });
 
-      alert("Chuyển tiền thành công!");
+      alert(t("transferSuccess"));
       onClose();
 
       // Reset form
@@ -97,7 +109,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
       console.error("Error transferring money:", error);
-      alert("Có lỗi xảy ra khi chuyển tiền");
+      alert(t("transferError"));
     }
   };
 
@@ -107,12 +119,12 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-800">
-            Chuyển tiền giữa các ví
+            {t("transferBetweenWallets")}
           </h2>
           <button
             onClick={onClose}
             className="w-9 h-9 bg-yellow-100 hover:bg-yellow-200 rounded-full flex items-center justify-center transition-colors"
-            aria-label="Đóng"
+            aria-label={t("close")}
           >
             <X className="w-5 h-5 text-emerald-800" />
           </button>
@@ -120,9 +132,9 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
 
         {/* Amount Display */}
         <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 mb-4 text-center shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 mb-1">Bạn muốn chuyển đi</div>
+          <div className="text-sm text-gray-500 mb-1">{t("youWantToTransfer")}</div>
           <div className="text-3xl font-bold text-emerald-800">
-            {parseFloat(amount).toLocaleString()}₫
+            {formatCurrency(parseFloat(amount))}
           </div>
         </div>
 
@@ -131,7 +143,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
           {/* From Wallet */}
           <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
             <label className="text-xs text-gray-500 mb-2 block">
-              Ví thanh toán
+              {t("paymentWallets")}
             </label>
             <select
               value={fromWallet}
@@ -146,16 +158,25 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
             </select>
           </div>
 
-          {/* Arrow */}
-          <div className="flex justify-center">
-            <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center">
-              <ArrowRight className="w-5 h-5 text-gray-800" />
+          {/* Direction + Swap Controls */}
+          <div className="flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleSwapWallets}
+              className="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+              title="Đổi vị trí 2 ví"
+              aria-label="Đổi vị trí 2 ví"
+            >
+              <ArrowUpDown className="w-5 h-5 text-gray-700" />
+            </button>
+            <div className="w-10 h-10 bg-[#1ABC9C] rounded-full flex items-center justify-center">
+              <ArrowRight className="w-5 h-5 text-white" />
             </div>
           </div>
 
           {/* To Wallet */}
           <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-            <label className="text-xs text-gray-500 mb-2 block">Chọn ví</label>
+            <label className="text-xs text-gray-500 mb-2 block">{t("selectWallet")}</label>
             <select
               value={toWallet}
               onChange={(e) => setToWallet(e.target.value)}
@@ -165,7 +186,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
                 .filter((w) => w.name !== fromWallet)
                 .map((wallet) => (
                   <option key={wallet.id} value={wallet.name}>
-                    {wallet.name} - {wallet.balance.toLocaleString()}₫
+                    {wallet.name} - {formatCurrency(wallet.balance)}
                   </option>
                 ))}
             </select>
@@ -177,7 +198,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Thêm mô tả..."
+              placeholder={t("addDescription")}
               className="w-full text-sm text-gray-700 focus:outline-none"
             />
           </div>
@@ -224,7 +245,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
             onClick={handleClear}
             className="bg-white rounded-xl p-2.5 text-[11px] font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm leading-tight"
           >
-            Xóa hết
+            {t("clearAll")}
           </button>
 
           {["7", "8", "9"].map((num) => (
@@ -246,10 +267,10 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
           {/* Transfer Button */}
           <button
             onClick={handleTransfer}
-            className="col-span-4 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-3.5 text-gray-800 font-bold hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
+            className="col-span-4 bg-gradient-to-r from-[#1ABC9C] to-[#149D86] rounded-xl p-3.5 text-white font-bold hover:from-[#149D86] hover:to-[#118a77] active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
           >
             <Check className="w-5 h-5" />
-            <span>CẬP NHẬT SỐ DƯ</span>
+            <span>{t("updateBalance")}</span>
           </button>
         </div>
       </div>

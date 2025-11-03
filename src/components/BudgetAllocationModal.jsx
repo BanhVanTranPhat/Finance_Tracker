@@ -1,5 +1,33 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Minus } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { translateCategoryName } from "../utils/translateCategoryName.js";
+// react-icons for category icons
+import {
+  FaHome,
+  FaFileInvoice,
+  FaUtensils,
+  FaBus,
+  FaBaby,
+  FaPaw,
+  FaCreditCard,
+  FaPills,
+  FaShieldAlt,
+  FaCar,
+  FaGift,
+  FaGraduationCap,
+  FaShoppingBag,
+  FaSpa,
+  FaCouch,
+  FaPlane,
+  // FaHouse is not available in FontAwesome v5 – use FaHome/House mapping above
+  FaWrench,
+  FaWallet,
+  FaFolder,
+  FaCoins,
+  FaChartLine,
+  FaDollarSign,
+} from "react-icons/fa";
 import { useCurrency } from "../contexts/CurrencyContext.jsx";
 
 export default function BudgetAllocationModal({
@@ -11,6 +39,7 @@ export default function BudgetAllocationModal({
   availableBalance = 0,
 }) {
   const { formatCurrency } = useCurrency();
+  const { t, language } = useLanguage();
   const [allocations, setAllocations] = useState({});
   const [totalAllocated, setTotalAllocated] = useState(0);
   const [displayValues, setDisplayValues] = useState({});
@@ -76,7 +105,7 @@ export default function BudgetAllocationModal({
 
   // Group categories
   const groupedCategories = categories.reduce((acc, category) => {
-    const group = category.group || "Khác";
+    const group = category.group || t("other");
     if (!acc[group]) {
       acc[group] = [];
     }
@@ -86,13 +115,72 @@ export default function BudgetAllocationModal({
 
   if (!isOpen) return null;
 
+  // Map category.icon (string id) -> Lucide icon component
+  const iconMap = {
+    home: FaHome,
+    receipt: FaFileInvoice,
+    utensils: FaUtensils,
+    bus: FaBus,
+    baby: FaBaby,
+    "paw-print": FaPaw,
+    "credit-card": FaCreditCard,
+    pill: FaPills,
+    "shield-check": FaShieldAlt,
+    car: FaCar,
+    gift: FaGift,
+    "graduation-cap": FaGraduationCap,
+    "shopping-bag": FaShoppingBag,
+    sparkles: FaSpa,
+    sofa: FaCouch,
+    plane: FaPlane,
+    house: FaHome,
+    wrench: FaWrench,
+    toolbox: FaWrench,
+    wallet: FaWallet,
+    coins: FaCoins,
+    "line-chart": FaChartLine,
+    "dollar-sign": FaDollarSign,
+  };
+
+  const nameToKeyMap = {
+    // Nhà ở và chi phí bắt buộc
+    "tiền nhà": "home",
+    "nhà ở": "home",
+    "mua nhà": "home",
+    "hoá đơn": "receipt",
+    "mua xe": "car",
+    "sửa nhà": "wrench",
+    "nâng cấp thiết bị": "wrench",
+    "nâng cấp thiết bị, đồ nghề": "wrench",
+    // Chi phí hàng ngày
+    "ăn uống": "utensils",
+    "ăn uống hằng ngày": "utensils",
+    "đi lại": "bus",
+    // Sức khoẻ và bảo hiểm
+    "khám bệnh/thuốc men": "pill",
+    "bảo hiểm": "shield-check",
+    "bảo hiểm nhân thọ": "shield-check",
+    // Gia đình
+    "con cái": "baby",
+    "thú cưng": "paw-print",
+    // Khác
+    "quà tặng": "gift",
+    "học phí": "graduation-cap",
+    shopping: "shopping-bag",
+    spa: "sparkles",
+    massage: "sparkles",
+    "du lịch": "plane",
+    "trả nợ": "credit-card",
+    "trả nợ/khoản vay": "credit-card",
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-[480px] rounded-2xl shadow-2xl max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-xl font-bold text-gray-800">
-            Phân chia tiền vào ngân sách
+            {t("allocateMoneyToBudget")}
           </h2>
           <button
             onClick={onClose}
@@ -106,13 +194,13 @@ export default function BudgetAllocationModal({
         <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100">
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-sm text-gray-600">Đang có</div>
+              <div className="text-sm text-gray-600">{t("currentlyAvailable")}</div>
               <div className="text-2xl font-bold text-emerald-600">
                 {formatCurrency(availableBalance)}
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-600">Còn lại</div>
+              <div className="text-sm text-gray-600">{t("remaining")}</div>
               <div
                 className={`text-2xl font-bold ${
                   remainingBalance >= 0 ? "text-emerald-600" : "text-red-600"
@@ -142,16 +230,74 @@ export default function BudgetAllocationModal({
                     <div key={categoryId} className="bg-gray-50 rounded-xl p-4">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-2xl">
-                            {category.icon || "📚"}
-                          </span>
+                          {(() => {
+                            const raw = (category.icon || "").toString().toLowerCase();
+                            const fallbackKey = nameToKeyMap[(category.name || "").toString().toLowerCase()];
+                            const key = iconMap[raw] ? raw : (iconMap[fallbackKey] ? fallbackKey : "");
+                            const Icon = iconMap[key] || FaFolder;
+
+                            const colorMap = {
+                              home: "text-emerald-600",
+                              house: "text-emerald-600",
+                              receipt: "text-blue-600",
+                              utensils: "text-orange-600",
+                              bus: "text-sky-600",
+                              baby: "text-rose-500",
+                              "paw-print": "text-orange-500",
+                              "credit-card": "text-cyan-600",
+                              pill: "text-teal-600",
+                              "shield-check": "text-indigo-600",
+                              car: "text-blue-600",
+                              gift: "text-pink-600",
+                              "graduation-cap": "text-purple-600",
+                              "shopping-bag": "text-fuchsia-600",
+                              sparkles: "text-yellow-500",
+                              sofa: "text-violet-600",
+                              plane: "text-blue-500",
+                              wrench: "text-amber-600",
+                              toolbox: "text-amber-600",
+                              wallet: "text-emerald-600",
+                              coins: "text-amber-500",
+                              "line-chart": "text-green-600",
+                              "dollar-sign": "text-green-600",
+                            };
+                            
+                            // Use color from map, fallback to a default color based on icon type if key not found
+                            let colorClass = colorMap[key];
+                            
+                            // If no color found, try to infer from icon name or use a vibrant default
+                            if (!colorClass) {
+                              // Try to find color by checking if key matches any colorMap entry
+                              const lowerKey = key.toLowerCase();
+                              if (lowerKey.includes("home") || lowerKey.includes("house")) {
+                                colorClass = "text-emerald-600";
+                              } else if (lowerKey.includes("receipt") || lowerKey.includes("bills")) {
+                                colorClass = "text-blue-600";
+                              } else if (lowerKey.includes("utensils") || lowerKey.includes("food")) {
+                                colorClass = "text-orange-600";
+                              } else if (lowerKey.includes("bus") || lowerKey.includes("transport")) {
+                                colorClass = "text-sky-600";
+                              } else if (lowerKey.includes("baby") || lowerKey.includes("children")) {
+                                colorClass = "text-rose-500";
+                              } else if (lowerKey.includes("paw") || lowerKey.includes("pet")) {
+                                colorClass = "text-orange-500";
+                              } else if (lowerKey.includes("credit") || lowerKey.includes("debt")) {
+                                colorClass = "text-cyan-600";
+                              } else {
+                                // Use a nice vibrant color instead of gray/black
+                                colorClass = "text-indigo-600";
+                              }
+                            }
+                            
+                            return <Icon className={`w-5 h-5 ${colorClass}`} />;
+                          })()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-gray-800 truncate">
-                            {category.name}
+                            {translateCategoryName(category.name, language)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            Đã tiêu: {formatCurrency(spent)}
+                            {t("spent")} {formatCurrency(spent)}
                           </div>
                         </div>
                       </div>
@@ -208,11 +354,11 @@ export default function BudgetAllocationModal({
                 : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
             }`}
           >
-            LƯU TẤT CẢ PHÂN BỔ
+            {t("saveAllAllocations")}
           </button>
           {remainingBalance < 0 && (
             <p className="text-red-500 text-sm text-center mt-2">
-              Số tiền phân bổ vượt quá số dư khả dụng
+              {t("allocationExceedsBalance")}
             </p>
           )}
         </div>

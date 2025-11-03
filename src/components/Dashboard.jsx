@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useTransactions } from "../contexts/TransactionContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 import { formatCurrency as formatCurrencyUtil } from "../utils/currency.js";
 import {
   Chart,
@@ -51,6 +52,7 @@ const categoryLabels = {
 };
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const { transactions } = useTransactions();
 
   const summary = useMemo(() => {
@@ -176,36 +178,26 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4">
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-4 sm:p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium opacity-90">Tổng thu nhập</h3>
-            <TrendingUp className="w-8 h-8 opacity-80" />
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium text-[#6B7785]">Tổng thu nhập</h3>
+            <TrendingUp className="w-6 h-6 text-[#1ABC9C]" />
           </div>
-          <p className="text-3xl font-bold">{formatCurrency(summary.income)}</p>
+          <p className="text-3xl font-bold text-[#1B2733]">{formatCurrency(summary.income)}</p>
         </div>
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 sm:p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium opacity-90">Tổng chi tiêu</h3>
-            <TrendingDown className="w-8 h-8 opacity-80" />
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium text-[#6B7785]">Tổng chi tiêu</h3>
+            <TrendingDown className="w-6 h-6 text-[#F2745A]" />
           </div>
-          <p className="text-3xl font-bold">
-            {formatCurrency(summary.expense)}
-          </p>
+          <p className="text-3xl font-bold text-[#1B2733]">{formatCurrency(summary.expense)}</p>
         </div>
-        <div
-          className={`bg-gradient-to-br ${
-            summary.balance >= 0
-              ? "from-blue-500 to-blue-600"
-              : "from-orange-500 to-orange-600"
-          } rounded-2xl p-4 sm:p-6 text-white shadow-lg`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium opacity-90">Số dư</h3>
-            <Wallet className="w-8 h-8 opacity-80" />
+        <div className="bg-white border border-[#E6E8EB] rounded-[14px] p-6 shadow-[0_6px_18px_rgba(10,37,64,0.08)]">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium text-[#6B7785]">Số dư</h3>
+            <Wallet className="w-6 h-6 text-[#5DADE2]" />
           </div>
-          <p className="text-3xl font-bold">
-            {formatCurrency(summary.balance)}
-          </p>
+          <p className="text-3xl font-bold text-[#1B2733]">{formatCurrency(summary.balance)}</p>
         </div>
       </div>
 
@@ -226,7 +218,7 @@ export default function Dashboard() {
             {categoryData.length > 0 ? (
               <Doughnut data={doughnutChartData} options={chartOptions} />
             ) : (
-              <p className="text-gray-500">Chưa có dữ liệu chi tiêu</p>
+              <p className="text-gray-500">{t("noExpenseData")}</p>
             )}
           </div>
         </div>

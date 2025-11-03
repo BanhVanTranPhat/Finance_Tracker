@@ -1,9 +1,12 @@
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { translateCategoryName } from "../utils/translateCategoryName.js";
 import { BarChart3, TrendingUp, Target } from "lucide-react";
 import CategoryProgressBar from "./CategoryProgressBar.jsx";
 
 export default function CategoryStats() {
   const { categories, transactions } = useFinance();
+  const { language } = useLanguage();
 
   // Tính toán thống kê theo danh mục
   const categoryStats = categories
@@ -93,7 +96,7 @@ export default function CategoryStats() {
         {categoryStats.map((category) => (
           <div key={category.id} className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <h5 className="font-medium text-gray-800">{category.name}</h5>
+              <h5 className="font-medium text-gray-800">{translateCategoryName(category.name, language)}</h5>
               <p className="text-sm text-gray-500">{category.group}</p>
             </div>
             <div className="text-right">

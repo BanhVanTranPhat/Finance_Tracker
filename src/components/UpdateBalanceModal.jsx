@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
+import ContextTip from "./ContextTip.jsx";
 
 export default function UpdateBalanceModal({ isOpen, onClose }) {
   const { wallets, updateWallet } = useFinance();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [selectedWallet, setSelectedWallet] = useState("");
   const [newBalance, setNewBalance] = useState("0");
 
@@ -50,12 +55,12 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
     const balance = parseFloat(newBalance);
 
     if (balance < 0) {
-      alert("Số dư không thể âm");
+      alert(t("balanceCannotBeNegative"));
       return;
     }
 
     if (!selectedWallet) {
-      alert("Vui lòng chọn ví");
+      alert(t("pleaseSelectWalletForUpdate"));
       return;
     }
 
@@ -67,11 +72,11 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
         balance: balance,
       });
 
-      alert("Cập nhật số dư thành công!");
+      alert(t("updateBalanceSuccess"));
       onClose();
     } catch (error) {
       console.error("Error updating balance:", error);
-      alert("Có lỗi xảy ra khi cập nhật số dư");
+      alert(t("updateBalanceError"));
     }
   };
 
@@ -82,24 +87,27 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-white w-full sm:w-[500px] sm:max-w-[90vw] rounded-t-3xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white w-full sm:w-[500px] sm:max-w-[90vw] rounded-t-3xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto mb-24 sm:mb-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-800">
-            Cập nhật số dư hiện tại trong ví
+            {t("updateBalanceTitle")}
           </h2>
           <button
             onClick={onClose}
             className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors flex-shrink-0"
-            aria-label="Đóng"
+            aria-label={t("close")}
           >
             <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
 
         {/* Wallet Selection */}
+        <ContextTip storageKey="tip_update_balance">
+          {t("balanceInputTip")}
+        </ContextTip>
         <div className="mb-4">
-          <div className="text-sm text-gray-600 mb-2">Ví thanh toán</div>
+          <div className="text-sm text-gray-600 mb-2">{t("paymentWallets")}</div>
           <div className="bg-white rounded-xl p-3 shadow-sm border-2 border-gray-200">
             <select
               value={selectedWallet}
@@ -114,7 +122,7 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
             </select>
             {selectedWalletObj && (
               <div className="text-xs text-gray-500 mt-2">
-                Lần cuối cập nhật: {selectedWalletObj.balance.toLocaleString()}₫
+                {t("lastUpdate")} {formatCurrency(selectedWalletObj.balance)}
               </div>
             )}
           </div>
@@ -122,10 +130,10 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
 
         {/* Balance Display */}
         <div className="mb-4">
-          <div className="text-sm text-gray-600 mb-2">Số dư mới</div>
+          <div className="text-sm text-gray-600 mb-2">{t("newBalance")}</div>
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 text-center shadow-sm border border-gray-100">
-            <div className="text-3xl font-bold text-emerald-800 mb-1">
-              {parseFloat(newBalance).toLocaleString()}₫
+            <div className="text-3xl font-bold text-emerald-800 mb-1 leading-[1.25] min-h-[2.75rem] flex items-center justify-center">
+              {formatCurrency(parseFloat(newBalance))}
             </div>
             {difference !== 0 && (
               <div
@@ -134,7 +142,7 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
                 }`}
               >
                 {difference > 0 ? "+" : ""}
-                {difference.toLocaleString()}₫
+                {formatCurrency(difference)}
               </div>
             )}
           </div>
@@ -171,7 +179,7 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
             onClick={handleClear}
             className="bg-white rounded-xl p-3 text-[11px] font-bold text-gray-800 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all shadow-sm leading-tight"
           >
-            Xóa hết
+            {t("clearAll")}
           </button>
 
           {["7", "8", "9"].map((num) => (
@@ -190,21 +198,13 @@ export default function UpdateBalanceModal({ isOpen, onClose }) {
             0
           </button>
 
-          {/* Quick Add */}
-          <button
-            onClick={() => handleNumberPress("000")}
-            className="bg-white rounded-xl p-3 text-lg font-bold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
-          >
-            000
-          </button>
-
           {/* Update Button */}
           <button
             onClick={handleUpdateBalance}
-            className="col-span-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-3 text-gray-800 font-bold hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
+            className="col-span-4 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-3 text-gray-800 font-bold hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all flex items-center justify-center space-x-2 shadow-md"
           >
             <Check className="w-5 h-5" />
-            <span>CẬP NHẬT SỐ DƯ</span>
+            <span>{t("updateBalance")}</span>
           </button>
         </div>
       </div>

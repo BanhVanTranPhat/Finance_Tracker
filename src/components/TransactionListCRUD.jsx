@@ -12,12 +12,16 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 import { formatDate } from "../utils/dateFormatter.js";
 import TransactionModal from "./TransactionModal.jsx";
 
 export default function TransactionListCRUD() {
   const { transactions, addTransaction, updateTransaction, deleteTransaction } =
     useFinance();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [showModal, setShowModal] = useState(false);
   const [editTransaction, setEditTransaction] = useState(null);
   const [modalMode, setModalMode] = useState("add");
@@ -82,17 +86,13 @@ export default function TransactionListCRUD() {
   };
 
   const handleDeleteTransaction = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa giao dịch này?")) {
+    if (window.confirm(t("confirmDeleteTransaction"))) {
       try {
         await deleteTransaction(id);
       } catch (error) {
         console.error("Error deleting transaction:", error);
       }
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return amount.toLocaleString("vi-VN") + "₫";
   };
 
   const formatDate = (dateString) => {
@@ -108,7 +108,7 @@ export default function TransactionListCRUD() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-4 pt-4 sm:px-0 sm:pt-0">
         <h3 className="text-xl font-bold text-gray-800">
-          Giao dịch ({filteredTransactions.length})
+          {t("transactionCount")} ({filteredTransactions.length})
         </h3>
       </div>
 
@@ -119,7 +119,7 @@ export default function TransactionListCRUD() {
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm kiếm giao dịch..."
+            placeholder={t("searchTransactions")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-base"
@@ -134,9 +134,9 @@ export default function TransactionListCRUD() {
             onChange={(e) => setFilterType(e.target.value)}
             className="flex-shrink-0 px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm font-medium bg-white min-w-[110px]"
           >
-            <option value="all">Tất cả</option>
-            <option value="income">Thu nhập</option>
-            <option value="expense">Chi tiêu</option>
+            <option value="all">{t("all")}</option>
+            <option value="income">{t("income")}</option>
+            <option value="expense">{t("expense")}</option>
           </select>
 
           {/* Sort By */}
@@ -145,9 +145,9 @@ export default function TransactionListCRUD() {
             onChange={(e) => setSortBy(e.target.value)}
             className="flex-shrink-0 px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm font-medium bg-white min-w-[140px]"
           >
-            <option value="date">Theo ngày</option>
-            <option value="amount">Theo số tiền</option>
-            <option value="category">Theo danh mục</option>
+            <option value="date">{t("byDate")}</option>
+            <option value="amount">{t("byAmount")}</option>
+            <option value="category">{t("byCategory")}</option>
           </select>
 
           {/* Sort Order */}
@@ -175,10 +175,10 @@ export default function TransactionListCRUD() {
               <Calendar className="w-10 h-10 text-gray-400" />
             </div>
             <p className="text-gray-600 font-medium mb-1">
-              Chưa có giao dịch nào
+              {t("noData")}
             </p>
             <p className="text-sm text-gray-400">
-              Nhấn nút "+" ở giữa bottom navigation để thêm giao dịch đầu tiên
+              {t("addTransactionToViewChart")}
             </p>
           </div>
         ) : (
@@ -222,8 +222,8 @@ export default function TransactionListCRUD() {
                         }`}
                       >
                         {transaction.type === "income"
-                          ? "Thu nhập"
-                          : "Chi tiêu"}
+                          ? t("income")
+                          : t("expense")}
                       </span>
                     </div>
 

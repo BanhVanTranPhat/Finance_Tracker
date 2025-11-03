@@ -1,15 +1,47 @@
 import { useState } from "react";
 import { X, Plus, ChevronUp, ChevronDown, Menu, Trash2 } from "lucide-react";
+import {
+  FaHome,
+  FaFileInvoice,
+  FaUtensils,
+  FaBus,
+  FaBaby,
+  FaPaw,
+  FaCreditCard,
+  FaPills,
+  FaShieldAlt,
+  FaCar,
+  FaGift,
+  FaGraduationCap,
+  FaShoppingBag,
+  FaSpa,
+  FaCouch,
+  FaPlane,
+  FaWrench,
+  FaWallet,
+  FaFolder,
+  FaCoins,
+  FaChartLine,
+  FaDollarSign,
+} from "react-icons/fa";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { translateCategoryName } from "../utils/translateCategoryName.js";
 import DeleteCategoryConfirmModal from "./DeleteCategoryConfirmModal.jsx";
 import CategoryTutorial from "./CategoryTutorial.jsx";
+import CreateCategoryModal from "./CreateCategoryModal.jsx";
+import CategoryTemplateSelector from "./CategoryTemplateSelector.jsx";
+import ContextTip from "./ContextTip.jsx";
 
 export default function CategoryGroupManager({ isOpen, onClose }) {
   const { categories, deleteCategory } = useFinance();
+  const { t, language } = useLanguage();
   const [expandedGroups, setExpandedGroups] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   if (!isOpen) return null;
 
@@ -17,7 +49,7 @@ export default function CategoryGroupManager({ isOpen, onClose }) {
   const groupedCategories = categories
     .filter((c) => c.type === "expense")
     .reduce((acc, category) => {
-      const group = category.group || "Khác";
+      const group = category.group || t("other");
       if (!acc[group]) {
         acc[group] = [];
       }
@@ -40,54 +72,64 @@ export default function CategoryGroupManager({ isOpen, onClose }) {
   const handleConfirmDelete = async () => {
     if (categoryToDelete) {
       try {
-        await deleteCategory(categoryToDelete.id || categoryToDelete._id);
+        const categoryId = categoryToDelete.id || categoryToDelete._id;
+        await deleteCategory(categoryId);
+        
+        // Close confirmation modal
         setShowDeleteConfirm(false);
         setCategoryToDelete(null);
+        
+        // Note: deleteCategory in FinanceContext already updates the state,
+        // so categories list will be updated automatically
       } catch (error) {
         console.error("Error deleting category:", error);
-        alert("Có lỗi xảy ra khi xóa danh mục");
+        alert(t("deleteCategoryError") || "An error occurred while deleting category");
       }
     }
   };
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0">
-        <div className="bg-white w-full h-full flex flex-col">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white w-full max-w-4xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 flex-shrink-0">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0 bg-white/80 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                title={t("close")}
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+              <h1 className="text-xl font-bold text-gray-800">{t("manageCategoryGroups")}</h1>
+            </div>
             <button
               onClick={onClose}
-              className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center"
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold shadow-sm"
             >
-              <X className="w-6 h-6 text-white" />
-            </button>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Chỉnh sửa ngân sách
-            </h1>
-            <button
-              onClick={() => setShowTutorial(true)}
-              className="text-yellow-600 font-bold text-lg px-3"
-            >
-              LƯU
+              {t("saveButton")}
             </button>
           </div>
 
           {/* Create Group Button */}
-          <div className="px-5 pt-4 pb-4 flex-shrink-0">
-            <button className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg font-bold text-gray-800">
+          <div className="px-6 pt-5 pb-4 flex-shrink-0">
+            <button onClick={() => setShowCreateModal(true)} className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 py-3 rounded-xl flex items-center justify-center gap-2 shadow-md font-bold text-white">
               <Plus className="w-5 h-5" />
-              TẠO NHÓM DANH MỤC
+              {t("createCategoryGroup")}
             </button>
           </div>
 
           {/* Category Groups List */}
-          <div className="flex-1 overflow-y-auto px-5 pb-20">
-            <div className="space-y-3">
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
+            <ContextTip storageKey="tip_category_group_manager">
+              {t("categoryGroupTip")}
+            </ContextTip>
+            <div className="space-y-4">
               {Object.entries(groupedCategories).map(([groupName, cats]) => (
                 <div
                   key={groupName}
-                  className="bg-white rounded-2xl overflow-hidden"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
                 >
                   {/* Group Header */}
                   <button
@@ -95,19 +137,16 @@ export default function CategoryGroupManager({ isOpen, onClose }) {
                     className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span className="font-semibold text-gray-800 text-lg">
+                      <div className="w-2.5 h-2.5 bg-rose-500 rounded-full"></div>
+                      <span className="font-semibold text-gray-800">
                         {groupName}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button className="p-1">
-                        <ChevronUp className="w-5 h-5 text-gray-400" />
-                      </button>
-                      <button className="p-1">
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
-                      </button>
-                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-gray-400 transition-transform ${
+                        expandedGroups[groupName] !== false ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
                   </button>
 
                   {/* Category Items */}
@@ -119,24 +158,143 @@ export default function CategoryGroupManager({ isOpen, onClose }) {
                           className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0"
                         >
                           <div className="flex items-center gap-3 flex-1">
-                            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                              <span className="text-2xl">
-                                {category.icon || "📚"}
-                              </span>
+                            <div className="w-10 h-10 bg-white border border-gray-100 rounded-lg flex items-center justify-center shadow-sm">
+                              {(() => {
+                                const iconMap = {
+                                  home: FaHome,
+                                  receipt: FaFileInvoice,
+                                  utensils: FaUtensils,
+                                  bus: FaBus,
+                                  baby: FaBaby,
+                                  "paw-print": FaPaw,
+                                  "credit-card": FaCreditCard,
+                                  pill: FaPills,
+                                  "shield-check": FaShieldAlt,
+                                  car: FaCar,
+                                  gift: FaGift,
+                                  "graduation-cap": FaGraduationCap,
+                                  "shopping-bag": FaShoppingBag,
+                                  sparkles: FaSpa,
+                                  sofa: FaCouch,
+                                  plane: FaPlane,
+                                  house: FaHome,
+                                  wrench: FaWrench,
+                                  toolbox: FaWrench,
+                                  wallet: FaWallet,
+                                  coins: FaCoins,
+                                  "line-chart": FaChartLine,
+                                  "dollar-sign": FaDollarSign,
+                                };
+                                const nameToKeyMap = {
+                                  // Nhà ở và chi phí bắt buộc
+                                  "tiền nhà": "home",
+                                  "nhà ở": "home",
+                                  "mua nhà": "home",
+                                  "hoá đơn": "receipt",
+                                  "mua xe": "car",
+                                  "sửa nhà": "wrench",
+                                  "nâng cấp thiết bị": "wrench",
+                                  "nâng cấp thiết bị, đồ nghề": "wrench",
+                                  // Chi phí hàng ngày
+                                  "ăn uống": "utensils",
+                                  "ăn uống hằng ngày": "utensils",
+                                  "đi lại": "bus",
+                                  // Sức khoẻ và bảo hiểm
+                                  "khám bệnh/thuốc men": "pill",
+                                  "bảo hiểm": "shield-check",
+                                  "bảo hiểm nhân thọ": "shield-check",
+                                  // Gia đình
+                                  "con cái": "baby",
+                                  "thú cưng": "paw-print",
+                                  // Khác
+                                  "quà tặng": "gift",
+                                  "học phí": "graduation-cap",
+                                  shopping: "shopping-bag",
+                                  spa: "sparkles",
+                                  massage: "sparkles",
+                                  "du lịch": "plane",
+                                  "trả nợ": "credit-card",
+                                  "trả nợ/khoản vay": "credit-card",
+                                };
+                                const raw = (category.icon || "").toString().toLowerCase();
+                                const fallbackKey = nameToKeyMap[(category.name || "").toString().toLowerCase()];
+                                const key = iconMap[raw] ? raw : (iconMap[fallbackKey] ? fallbackKey : "");
+                                const Icon = iconMap[key] || FaFolder;
+                                const colorMap = {
+                                  home: "text-emerald-600",
+                                  house: "text-emerald-600",
+                                  receipt: "text-blue-600",
+                                  utensils: "text-orange-600",
+                                  bus: "text-sky-600",
+                                  baby: "text-rose-500",
+                                  "paw-print": "text-orange-500",
+                                  "credit-card": "text-cyan-600",
+                                  pill: "text-teal-600",
+                                  "shield-check": "text-indigo-600",
+                                  car: "text-blue-600",
+                                  gift: "text-pink-600",
+                                  "graduation-cap": "text-purple-600",
+                                  "shopping-bag": "text-fuchsia-600",
+                                  sparkles: "text-yellow-500",
+                                  sofa: "text-violet-600",
+                                  plane: "text-blue-500",
+                                  wrench: "text-amber-600",
+                                  toolbox: "text-amber-600",
+                                  wallet: "text-emerald-600",
+                                  coins: "text-amber-500",
+                                  "line-chart": "text-green-600",
+                                  "dollar-sign": "text-green-600",
+                                };
+                                
+                                // Use color from map, fallback to a default color based on icon type if key not found
+                                let colorClass = colorMap[key];
+                                
+                                // If no color found, try to infer from icon name or use a vibrant default
+                                if (!colorClass) {
+                                  // Try to find color by checking if key matches any colorMap entry
+                                  const lowerKey = key.toLowerCase();
+                                  if (lowerKey.includes("home") || lowerKey.includes("house")) {
+                                    colorClass = "text-emerald-600";
+                                  } else if (lowerKey.includes("receipt") || lowerKey.includes("bills")) {
+                                    colorClass = "text-blue-600";
+                                  } else if (lowerKey.includes("utensils") || lowerKey.includes("food")) {
+                                    colorClass = "text-orange-600";
+                                  } else if (lowerKey.includes("bus") || lowerKey.includes("transport")) {
+                                    colorClass = "text-sky-600";
+                                  } else if (lowerKey.includes("baby") || lowerKey.includes("children")) {
+                                    colorClass = "text-rose-500";
+                                  } else if (lowerKey.includes("paw") || lowerKey.includes("pet")) {
+                                    colorClass = "text-orange-500";
+                                  } else if (lowerKey.includes("credit") || lowerKey.includes("debt")) {
+                                    colorClass = "text-cyan-600";
+                                  } else {
+                                    // Use a nice vibrant color instead of gray/black
+                                    colorClass = "text-indigo-600";
+                                  }
+                                }
+                                
+                                return <Icon className={`w-5 h-5 ${colorClass}`} />;
+                              })()}
                             </div>
                             <span className="font-medium text-gray-800">
-                              {category.name}
+                              {translateCategoryName(category.name, language)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button className="p-2">
+                            {/* Sort button - feature not implemented yet */}
+                            <button 
+                              className="p-2 rounded-lg hover:bg-gray-100 cursor-not-allowed opacity-50" 
+                              title={t("sort") || "Sort (coming soon)"}
+                              disabled
+                            >
                               <Menu className="w-5 h-5 text-gray-400" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(category)}
-                              className="p-2 bg-red-500 rounded-lg"
+                              className="p-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                              title={t("deleteCategory")}
                             >
-                              <Trash2 className="w-5 h-5 text-white" />
+                              <Trash2 className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
@@ -146,9 +304,9 @@ export default function CategoryGroupManager({ isOpen, onClose }) {
 
                   {/* Add Category Button */}
                   {expandedGroups[groupName] !== false && (
-                    <button className="w-full p-4 flex items-center justify-center gap-2 text-yellow-600 font-semibold hover:bg-gray-50 transition-colors border-t border-gray-100">
+                    <button onClick={() => setShowTemplateSelector(true)} className="w-full p-4 flex items-center justify-center gap-2 text-emerald-700 font-semibold hover:bg-gray-50 transition-colors border-t border-gray-100">
                       <Plus className="w-5 h-5" />
-                      <span>THÊM DANH MỤC</span>
+                      <span>{t("addCategory")}</span>
                     </button>
                   )}
                 </div>
@@ -173,6 +331,18 @@ export default function CategoryGroupManager({ isOpen, onClose }) {
       <CategoryTutorial
         isOpen={showTutorial}
         onClose={() => setShowTutorial(false)}
+      />
+
+      {/* Create New Category */}
+      <CreateCategoryModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
+
+      {/* Add From Templates */}
+      <CategoryTemplateSelector
+        isOpen={showTemplateSelector}
+        onClose={() => setShowTemplateSelector(false)}
       />
     </>
   );

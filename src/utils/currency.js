@@ -17,4 +17,3 @@ export const parseFormattedNumber = (value) => {
 
 export const getCurrencySymbol = () => "₫";
 
-// No exchange/conversion when single currency is used

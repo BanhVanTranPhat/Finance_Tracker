@@ -3,6 +3,7 @@ const Category = require("../models/Category");
 const Transaction = require("../models/Transaction");
 const Wallet = require("../models/Wallet");
 const auth = require("../middleware/auth");
+const logger = require("../utils/logger");
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.get("/", auth, async (req, res) => {
 
     res.json(categoriesWithSpent);
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    logger.logError(error, { action: "getCategories", userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -78,7 +79,7 @@ router.post("/", auth, async (req, res) => {
     await category.save();
     res.status(201).json(category);
   } catch (error) {
-    console.error("Error creating category:", error);
+    logger.logError(error, { action: "createCategory", userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -107,21 +108,52 @@ router.put("/:id", auth, async (req, res) => {
 
     res.json(category);
   } catch (error) {
-    console.error("Error updating category:", error);
+    logger.logError(error, { action: "updateCategory", categoryId: req.params.id, userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Delete all categories for user
+// Delete all categories for user (preserve income categories)
 router.delete("/all", auth, async (req, res) => {
   try {
-    const result = await Category.deleteMany({ user: req.user.id });
+    // Only delete expense categories, preserve income categories
+    const result = await Category.deleteMany({ 
+      user: req.user.id,
+      type: "expense"
+    });
+
+    // Check existing income categories (preserve all existing income categories)
+    const existingIncomeCategories = await Category.find({
+      user: req.user.id,
+      type: "income"
+    });
+
+    // If no income categories exist, create the 4 default ones (in Vietnamese, user can edit later)
+    // If some exist, preserve them (don't create duplicates)
+    if (existingIncomeCategories.length === 0) {
+      const defaultIncomeCategories = [
+        { name: "Lương", type: "income", group: "Thu nhập", icon: "dollar-sign", isDefault: true },
+        { name: "Thưởng", type: "income", group: "Thu nhập", icon: "gift", isDefault: true },
+        { name: "Đầu tư", type: "income", group: "Thu nhập", icon: "line-chart", isDefault: true },
+        { name: "Thu nhập khác", type: "income", group: "Thu nhập", icon: "coins", isDefault: true },
+      ];
+
+      const categoriesToCreate = defaultIncomeCategories.map(category => ({
+        ...category,
+        user: req.user.id,
+      }));
+      
+      await Category.insertMany(categoriesToCreate);
+      logger.info(`Created 4 default income categories for user (none existed)`, { userId: req.user.id });
+    }
+
     res.json({
-      message: "All categories deleted successfully",
+      message: "All expense categories deleted successfully (income categories preserved)",
       deletedCount: result.deletedCount,
+      incomeCategoriesPreserved: existingIncomeCategories.length,
     });
   } catch (error) {
-    console.error("Error deleting all categories:", error);
+    logger.logError(error, { action: "deleteAllCategories", userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -140,7 +172,7 @@ router.delete("/:id", auth, async (req, res) => {
 
     res.json({ message: "Category deleted successfully" });
   } catch (error) {
-    console.error("Error deleting category:", error);
+    logger.logError(error, { action: "deleteCategory", categoryId: req.params.id, userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -154,20 +186,65 @@ router.post("/initialize", auth, async (req, res) => {
       return res.status(400).json({ message: "Categories array is required" });
     }
 
+    if (categories.length === 0) {
+      return res.status(400).json({ message: "At least one category is required" });
+    }
+
+    // Validate each category has required fields
+    for (let i = 0; i < categories.length; i++) {
+      const cat = categories[i];
+      if (!cat.name || typeof cat.name !== "string" || cat.name.trim().length === 0) {
+        return res.status(400).json({ 
+          message: `Category at index ${i} is missing or has invalid name` 
+        });
+      }
+      if (!cat.type || !["income", "expense"].includes(cat.type)) {
+        return res.status(400).json({ 
+          message: `Category at index ${i} has invalid type. Must be "income" or "expense"` 
+        });
+      }
+      if (!cat.group || typeof cat.group !== "string" || cat.group.trim().length === 0) {
+        return res.status(400).json({ 
+          message: `Category at index ${i} is missing or has invalid group` 
+        });
+      }
+    }
+
     // Delete existing categories for user
     await Category.deleteMany({ user: req.user.id });
 
-    // Create new categories
+    // Create new categories - ensure clean data
     const categoriesWithUser = categories.map((category) => ({
-      ...category,
+      name: category.name.trim(),
+      type: category.type,
+      group: category.group.trim(),
+      icon: category.icon || "folder",
+      isDefault: category.isDefault || false,
+      budgeted_amount: category.budgeted_amount || 0,
       user: req.user.id,
     }));
 
     const createdCategories = await Category.insertMany(categoriesWithUser);
     res.status(201).json(createdCategories);
   } catch (error) {
-    console.error("Error initializing categories:", error);
-    res.status(500).json({ message: "Server error" });
+    logger.logError(error, { 
+      action: "initializeCategories", 
+      userId: req.user?.id,
+      errorMessage: error.message,
+      stack: error.stack 
+    });
+    
+    // Provide more helpful error message
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ 
+        message: "Validation error: " + Object.values(error.errors).map(e => e.message).join(", ")
+      });
+    }
+    
+    res.status(500).json({ 
+      message: "An error occurred while initializing categories. Please try again.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 });
 
@@ -194,7 +271,7 @@ router.put("/:id/budget", auth, async (req, res) => {
 
     res.json(category);
   } catch (error) {
-    console.error("Error updating budget limit:", error);
+    logger.logError(error, { action: "updateBudgetLimit", categoryId: req.params.id, userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -233,7 +310,7 @@ router.post("/allocate-budgets", auth, async (req, res) => {
       month,
     });
   } catch (error) {
-    console.error("Error allocating budgets:", error);
+    logger.logError(error, { action: "allocateBudgets", userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -306,7 +383,7 @@ router.get("/budget-summary", auth, async (req, res) => {
           : 0,
     });
   } catch (error) {
-    console.error("Error fetching budget summary:", error);
+    logger.logError(error, { action: "getBudgetSummary", userId: req.user?.id });
     res.status(500).json({ message: "Server error" });
   }
 });

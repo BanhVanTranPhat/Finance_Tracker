@@ -1,36 +1,38 @@
 import { useState } from "react";
 import { DollarSign, Wallet, BarChart3, Settings, User } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 
 export default function DesktopSidebar({ activeTab, onTabChange, onAddTransaction }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
     {
       id: "budget",
-      label: "Ngân sách",
+      label: t("budget"),
       icon: DollarSign,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
     },
     {
       id: "wallet",
-      label: "Ví",
+      label: t("wallet"),
       icon: Wallet,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
       id: "transactions",
-      label: "Phân tích",
+      label: t("analysis"),
       icon: BarChart3,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
       id: "settings",
-      label: "Cài đặt",
+      label: t("settings"),
       icon: Settings,
       color: "text-gray-600",
       bgColor: "bg-gray-50",
@@ -39,36 +41,36 @@ export default function DesktopSidebar({ activeTab, onTabChange, onAddTransactio
 
   return (
     <div
-      className={`bg-white border-r border-gray-200 transition-all duration-300 ${
+      className={`bg-[#0A2540] text-white transition-all duration-300 ${
         isCollapsed ? "w-16" : "w-64"
-      } h-screen flex flex-col`}
+      } min-h-screen flex flex-col`}
     >
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-white/10">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-white/90" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-800">
+                <h1 className="text-lg font-bold text-white">
                   Finance Tracker
                 </h1>
-                <p className="text-xs text-gray-500">
-                  Quản lý chi tiêu cá nhân
+                <p className="text-xs text-white/70">
+                  {t("personalSpendingManagement")}
                 </p>
               </div>
             </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
             <div className="w-4 h-4 flex flex-col justify-center space-y-1">
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-white/70"></div>
+              <div className="w-full h-0.5 bg-white/70"></div>
+              <div className="w-full h-0.5 bg-white/70"></div>
             </div>
           </button>
         </div>
@@ -76,16 +78,16 @@ export default function DesktopSidebar({ activeTab, onTabChange, onAddTransactio
 
       {/* User Profile */}
       {!isCollapsed && (
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-white/10">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white/90" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-800 truncate">
-                {user?.name || "Người dùng"}
+              <p className="text-sm font-medium text-white truncate">
+                {user?.name || t("user")}
               </p>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="text-xs text-white/70 truncate">
                 {user?.email || "user@example.com"}
               </p>
             </div>
@@ -93,9 +95,10 @@ export default function DesktopSidebar({ activeTab, onTabChange, onAddTransactio
           {/* Add Transaction Button */}
           <button
             onClick={onAddTransaction}
-            className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 rounded-lg shadow"
+            className="mt-4 w-full bg-[#1ABC9C] hover:bg-[#149D86] text-white text-sm font-semibold py-2.5 rounded-lg shadow"
+            data-tour="add-transaction-btn"
           >
-            + Thêm giao dịch
+            + {t("addTransaction")}
           </button>
         </div>
       )}
@@ -112,9 +115,7 @@ export default function DesktopSidebar({ activeTab, onTabChange, onAddTransactio
                 <button
                   onClick={() => onTabChange(item.id)}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActive
-                      ? `${item.bgColor} ${item.color}`
-                      : "text-gray-600 hover:bg-gray-50"
+                    isActive ? "bg-white/10 text-white" : "text-white/80 hover:bg-white/5"
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -129,11 +130,11 @@ export default function DesktopSidebar({ activeTab, onTabChange, onAddTransactio
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-white/10">
         {!isCollapsed && (
           <div className="text-center">
-            <p className="text-xs text-gray-400">© 2025 Finance Tracker</p>
-            <p className="text-xs text-gray-400">v1.0.0</p>
+            <p className="text-xs text-white/50">© 2025 Finance Tracker</p>
+            <p className="text-xs text-white/50">v1.0.0</p>
           </div>
         )}
       </div>

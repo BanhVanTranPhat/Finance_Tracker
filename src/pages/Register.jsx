@@ -2,38 +2,106 @@ import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../contexts/AuthContext.jsx";
-import { UserPlus, Wallet } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { UserPlus, Wallet, Languages, ArrowLeft } from "lucide-react";
 
-const RegisterSchema = Yup.object().shape({
-  name: Yup.string().min(2, "Tên quá ngắn").required("Vui lòng nhập tên"),
+const getRegisterSchema = (t) => Yup.object().shape({
+  name: Yup.string()
+    .min(2, t("nameMinLength"))
+    .required(t("nameRequired")),
   email: Yup.string()
-    .email("Email không hợp lệ")
-    .required("Vui lòng nhập email"),
+    .email(t("invalidEmail"))
+    .required(t("emailRequired")),
   password: Yup.string()
-    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-    .required("Vui lòng nhập mật khẩu"),
+    .min(6, t("passwordMinLength"))
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, t("passwordStrengthRequirement"))
+    .required(t("passwordRequired")),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Mật khẩu không khớp")
-    .required("Vui lòng xác nhận mật khẩu"),
+    .oneOf([Yup.ref("password")], t("passwordsDontMatch"))
+    .required(t("confirmPasswordRequired")),
 });
 
-export default function Register({ onSwitchToLogin }) {
+export default function Register({ onSwitchToLogin, onBackToLanding }) {
   const { register } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [error, setError] = useState("");
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  
+  const RegisterSchema = getRegisterSchema(t);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 relative">
+        {/* Back Button */}
+        {onBackToLanding && (
+          <div className="absolute top-4 left-4">
+            <button
+              onClick={onBackToLanding}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition text-gray-700"
+              aria-label={t("goBack") || "Back to home"}
+              title={t("goBack") || "Back to home"}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium hidden sm:inline">{t("goBack") || "Back"}</span>
+            </button>
+          </div>
+        )}
+        {/* Language Selector */}
+        <div className="absolute top-4 right-4">
+          <div className="relative">
+            <button
+              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition text-gray-700"
+              aria-label="Select language"
+            >
+              <Languages className="w-5 h-5" />
+              <span className="text-sm font-medium">{language === "vi" ? "VI" : "EN"}</span>
+            </button>
+            {showLanguageMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowLanguageMenu(false)}
+                ></div>
+                <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 min-w-[150px]">
+                  <button
+                    onClick={() => {
+                      setLanguage("vi");
+                      setShowLanguageMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition ${
+                      language === "vi" ? "bg-emerald-50 text-emerald-600 font-semibold" : "text-gray-700"
+                    }`}
+                  >
+                    Tiếng Việt
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage("en");
+                      setShowLanguageMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition ${
+                      language === "en" ? "bg-emerald-50 text-emerald-600 font-semibold" : "text-gray-700"
+                    }`}
+                  >
+                    English
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
         <div className="flex items-center justify-center mb-8">
           <div className="bg-emerald-500 p-3 rounded-full">
             <Wallet className="w-8 h-8 text-white" />
           </div>
         </div>
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Đăng ký
+          {t("register")}
         </h1>
         <p className="text-center text-gray-600 mb-8">
-          Tạo tài khoản mới để bắt đầu
+          {t("registerSubtitle")}
         </p>
 
         {error && (
@@ -56,7 +124,7 @@ export default function Register({ onSwitchToLogin }) {
               await register(values.email, values.password, values.name);
             } catch (err) {
               const errorMessage =
-                err instanceof Error ? err.message : "Đăng ký thất bại";
+                err instanceof Error ? err.message : t("registerFailed");
               setError(errorMessage);
             } finally {
               setSubmitting(false);
@@ -70,14 +138,14 @@ export default function Register({ onSwitchToLogin }) {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Họ và tên
+                  {t("fullName")}
                 </label>
                 <Field
                   type="text"
                   name="name"
                   id="name"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                  placeholder="Nguyễn Văn A"
+                  placeholder={t("placeholderName")}
                 />
                 <ErrorMessage
                   name="name"
@@ -112,7 +180,7 @@ export default function Register({ onSwitchToLogin }) {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Mật khẩu
+                  {t("password")}
                 </label>
                 <Field
                   type="password"
@@ -133,7 +201,7 @@ export default function Register({ onSwitchToLogin }) {
                   htmlFor="confirmPassword"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Xác nhận mật khẩu
+                  {t("confirmPassword")}
                 </label>
                 <Field
                   type="password"
@@ -155,7 +223,7 @@ export default function Register({ onSwitchToLogin }) {
                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <UserPlus className="w-5 h-5" />
-                {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
+                {isSubmitting ? t("registering") : t("register")}
               </button>
             </Form>
           )}
@@ -163,12 +231,12 @@ export default function Register({ onSwitchToLogin }) {
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Đã có tài khoản?{" "}
+            {t("alreadyHaveAccount")}{" "}
             <button
               onClick={onSwitchToLogin}
               className="text-emerald-500 hover:text-emerald-600 font-semibold transition"
             >
-              Đăng nhập ngay
+              {t("loginNow")}
             </button>
           </p>
         </div>

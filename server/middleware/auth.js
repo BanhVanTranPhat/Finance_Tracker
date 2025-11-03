@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const config = require("../config");
 
 const auth = async (req, res, next) => {
   try {
@@ -10,10 +11,7 @@ const auth = async (req, res, next) => {
         .json({ message: "Không có token, truy cập bị từ chối" });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your-secret-key"
-    );
+    const decoded = jwt.verify(token, config.jwtSecret);
     req.user = { id: decoded.userId };
     next();
   } catch (error) {

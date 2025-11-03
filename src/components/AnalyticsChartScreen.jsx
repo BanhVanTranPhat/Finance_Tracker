@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -27,6 +29,8 @@ const INCOME_COLORS = [
 
 export default function AnalyticsChartScreen() {
   const { transactions, categories } = useFinance();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
 
   // Calculate expense data by category
   const expenseData = useMemo(() => {
@@ -36,7 +40,7 @@ export default function AnalyticsChartScreen() {
     const categoryTotals = {};
 
     expenseTransactions.forEach((t) => {
-      const category = t.category || "Khác";
+      const category = t.category || t("other");
       categoryTotals[category] = (categoryTotals[category] || 0) + t.amount;
     });
 
@@ -55,7 +59,7 @@ export default function AnalyticsChartScreen() {
     const categoryTotals = {};
 
     incomeTransactions.forEach((t) => {
-      const category = t.category || "Khác";
+      const category = t.category || t("other");
       categoryTotals[category] = (categoryTotals[category] || 0) + t.amount;
     });
 
@@ -116,9 +120,9 @@ export default function AnalyticsChartScreen() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-500 to-blue-500 pt-12 pb-6 px-4">
-        <h1 className="text-3xl font-bold text-white text-center">Phân tích</h1>
+        <h1 className="text-3xl font-bold text-white text-center">{t("analysis")}</h1>
         <p className="text-white/80 text-sm text-center mt-2">
-          Chi tiết thu chi theo danh mục
+          {t("analysisDetails")}
         </p>
       </div>
 
@@ -131,9 +135,9 @@ export default function AnalyticsChartScreen() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">
-                Phân tích chi tiêu
+                {t("spendingAnalysis")}
               </h2>
-              <p className="text-sm text-gray-500">Theo danh mục</p>
+              <p className="text-sm text-gray-500">{t("byCategory")}</p>
             </div>
           </div>
 
@@ -166,9 +170,9 @@ export default function AnalyticsChartScreen() {
 
               {/* Total */}
               <div className="text-center mb-6 p-4 bg-red-50 rounded-xl">
-                <div className="text-sm text-red-700 mb-1">Tổng chi tiêu</div>
+                <div className="text-sm text-red-700 mb-1">{t("totalSpending")}</div>
                 <div className="text-3xl font-bold text-red-600">
-                  {totalExpense.toLocaleString()}₫
+                  {formatCurrency(totalExpense)}
                 </div>
               </div>
 
@@ -194,7 +198,7 @@ export default function AnalyticsChartScreen() {
                     <div className="flex items-center space-x-3">
                       <div className="text-right">
                         <div className="font-bold text-red-600">
-                          {item.value.toLocaleString()}₫
+                          {formatCurrency(item.value)}
                         </div>
                         <div className="text-xs text-gray-500">
                           {item.percentage}%
@@ -214,7 +218,7 @@ export default function AnalyticsChartScreen() {
           ) : (
             <div className="text-center py-12">
               <TrendingDown className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">Chưa có giao dịch chi tiêu</p>
+              <p className="text-gray-500">{t("noExpenseTransactions")}</p>
             </div>
           )}
         </div>
@@ -227,9 +231,9 @@ export default function AnalyticsChartScreen() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">
-                Phân tích thu nhập
+                {t("incomeAnalysis")}
               </h2>
-              <p className="text-sm text-gray-500">Theo danh mục</p>
+              <p className="text-sm text-gray-500">{t("byCategory")}</p>
             </div>
           </div>
 
@@ -262,9 +266,9 @@ export default function AnalyticsChartScreen() {
 
               {/* Total */}
               <div className="text-center mb-6 p-4 bg-green-50 rounded-xl">
-                <div className="text-sm text-green-700 mb-1">Tổng thu nhập</div>
+                <div className="text-sm text-green-700 mb-1">{t("totalIncome")}</div>
                 <div className="text-3xl font-bold text-green-600">
-                  {totalIncome.toLocaleString()}₫
+                  {formatCurrency(totalIncome)}
                 </div>
               </div>
 
@@ -290,7 +294,7 @@ export default function AnalyticsChartScreen() {
                     <div className="flex items-center space-x-3">
                       <div className="text-right">
                         <div className="font-bold text-green-600">
-                          {item.value.toLocaleString()}₫
+                          {formatCurrency(item.value)}
                         </div>
                         <div className="text-xs text-gray-500">
                           {item.percentage}%
@@ -310,7 +314,7 @@ export default function AnalyticsChartScreen() {
           ) : (
             <div className="text-center py-12">
               <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">Chưa có giao dịch thu nhập</p>
+              <p className="text-gray-500">{t("noIncomeTransactions")}</p>
             </div>
           )}
         </div>

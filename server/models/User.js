@@ -28,6 +28,24 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google"],
       default: "local",
     },
+    avatar: {
+      type: String,
+      default: "",
+    },
+    // Password reset fields
+    resetCodeHash: {
+      type: String,
+      select: false,
+    },
+    resetCodeExpires: {
+      type: Date,
+      select: false,
+    },
+    resetAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
   },
   {
     timestamps: true,

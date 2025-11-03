@@ -9,6 +9,8 @@ import {
   Calendar,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 
 const walletIcons = [
   { id: "money-bag", icon: Banknote, color: "bg-yellow-500" },
@@ -19,15 +21,6 @@ const walletIcons = [
   { id: "calendar", icon: Calendar, color: "bg-green-500" },
 ];
 
-const defaultNameByIcon = {
-  "money-bag": "Tiền mặt",
-  "credit-card": "Thẻ ngân hàng",
-  bank: "Ví điện tử",
-  coins: "Vàng",
-  target: "Thẻ tín dụng",
-  calendar: "Các khoản vay",
-};
-
 export default function WalletManagementModal({
   isOpen,
   onClose,
@@ -36,7 +29,19 @@ export default function WalletManagementModal({
   mode = "create", // "create" or "edit"
 }) {
   const { addWallet, updateWallet } = useFinance();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
   const [selectedIcon, setSelectedIcon] = useState("money-bag");
+
+  // Default wallet names by icon with translations
+  const defaultNameByIcon = {
+    "money-bag": t("cash"),
+    "credit-card": t("creditCard"),
+    "bank": t("bank"),
+    "coins": t("coins"),
+    "target": t("target"),
+    "calendar": t("calendar"),
+  };
   const [walletName, setWalletName] = useState("");
   const [balance, setBalance] = useState("");
   const [displayBalance, setDisplayBalance] = useState("");
@@ -83,8 +88,8 @@ export default function WalletManagementModal({
   };
 
   const handleSave = async () => {
-    // Nếu không nhập tên, dùng "Tiền mặt" làm mặc định
-    const finalWalletName = walletName.trim() || "Tiền mặt";
+    // Nếu không nhập tên, dùng default name làm mặc định
+    const finalWalletName = walletName.trim() || defaultNameByIcon[selectedIcon] || t("cash");
 
     const walletData = {
       name: finalWalletName,
@@ -116,7 +121,7 @@ export default function WalletManagementModal({
       setSelectedIcon("money-bag");
     } catch (error) {
       console.error("Error saving wallet:", error);
-      alert("Có lỗi xảy ra khi lưu ví. Vui lòng thử lại.");
+      alert(t("saveWalletError"));
     }
   };
 
@@ -131,13 +136,13 @@ export default function WalletManagementModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-800">
-            {mode === "edit" ? "Cập nhật số dư ví" : "Tạo ví thanh toán"}
+            {mode === "edit" ? t("updateWalletBalance") : t("createPaymentWallet")}
           </h2>
           <button
             onClick={onClose}
             className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
-            aria-label="Đóng modal"
-            title="Đóng modal"
+            aria-label={t("close")}
+            title={t("close")}
           >
             <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
           </button>
@@ -149,7 +154,7 @@ export default function WalletManagementModal({
             <SelectedIconComponent className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           <button className="bg-yellow-400 hover:bg-yellow-500 text-emerald-800 px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm">
-            Thay đổi biểu tượng
+            {t("changeIcon")}
           </button>
         </div>
 
@@ -176,8 +181,8 @@ export default function WalletManagementModal({
                     ? "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-200 scale-105"
                     : `${iconData.color} bg-opacity-20 hover:bg-opacity-30 hover:scale-105`
                 }`}
-                aria-label={`Chọn icon ${iconData.id}`}
-                title={`Chọn icon ${iconData.id}`}
+                aria-label={t("selectIcon") + " " + iconData.id}
+                title={t("selectIcon") + " " + iconData.id}
               >
                 <IconComponent
                   className={`w-6 h-6 ${
@@ -192,13 +197,13 @@ export default function WalletManagementModal({
         {/* Wallet Name Input */}
         <div className="mb-5 sm:mb-6">
           <label className="block text-emerald-800 font-semibold mb-2 text-sm sm:text-base">
-            Tên của ví này
+            {t("walletName")}
           </label>
           <input
             type="text"
             value={walletName}
             onChange={(e) => setWalletName(e.target.value)}
-            placeholder={defaultNameByIcon[selectedIcon] || "Tiền mặt"}
+            placeholder={defaultNameByIcon[selectedIcon] || t("cash")}
             className="w-full px-4 py-3 sm:py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm sm:text-base"
           />
         </div>
@@ -206,11 +211,11 @@ export default function WalletManagementModal({
         {/* Balance Input */}
         <div className="mb-6 sm:mb-8">
           <label className="block text-emerald-800 font-semibold mb-2 text-sm sm:text-base">
-            Hiện tại số dư trong ví của bạn là bao nhiêu?
+            {t("currentBalanceInWallet")}
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-base sm:text-lg">
-              đ
+              {formatCurrency(0).replace(/[\d.,]/g, "").trim()}
             </span>
             <input
               type="text"
@@ -221,23 +226,21 @@ export default function WalletManagementModal({
             />
           </div>
           <p className="text-gray-500 text-xs sm:text-sm mt-2">
-            Bạn nhập số tiền càng chính xác thì chúng tôi có thể giúp bạn cập
-            nhật ngân sách càng chính xác hơn.
+            {t("balanceInputHelper")}
           </p>
         </div>
 
         {/* Default Wallet Toggle */}
         <div className="mb-6 sm:mb-8 p-4 sm:p-5 bg-gray-50 rounded-xl border border-gray-200">
           <h3 className="text-emerald-800 font-semibold mb-2 text-sm sm:text-base">
-            Ví mặc định
+            {t("defaultWallet")}
           </h3>
           <p className="text-gray-600 text-xs sm:text-sm mb-4">
-            Ví mặc định là ví sẽ được mặc định lựa chọn khi bạn tạo các giao
-            dịch.
+            {t("defaultWalletDescription")}
           </p>
           <div className="flex items-center justify-between">
             <span className="text-gray-700 text-sm sm:text-base font-medium">
-              Đặt làm ví mặc định
+              {t("setAsDefaultWallet")}
             </span>
             <button
               onClick={() => setIsDefault(!isDefault)}
@@ -262,10 +265,10 @@ export default function WalletManagementModal({
         <button
           onClick={handleSave}
           className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-emerald-800 font-bold py-3.5 sm:py-4 rounded-xl transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
-          aria-label={mode === "edit" ? "Cập nhật ví" : "Lưu ví mới"}
-          title={mode === "edit" ? "Cập nhật ví" : "Lưu ví mới"}
+          aria-label={mode === "edit" ? t("updateWallet") : t("saveNewWallet")}
+          title={mode === "edit" ? t("updateWallet") : t("saveNewWallet")}
         >
-          {mode === "edit" ? "CẬP NHẬT VÍ" : "LƯU VÍ MỚI"}
+          {mode === "edit" ? t("updateWalletButton") : t("saveNewWalletButton")}
         </button>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 
 export default function BottomNav({
   activeTab,
@@ -15,12 +16,13 @@ export default function BottomNav({
   onCentralAction,
 }) {
   const { wallets } = useFinance();
+  const { t } = useLanguage();
   const hasWallets = wallets && wallets.length > 0;
   const navItems = [
-    { id: "budget", icon: DollarSign, label: "Ngân sách" },
-    { id: "wallet", icon: Wallet, label: "Ví" },
-    { id: "transactions", icon: BarChart3, label: "Phân tích" },
-    { id: "settings", icon: Settings, label: "Cài đặt" },
+    { id: "budget", icon: DollarSign, label: t("budget") },
+    { id: "wallet", icon: Wallet, label: t("wallet") },
+    { id: "transactions", icon: BarChart3, label: t("analysis") },
+    { id: "settings", icon: Settings, label: t("settings") },
   ];
 
   return (
@@ -38,8 +40,8 @@ export default function BottomNav({
                   ? "text-emerald-600 bg-emerald-50"
                   : "text-gray-500 hover:text-gray-700"
               }`}
-              aria-label={`Chuyển đến ${item.label}`}
-              title={`Chuyển đến ${item.label}`}
+              aria-label={t("navigateTo") + " " + item.label}
+              title={t("navigateTo") + " " + item.label}
             >
               <Icon
                 className={`w-5 h-5 ${
@@ -61,8 +63,9 @@ export default function BottomNav({
         <button
           onClick={hasWallets ? onCentralAction : onCreateWallet}
           className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors"
-          aria-label={hasWallets ? "Thêm giao dịch" : "Tạo ví mới"}
-          title={hasWallets ? "Thêm giao dịch" : "Tạo ví mới"}
+          data-tour="add-transaction-btn"
+          aria-label={hasWallets ? t("addTransaction") : t("createNewWallet")}
+          title={hasWallets ? t("addTransaction") : t("createNewWallet")}
         >
           <Plus className="w-6 h-6 text-white" />
         </button>

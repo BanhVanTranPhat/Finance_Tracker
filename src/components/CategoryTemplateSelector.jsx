@@ -4,10 +4,13 @@ import { categoryTemplates } from "../data/categoryTemplates.js";
 import { X, Check, ArrowRight } from "lucide-react";
 
 export default function CategoryTemplateSelector({ isOpen, onClose }) {
-  const { initializeCategories } = useFinance();
+  const { importCategories, categories } = useFinance();
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const existingNameSet = new Set(
+    (categories || []).map((c) => (c.name || "").toString().trim().toLowerCase())
+  );
 
   if (!isOpen) return null;
 
@@ -21,6 +24,13 @@ export default function CategoryTemplateSelector({ isOpen, onClose }) {
   };
 
   const toggleCategory = (categoryId) => {
+    if (!selectedTemplate) return;
+    const cat = selectedTemplate.groups
+      .flatMap((g) => g.categories)
+      .find((c) => c.id === categoryId);
+    if (cat && existingNameSet.has((cat.name || "").toString().trim().toLowerCase())) {
+      return; // ignore toggle for categories that already exist
+    }
     setSelectedCategories((prev) =>
       prev.includes(categoryId)
         ? prev.filter((id) => id !== categoryId)
@@ -52,7 +62,7 @@ export default function CategoryTemplateSelector({ isOpen, onClose }) {
         })
         .filter(Boolean);
 
-      await initializeCategories(categoriesForFinance);
+      await importCategories(categoriesForFinance);
       onClose();
     } catch (error) {
       console.error("Error applying template: ", error);
@@ -119,32 +129,42 @@ export default function CategoryTemplateSelector({ isOpen, onClose }) {
                     {group.name}
                   </h5>
                   <div className="grid grid-cols-2 gap-2">
-                    {group.categories.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => toggleCategory(category.id)}
-                        className={`p-2 rounded-lg border text-left transition-all flex items-center space-x-2 ${
-                          selectedCategories.includes(category.id)
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <div
-                          className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                            selectedCategories.includes(category.id)
-                              ? "border-blue-500 bg-blue-500"
-                              : "border-gray-300"
+                    {group.categories.map((category) => {
+                      const exists = existingNameSet.has(
+                        (category.name || "").toString().trim().toLowerCase()
+                      );
+                      const isSelected = selectedCategories.includes(category.id);
+                      return (
+                        <button
+                          key={category.id}
+                          onClick={() => toggleCategory(category.id)}
+                          disabled={exists}
+                          className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between ${
+                            exists
+                              ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+                              : isSelected
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300"
                           }`}
                         >
-                          {selectedCategories.includes(category.id) && (
-                            <Check className="w-3 h-3 text-white" />
+                          <div className="flex items-center space-x-2">
+                            <div
+                              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+                              }`}
+                            >
+                              {isSelected && <Check className="w-3 h-3 text-white" />}
+                            </div>
+                            <span className={`text-sm ${exists ? "text-gray-400" : "text-gray-700"}`}>
+                              {category.name}
+                            </span>
+                          </div>
+                          {exists && (
+                            <span className="text-xs font-medium text-gray-400">Đã có</span>
                           )}
-                        </div>
-                        <span className="text-sm text-gray-700">
-                          {category.name}
-                        </span>
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

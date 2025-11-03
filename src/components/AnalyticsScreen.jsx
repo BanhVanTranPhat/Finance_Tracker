@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { TrendingUp, TrendingDown, Folder, Calendar } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useCurrency } from "../contexts/CurrencyContext.jsx";
 import TransactionModal from "./TransactionModal.jsx";
 
 export default function AnalyticsScreen() {
@@ -8,14 +10,16 @@ export default function AnalyticsScreen() {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [transactionType, setTransactionType] = useState("expense");
   const { totalIncome, totalExpense, addTransaction } = useFinance();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
 
   // Computed values
   const totalSavings = totalIncome - totalExpense;
 
   const filters = [
-    { id: "all", label: "Tất cả" },
-    { id: "income", label: "Thu nhập" },
-    { id: "expense", label: "Chi tiêu" },
+    { id: "all", label: t("all") },
+    { id: "income", label: t("income") },
+    { id: "expense", label: t("expense") },
   ];
 
   const handleAddTransaction = () => {
@@ -33,12 +37,12 @@ export default function AnalyticsScreen() {
       {/* Header */}
       <div className="pt-12 pb-6 px-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Phân tích</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t("analysis")}</h1>
           <button
             onClick={handleAddTransaction}
             className="bg-yellow-400 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition-colors"
           >
-            + Thêm
+            + {t("add")}
           </button>
         </div>
       </div>
@@ -49,26 +53,26 @@ export default function AnalyticsScreen() {
           <div className="bg-white rounded-xl p-4">
             <div className="flex items-center mb-2">
               <TrendingUp className="w-5 h-5 text-gray-400 mr-2" />
-              <span className="text-gray-600 text-sm">Thu nhập</span>
+              <span className="text-gray-600 text-sm">{t("income")}</span>
             </div>
             <div className="text-2xl font-bold text-gray-800">
-              +{totalIncome.toLocaleString()}
+              +{formatCurrency(totalIncome)}
             </div>
           </div>
           <div className="bg-white rounded-xl p-4">
             <div className="flex items-center mb-2">
               <TrendingDown className="w-5 h-5 text-gray-400 mr-2" />
-              <span className="text-gray-600 text-sm">Chi tiêu</span>
+              <span className="text-gray-600 text-sm">{t("expense")}</span>
             </div>
             <div className="text-2xl font-bold text-red-500">
-              -{totalExpense.toLocaleString()}
+              -{formatCurrency(totalExpense)}
             </div>
           </div>
         </div>
         <div className="bg-emerald-500 rounded-xl p-4">
-          <div className="text-white text-sm mb-2">Tiết kiệm được</div>
+          <div className="text-white text-sm mb-2">{t("saved")}</div>
           <div className="text-2xl font-bold text-white">
-            {totalSavings.toLocaleString()}VNĐ
+            {formatCurrency(totalSavings)}
           </div>
         </div>
       </div>
@@ -76,14 +80,14 @@ export default function AnalyticsScreen() {
       {/* Spending Trend Chart */}
       <div className="px-4 mb-6">
         <h3 className="text-lg font-bold text-gray-800 mb-4">
-          Xu hướng 5 tháng
+          {t("trend5Months")}
         </h3>
         <div className="bg-white rounded-xl p-4">
           {totalExpense === 0 ? (
             <div className="text-center py-8">
-              <div className="text-gray-400 text-sm">Chưa có dữ liệu</div>
+              <div className="text-gray-400 text-sm">{t("noData")}</div>
               <div className="text-gray-300 text-xs mt-1">
-                Thêm giao dịch để xem biểu đồ
+                {t("addTransactionToViewChart")}
               </div>
             </div>
           ) : (
@@ -124,13 +128,13 @@ export default function AnalyticsScreen() {
       {/* Spending by Category */}
       <div className="px-4 mb-6">
         <h3 className="text-lg font-bold text-gray-800 mb-4">
-          Chi tiêu theo danh mục
+          {t("expensesByCategory")}
         </h3>
         {totalExpense === 0 ? (
           <div className="text-center py-8">
-            <div className="text-gray-400 text-sm">Chưa có chi tiêu nào</div>
+            <div className="text-gray-400 text-sm">{t("noData")}</div>
             <div className="text-gray-300 text-xs mt-1">
-              Thêm giao dịch để xem phân tích
+              {t("addTransactionToViewChart")}
             </div>
           </div>
         ) : (
@@ -142,7 +146,7 @@ export default function AnalyticsScreen() {
                   Chi tiêu bất ngờ
                 </div>
                 <div className="text-sm text-gray-500">
-                  {totalExpense.toLocaleString()}VNĐ
+                  {formatCurrency(totalExpense)}
                 </div>
                 <div className="text-xs text-gray-400">100.0%</div>
               </div>
@@ -177,9 +181,9 @@ export default function AnalyticsScreen() {
       <div className="px-4">
         {totalIncome === 0 && totalExpense === 0 ? (
           <div className="text-center py-8">
-            <div className="text-gray-400 text-sm">Chưa có giao dịch nào</div>
+            <div className="text-gray-400 text-sm">{t("noData")}</div>
             <div className="text-gray-300 text-xs mt-1">
-              Thêm giao dịch để xem lịch sử
+              {t("addTransactionToViewChart")}
             </div>
           </div>
         ) : (
@@ -200,7 +204,7 @@ export default function AnalyticsScreen() {
                   <div className="text-sm text-gray-500">ia</div>
                 </div>
                 <div className="text-red-500 font-bold">
-                  -{totalExpense.toLocaleString()}
+                  -{formatCurrency(totalExpense)}
                 </div>
               </div>
             </div>

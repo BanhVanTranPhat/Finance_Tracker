@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   User,
   Camera,
@@ -13,22 +13,56 @@ import {
   LogOut,
   MessageCircle,
   BookOpen,
+  Download,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 import { useCurrency } from "../contexts/CurrencyContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 import { dataAPI } from "../services/api.js";
+import HelpCenterModal from "./HelpCenterModal.jsx";
 
 export default function SettingsScreen() {
   const { user, logout, updateUserProfile } = useAuth();
   const { wallets, categories, transactions } = useFinance();
-  const { currency, setCurrency, currencies, currencyName } = useCurrency();
+  const {
+    currency,
+    setCurrency,
+    currencies,
+    currencyName,
+    usdToVndRate,
+    setUsdToVndRate,
+    DEFAULT_USD_TO_VND_RATE,
+  } = useCurrency();
+  const { language, setLanguage, t } = useLanguage();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [tempUsdRate, setTempUsdRate] = useState(usdToVndRate.toString());
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+
+  // Update tempUsdRate when usdToVndRate changes from outside
+  useEffect(() => {
+    setTempUsdRate(usdToVndRate.toString());
+  }, [usdToVndRate]);
+
+  // Initialize tempUsdRate when modal opens
+  useEffect(() => {
+    if (showCurrencyModal) {
+      setTempUsdRate(usdToVndRate.toString());
+    }
+  }, [showCurrencyModal, usdToVndRate]);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showHelpCenter, setShowHelpCenter] = useState(false);
   const fileInputRef = useRef(null);
 
   const [profileData, setProfileData] = useState({
@@ -37,14 +71,23 @@ export default function SettingsScreen() {
     avatar: user?.avatar || "",
   });
 
-  // Language settings
-  const [language, setLanguage] = useState(() => {
-    return localStorage.getItem("app_language") || "vi";
-  });
+  // Sync profileData when user changes
+  useEffect(() => {
+    setProfileData({
+      name: user?.name || "Người dùng",
+      email: user?.email || "user@example.com",
+      avatar: user?.avatar || "",
+    });
+  }, [user]);
 
-  const handleSaveProfile = () => {
-    updateUserProfile(profileData);
-    setIsEditingProfile(false);
+  const handleSaveProfile = async () => {
+    try {
+      await updateUserProfile(profileData);
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert(language === "vi" ? "Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại." : "An error occurred while saving. Please try again.");
+    }
   };
 
   const handleCancelEdit = () => {
@@ -63,10 +106,26 @@ export default function SettingsScreen() {
   const handleAvatarUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert("Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB");
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith("image/")) {
+        alert("Vui lòng chọn file ảnh");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileData({ ...profileData, avatar: reader.result });
         setShowAvatarModal(false);
+      };
+      reader.onerror = () => {
+        alert("Lỗi khi đọc file. Vui lòng thử lại.");
       };
       reader.readAsDataURL(file);
     }
@@ -79,22 +138,28 @@ export default function SettingsScreen() {
 
   const handleLanguageChange = (newLanguage) => {
     setLanguage(newLanguage);
-    localStorage.setItem("app_language", newLanguage);
     setShowLanguageModal(false);
   };
 
   const handleLogout = () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+    if (window.confirm(language === "vi" ? "Bạn có chắc chắn muốn đăng xuất?" : "Are you sure you want to logout?")) {
       logout();
     }
   };
 
   const handleResetData = async () => {
-    if (
-      window.confirm(
-        "Bạn có chắc chắn muốn xóa tất cả dữ liệu tài chính? Hành động này không thể hoàn tác!"
-      )
-    ) {
+    const confirmMessage = 
+      "⚠️ CẢNH BÁO\n\n" +
+      "Bạn có chắc chắn muốn xóa TẤT CẢ dữ liệu tài chính?\n\n" +
+      "Hành động này sẽ:\n" +
+      "• Xóa tất cả ví, danh mục, giao dịch\n" +
+      "• Xóa tất cả ngân sách và thống kê\n" +
+      "• KHÔNG THỂ HOÀN TÁC\n\n" +
+      "Nhập 'XÓA' để xác nhận:";
+    
+    const userInput = window.prompt(confirmMessage);
+    
+    if (userInput === "XÓA") {
       try {
         console.log("🧹 Starting to delete all financial data...");
 
@@ -113,9 +178,16 @@ export default function SettingsScreen() {
         localStorage.removeItem("analytics_data");
         localStorage.removeItem("user_preferences");
         localStorage.removeItem("google_oauth_login");
+        localStorage.removeItem("recurring_transactions");
 
-        // Set flag to indicate data was manually cleared
+        // Reset onboarding để hiển thị lại hướng dẫn
+        localStorage.setItem("onboarding_completed", "false");
         localStorage.setItem("data_manually_cleared", "true");
+        
+        // Reset tour flags để chạy lại tour
+        const userKey = (user?.id || user?._id || user?.email || "guest").toString();
+        localStorage.removeItem(`tour_seen_once_${userKey}`);
+        localStorage.removeItem("tour_dismissed");
 
         console.log("✅ All financial data cleared from Settings");
 
@@ -125,6 +197,8 @@ export default function SettingsScreen() {
         console.error("Error deleting data:", error);
         alert("Có lỗi xảy ra khi xóa dữ liệu. Vui lòng thử lại.");
       }
+    } else if (userInput !== null) {
+      alert("Xác nhận không đúng. Hủy bỏ xóa dữ liệu.");
     }
   };
 
@@ -132,21 +206,27 @@ export default function SettingsScreen() {
   const accountSettings = [
     {
       icon: <User className="w-5 h-5" />,
-      title: "Thông tin tài khoản",
-      subtitle: "Chỉnh sửa thông tin cá nhân",
+      title: t("profile"),
+      subtitle: language === "vi" ? "Chỉnh sửa thông tin cá nhân" : "Edit personal information",
       action: () => setIsEditingProfile(true),
     },
     {
       icon: <WalletIcon className="w-5 h-5" />,
-      title: "Ví mặc định",
+      title: t("currency"),
       subtitle: currencyName,
       action: () => setShowCurrencyModal(true),
     },
     {
       icon: <Globe className="w-5 h-5" />,
-      title: "Ngôn ngữ",
-      subtitle: language === "vi" ? "Tiếng Việt" : "English",
+      title: t("language"),
+      subtitle: language === "vi" ? t("vietnamese") : t("english"),
       action: () => setShowLanguageModal(true),
+    },
+    {
+      icon: <HelpCircle className="w-5 h-5" />,
+      title: language === "en" ? "Reset password" : "Đặt lại mật khẩu",
+      subtitle: user?.email || "",
+      action: () => setShowResetModal(true),
     },
   ];
 
@@ -161,7 +241,7 @@ export default function SettingsScreen() {
       icon: <BookOpen className="w-5 h-5" />,
       title: "Hướng dẫn sử dụng",
       subtitle: "FAQ và tài liệu",
-      action: () => setShowHelpModal(true),
+      action: () => setShowHelpCenter(true),
     },
   ];
 
@@ -338,6 +418,71 @@ export default function SettingsScreen() {
           </div>
         </div>
 
+        {/* Dữ liệu & Sao lưu */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-500 px-2 mb-3">
+            Dữ liệu & Sao lưu
+          </h2>
+          <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+            {/* Xóa dữ liệu - Nút nguy hiểm */}
+            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-red-800 mb-1 flex items-center gap-2">
+                    <Trash2 className="w-5 h-5" />
+                    Xóa tất cả dữ liệu
+                  </h3>
+                  <p className="text-sm text-red-700">
+                    Xóa toàn bộ ví, danh mục, giao dịch và ngân sách. Hành động này không thể hoàn tác.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleResetData}
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Xóa tất cả dữ liệu
+              </button>
+            </div>
+            {/* Date Range Filter for reports */}
+            <div className="flex items-center gap-3">
+              <select
+                value={reportPreset}
+                onChange={(e) => setReportPreset(e.target.value)}
+                className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white text-[#1B2733]"
+              >
+                <option value="all">Toàn bộ</option>
+                <option value="month">Tháng này</option>
+                <option value="year">Năm nay</option>
+                <option value="custom">Tùy chọn</option>
+              </select>
+              {reportPreset === "custom" && (
+                <div className="flex items-center gap-2">
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white" />
+                  <span className="text-sm text-gray-500">đến</span>
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white" />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <button onClick={() => exportCSV(transactions.map((t) => ({ id: t.id || t._id, type: t.type, amount: t.amount, date: t.date, category: t.category, wallet: t.wallet, note: t.note || "" })), "transactions.csv")} className="group bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+                <Download className="w-4 h-4" /> Xuất giao dịch (CSV)
+              </button>
+              <button onClick={() => exportCSV(categories.map((c) => ({ id: c.id || c._id, name: c.name, type: c.type, group: c.group, budgetLimit: c.budgetLimit || 0, spent: c.spent || 0 })), "categories.csv")} className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+                <FileSpreadsheet className="w-4 h-4" /> Xuất danh mục (CSV)
+              </button>
+              <button onClick={() => exportCSV(wallets.map((w) => ({ id: w.id || w._id, name: w.name, balance: w.balance, icon: w.icon })), "wallets.csv")} className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+                <FileSpreadsheet className="w-4 h-4" /> Xuất ví (CSV)
+              </button>
+              <button onClick={() => { const tx = filterByPreset(transactions); const join = tx.map((t) => ({ Ngay: new Date(t.date).toISOString().slice(0, 10), SoTien: t.amount, Loai: t.type === "income" ? "Thu nhập" : t.type === "expense" ? "Chi tiêu" : t.type, DanhMuc: t.category, Vi: t.wallet, GhiChu: t.note || "" })); exportCSV(join, "report.csv"); }} className="bg-[#6C5CE7] hover:bg-[#5a4fcb] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+                <FileText className="w-4 h-4" /> Xuất báo cáo đơn giản
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Trợ giúp Section */}
         <div>
           <h2 className="text-sm font-semibold text-gray-500 px-2 mb-3">
@@ -365,18 +510,18 @@ export default function SettingsScreen() {
           </div>
         </div>
 
-        {/* Export Section */}
-        <div>
+        {/* Export Section (legacy, hidden) */}
+        <div className="hidden">
           <h2 className="text-sm font-semibold text-gray-500 px-2 mb-3">
             Xuất dữ liệu
           </h2>
-          <div className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
+          <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
             {/* Date Range Filter for reports */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <select
                 value={reportPreset}
                 onChange={(e) => setReportPreset(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white text-[#1B2733]"
               >
                 <option value="all">Toàn bộ</option>
                 <option value="month">Tháng này</option>
@@ -389,21 +534,21 @@ export default function SettingsScreen() {
                     type="date"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                    className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white"
                   />
                   <span className="text-sm text-gray-500">đến</span>
                   <input
                     type="date"
                     value={toDate}
                     onChange={(e) => setToDate(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                    className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white"
                   />
                 </div>
               )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <button
+              <button
               onClick={() =>
                 exportCSV(
                   transactions.map((t) => ({
@@ -418,9 +563,9 @@ export default function SettingsScreen() {
                   "transactions.csv"
                 )
               }
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-3 rounded-xl"
+              className="group bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
             >
-              Xuất giao dịch (CSV)
+              <Download className="w-4 h-4" /> Xuất giao dịch (CSV)
             </button>
             <button
               onClick={() =>
@@ -436,9 +581,9 @@ export default function SettingsScreen() {
                   "categories.csv"
                 )
               }
-              className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-3 rounded-xl"
+              className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
             >
-              Xuất danh mục (CSV)
+              <FileSpreadsheet className="w-4 h-4" /> Xuất danh mục (CSV)
             </button>
             <button
               onClick={() =>
@@ -452,9 +597,9 @@ export default function SettingsScreen() {
                   "wallets.csv"
                 )
               }
-              className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-3 rounded-xl"
+              className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
             >
-              Xuất ví (CSV)
+              <FileSpreadsheet className="w-4 h-4" /> Xuất ví (CSV)
             </button>
             <button
               onClick={() => {
@@ -469,9 +614,9 @@ export default function SettingsScreen() {
                 }));
                 exportCSV(join, "report.csv");
               }}
-              className="bg-purple-500 hover:bg-purple-600 text-white font-medium px-4 py-3 rounded-xl"
+              className="bg-[#6C5CE7] hover:bg-[#5a4fcb] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
             >
-              Xuất báo cáo đơn giản
+              <FileText className="w-4 h-4" /> Xuất báo cáo đơn giản
             </button>
             </div>
           </div>
@@ -491,7 +636,7 @@ export default function SettingsScreen() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[420px] rounded-2xl shadow-2xl max-h-[70vh] flex flex-col">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-800">Chọn tiền tệ</h2>
+              <h2 className="text-xl font-bold text-gray-800">{t("selectCurrency")}</h2>
               <button
                 onClick={() => setShowCurrencyModal(false)}
                 className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
@@ -502,45 +647,97 @@ export default function SettingsScreen() {
 
             <div className="space-y-2 px-6 py-4 overflow-y-auto flex-1">
               {Object.entries(currencies).map(([code, currencyInfo]) => (
-                <button
-                  key={code}
-                  onClick={() => {
-                    setCurrency(code);
-                    setShowCurrencyModal(false);
-                  }}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
-                    currency === code
-                      ? "bg-emerald-50 border-2 border-emerald-500"
-                      : "bg-gray-50 border-2 border-transparent hover:bg-gray-100 active:bg-gray-200"
-                  }`}
-                >
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-800">
-                      {currencyInfo.name}
+                <div key={code} className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setCurrency(code);
+                      if (code === "USD") {
+                        // Keep modal open to show exchange rate input
+                      } else {
+                        setShowCurrencyModal(false);
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
+                      currency === code
+                        ? "bg-emerald-50 border-2 border-emerald-500"
+                        : "bg-gray-50 border-2 border-transparent hover:bg-gray-100 active:bg-gray-200"
+                    }`}
+                  >
+                    <div className="text-left">
+                      <div className="font-semibold text-gray-800">
+                        {currencyInfo.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {currencyInfo.code} ({currencyInfo.symbol})
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {currencyInfo.code} ({currencyInfo.symbol})
-                    </div>
-                  </div>
-                  {currency === code && (
-                    <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
+                    {currency === code && (
+                      <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Exchange rate input for USD */}
+                  {code === "USD" && currency === "USD" && (
+                    <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 space-y-2">
+                      <label className="text-sm font-medium text-gray-700 block">
+                        {t("exchangeRate")}
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={tempUsdRate}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || (parseFloat(value) > 0 && !isNaN(value))) {
+                              setTempUsdRate(value);
+                            }
+                          }}
+                          onBlur={() => {
+                            const rate = parseFloat(tempUsdRate);
+                            if (rate > 0 && !isNaN(rate)) {
+                              setUsdToVndRate(rate);
+                            } else {
+                              setTempUsdRate(usdToVndRate.toString());
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-800"
+                          placeholder={DEFAULT_USD_TO_VND_RATE.toString()}
                         />
-                      </svg>
+                        <span className="text-gray-600 font-medium">VND</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {t("default")} {DEFAULT_USD_TO_VND_RATE.toLocaleString()} VND
+                      </p>
                     </div>
                   )}
-                </button>
+                </div>
               ))}
+              
+              {/* Close button when USD is selected */}
+              {currency === "USD" && (
+                <button
+                  onClick={() => setShowCurrencyModal(false)}
+                  className="w-full mt-4 bg-emerald-500 text-white py-3 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+                >
+                  {t("confirm")}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -548,9 +745,9 @@ export default function SettingsScreen() {
 
       {/* Avatar Selection Modal */}
       {showAvatarModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-          <div className="bg-white w-full sm:w-[500px] sm:max-w-[90vw] rounded-t-3xl sm:rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 pb-20 sm:pb-4">
+          <div className="bg-white w-full sm:w-[500px] sm:max-w-[90vw] rounded-t-3xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto flex flex-col">
+            <div className="flex items-center justify-between mb-6 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-800">
                 Chọn ảnh đại diện
               </h2>
@@ -616,7 +813,7 @@ export default function SettingsScreen() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-800">Chọn ngôn ngữ</h2>
+              <h2 className="text-xl font-bold text-gray-800">{t("selectLanguage")}</h2>
               <button
                 onClick={() => setShowLanguageModal(false)}
                 className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
@@ -638,7 +835,7 @@ export default function SettingsScreen() {
                   <span className="text-3xl">🇻🇳</span>
                   <div className="text-left">
                     <div className="font-semibold text-gray-800">
-                      Tiếng Việt
+                      {t("vietnamese")}
                     </div>
                     <div className="text-sm text-gray-500">Vietnamese</div>
                   </div>
@@ -694,6 +891,121 @@ export default function SettingsScreen() {
                     </svg>
                   </div>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-[420px] rounded-2xl shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-xl font-bold text-gray-800">Đặt lại mật khẩu</h2>
+              <button
+                onClick={() => { setShowResetModal(false); setResetMessage(""); setResetError(""); setResetCode(""); setResetPassword(""); }}
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={user?.email || ""}
+                  disabled
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                />
+              </div>
+
+              {resetMessage && (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg">
+                  {resetMessage}
+                </div>
+              )}
+              {resetError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {resetError}
+                </div>
+              )}
+
+              <button
+                onClick={async () => {
+                  setResetMessage("");
+                  setResetError("");
+                  try {
+                    setResetSending(true);
+                    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                    const res = await fetch(base + "/auth/forgot", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: user?.email }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.message || "Gửi mã thất bại");
+                    setResetMessage("Đã gửi mã xác thực về email. Vui lòng kiểm tra hộp thư.");
+                  } catch (e) {
+                    setResetError(e instanceof Error ? e.message : "Có lỗi xảy ra");
+                  } finally {
+                    setResetSending(false);
+                  }
+                }}
+                disabled={resetSending}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resetSending ? "Đang gửi mã..." : "Gửi mã về email"}
+              </button>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mã xác thực (6 số)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="123456"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                  <input
+                    type="password"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={async () => {
+                  setResetMessage("");
+                  setResetError("");
+                  try {
+                    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                    const res = await fetch(base + "/auth/reset", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: user?.email, code: resetCode, newPassword: resetPassword }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.message || "Đặt lại mật khẩu thất bại");
+                    setResetMessage("Đặt lại mật khẩu thành công.");
+                  } catch (e) {
+                    setResetError(e instanceof Error ? e.message : "Có lỗi xảy ra");
+                  }
+                }}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-3 rounded-xl transition"
+              >
+                Xác nhận đặt lại
               </button>
             </div>
           </div>
@@ -817,6 +1129,12 @@ export default function SettingsScreen() {
           </div>
         </div>
       )}
+
+      {/* Help Center Modal - restart tour */}
+      <HelpCenterModal
+        isOpen={showHelpCenter}
+        onClose={() => setShowHelpCenter(false)}
+      />
     </div>
   );
 }

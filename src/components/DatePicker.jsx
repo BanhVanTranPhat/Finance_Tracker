@@ -1,30 +1,27 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 
 export default function DatePicker({
   selectedDate,
   onDateChange,
   className = "",
 }) {
+  const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [currentYear, setCurrentYear] = useState(selectedDate.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(selectedDate.getMonth());
   const dropdownRef = useRef(null);
 
-  const months = [
-    "Tháng 1",
-    "Tháng 2",
-    "Tháng 3",
-    "Tháng 4",
-    "Tháng 5",
-    "Tháng 6",
-    "Tháng 7",
-    "Tháng 8",
-    "Tháng 9",
-    "Tháng 10",
-    "Tháng 11",
-    "Tháng 12",
-  ];
+  const months = language === "vi" 
+    ? [
+        "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+      ]
+    : [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+      ];
 
   const years = Array.from(
     { length: 10 },
@@ -164,7 +161,7 @@ export default function DatePicker({
                 }}
                 className="py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl active:from-emerald-600 active:to-emerald-700 transition-all shadow-sm active:scale-95"
               >
-                Tháng này
+                {t("thisMonth")}
               </button>
               <button
                 onClick={() => {
@@ -177,7 +174,7 @@ export default function DatePicker({
                 }}
                 className="py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 rounded-xl active:bg-gray-200 transition-all shadow-sm active:scale-95"
               >
-                Tháng trước
+                {t("previousMonth")}
               </button>
             </div>
           </div>

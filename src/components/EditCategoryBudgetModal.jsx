@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import { useCurrency } from "../contexts/CurrencyContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { translateCategoryName } from "../utils/translateCategoryName.js";
 
 export default function EditCategoryBudgetModal({
   isOpen,
@@ -9,6 +11,7 @@ export default function EditCategoryBudgetModal({
   onSave,
 }) {
   const { formatCurrency } = useCurrency();
+  const { language } = useLanguage();
   const [budgetAmount, setBudgetAmount] = useState(0);
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function EditCategoryBudgetModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">
-                {category.name}
+                {translateCategoryName(category.name, language)}
               </h2>
               <p className="text-sm text-gray-500">{category.group}</p>
             </div>

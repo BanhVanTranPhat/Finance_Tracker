@@ -1,9 +1,13 @@
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { translateCategoryName } from "../utils/translateCategoryName.js";
+
 export default function DeleteCategoryConfirmModal({
   isOpen,
   onClose,
   onConfirm,
   categoryName,
 }) {
+  const { language } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -19,7 +23,7 @@ export default function DeleteCategoryConfirmModal({
         {/* Content */}
         <div className="mt-20 text-center">
           <h2 className="text-xl font-bold text-gray-800 mb-4">
-            Bạn muốn xóa "{categoryName}" thật hả?
+            Bạn muốn xóa "{translateCategoryName(categoryName, language)}" thật hả?
           </h2>
           <p className="text-gray-600 text-sm leading-relaxed mb-8">
             Số tiền còn lại trong danh mục sẽ trở thành "Tiền chưa có việc". Các

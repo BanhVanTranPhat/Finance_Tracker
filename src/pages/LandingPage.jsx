@@ -9,58 +9,60 @@ import {
   Wallet,
   ArrowRight,
   CheckCircle2,
+  Languages,
 } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { useState } from "react";
 
 export default function LandingPage({ onLogin, onRegister }) {
+  const { language, setLanguage, t } = useLanguage();
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const features = [
     {
       icon: TrendingUp,
-      title: "Theo dõi thu chi",
-      description:
-        "Ghi lại mọi khoản thu nhập và chi tiêu một cách dễ dàng, nhanh chóng",
+      title: t("landingFeature1Title"),
+      description: t("landingFeature1Desc"),
       color: "from-emerald-500 to-emerald-600",
     },
     {
       icon: PieChart,
-      title: "Phân tích chi tiêu",
-      description:
-        "Biểu đồ trực quan giúp bạn hiểu rõ các khoản chi tiêu của mình",
+      title: t("landingFeature2Title"),
+      description: t("landingFeature2Desc"),
       color: "from-blue-500 to-blue-600",
     },
     {
       icon: Target,
-      title: "Mục tiêu tiết kiệm",
-      description: "Đặt mục tiêu tài chính và theo dõi tiến độ đạt được",
+      title: t("landingFeature3Title"),
+      description: t("landingFeature3Desc"),
       color: "from-purple-500 to-purple-600",
     },
     {
       icon: Calendar,
-      title: "Giao dịch định kỳ",
-      description: "Tự động ghi nhận các khoản thu chi lặp lại hàng tháng",
+      title: t("landingFeature4Title"),
+      description: t("landingFeature4Desc"),
       color: "from-orange-500 to-orange-600",
     },
     {
       icon: BarChart3,
-      title: "Xu hướng tài chính",
-      description:
-        "Xem xu hướng thu chi theo thời gian để có quyết định tốt hơn",
+      title: t("landingFeature5Title"),
+      description: t("landingFeature5Desc"),
       color: "from-pink-500 to-pink-600",
     },
     {
       icon: Download,
-      title: "Xuất báo cáo",
-      description: "Tải xuống dữ liệu dưới dạng CSV hoặc PDF để lưu trữ",
+      title: t("landingFeature6Title"),
+      description: t("landingFeature6Desc"),
       color: "from-teal-500 to-teal-600",
     },
   ];
 
   const benefits = [
-    "Miễn phí 100% - Không có phí ẩn",
-    "Giao diện đẹp, dễ sử dụng",
-    "Bảo mật thông tin tuyệt đối",
-    "Truy cập mọi lúc, mọi nơi",
-    "Cập nhật tính năng liên tục",
-    "Hỗ trợ đa thiết bị",
+    t("landingBenefit1"),
+    t("landingBenefit2"),
+    t("landingBenefit3"),
+    t("landingBenefit4"),
+    t("landingBenefit5"),
+    t("landingBenefit6"),
   ];
 
   return (
@@ -78,17 +80,60 @@ export default function LandingPage({ onLogin, onRegister }) {
               </h1>
             </div>
             <div className="flex items-center gap-3">
+              {/* Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition text-gray-700 font-medium"
+                  aria-label="Select language"
+                >
+                  <Languages className="w-5 h-5" />
+                  <span className="hidden sm:inline">{language === "vi" ? "Tiếng Việt" : "English"}</span>
+                </button>
+                {showLanguageMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowLanguageMenu(false)}
+                    ></div>
+                    <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 min-w-[150px]">
+                      <button
+                        onClick={() => {
+                          setLanguage("vi");
+                          setShowLanguageMenu(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition ${
+                          language === "vi" ? "bg-emerald-50 text-emerald-600 font-semibold" : "text-gray-700"
+                        }`}
+                      >
+                        Tiếng Việt
+                      </button>
+                      <button
+                        onClick={() => {
+                          setLanguage("en");
+                          setShowLanguageMenu(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition ${
+                          language === "en" ? "bg-emerald-50 text-emerald-600 font-semibold" : "text-gray-700"
+                        }`}
+                      >
+                        English
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
               <button
                 onClick={onLogin}
                 className="text-gray-700 hover:text-emerald-600 px-4 py-2 rounded-lg font-medium transition"
               >
-                Đăng nhập
+                {t("login")}
               </button>
               <button
                 onClick={onRegister}
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-md hover:shadow-lg"
               >
-                Đăng ký miễn phí
+                {t("registerFree")}
               </button>
             </div>
           </div>
@@ -101,31 +146,30 @@ export default function LandingPage({ onLogin, onRegister }) {
           <div>
             <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
               <Shield className="w-4 h-4" />
-              Bảo mật & Miễn phí 100%
+              {t("landingSecurityBadge")}
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Quản lý tài chính{" "}
+              {t("landingHeroTitle")}{" "}
               <span className="block bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                thông minh hơn
+                {t("landingHeroSubtitle")}
               </span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Theo dõi chi tiêu, phân tích xu hướng và đạt được mục tiêu tài
-              chính của bạn. Tất cả trong một ứng dụng đơn giản, dễ sử dụng.
+              {t("landingHeroDescription")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={onRegister}
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-xl hover:shadow-2xl flex items-center justify-center gap-2"
               >
-                Bắt đầu ngay - Miễn phí
+                {t("landingStartFree")}
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button
                 onClick={onLogin}
                 className="border-2 border-gray-300 hover:border-emerald-500 text-gray-700 hover:text-emerald-600 px-8 py-4 rounded-xl font-bold text-lg transition"
               >
-                Đăng nhập
+                {t("login")}
               </button>
             </div>
           </div>
@@ -140,7 +184,7 @@ export default function LandingPage({ onLogin, onRegister }) {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">
-                          Thu nhập tháng này
+                          {t("landingExampleIncome")}
                         </p>
                         <p className="text-xl font-bold text-gray-900">
                           15.000.000 ₫
@@ -155,7 +199,7 @@ export default function LandingPage({ onLogin, onRegister }) {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">
-                          Chi tiêu tháng này
+                          {t("landingExampleExpense")}
                         </p>
                         <p className="text-xl font-bold text-gray-900">
                           8.500.000 ₫
@@ -169,7 +213,7 @@ export default function LandingPage({ onLogin, onRegister }) {
                         <Wallet className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Tiết kiệm được</p>
+                        <p className="text-sm text-gray-500">{t("saved")}</p>
                         <p className="text-xl font-bold text-gray-900">
                           6.500.000 ₫
                         </p>
@@ -188,10 +232,10 @@ export default function LandingPage({ onLogin, onRegister }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Tính năng nổi bật
+              {t("landingFeaturesTitle")}
             </h2>
             <p className="text-xl text-gray-600">
-              Mọi thứ bạn cần để quản lý tài chính hiệu quả
+              {t("landingFeaturesSubtitle")}
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -223,7 +267,7 @@ export default function LandingPage({ onLogin, onRegister }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Tại sao chọn chúng tôi?
+              {t("landingWhyUsTitle")}
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -244,16 +288,16 @@ export default function LandingPage({ onLogin, onRegister }) {
       <section className="py-20 bg-gradient-to-r from-emerald-500 to-teal-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Sẵn sàng bắt đầu hành trình tài chính của bạn?
+            {t("landingCTATitle")}
           </h2>
           <p className="text-xl text-emerald-50 mb-8">
-            Tham gia cùng hàng nghìn người dùng đã cải thiện tài chính của họ
+            {t("landingCTADescription")}
           </p>
           <button
             onClick={onRegister}
             className="bg-white hover:bg-gray-50 text-emerald-600 px-10 py-4 rounded-xl font-bold text-lg transition shadow-xl hover:shadow-2xl inline-flex items-center gap-2"
           >
-            Đăng ký miễn phí ngay
+            {t("landingCTAButton")}
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
@@ -272,7 +316,7 @@ export default function LandingPage({ onLogin, onRegister }) {
               </span>
             </div>
             <p className="text-gray-400">
-              © 2025 Finance Tracker. Quản lý tài chính thông minh.
+              © 2025 Finance Tracker. {t("landingFooterText")}
             </p>
           </div>
         </div>

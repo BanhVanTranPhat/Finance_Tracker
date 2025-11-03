@@ -1,9 +1,7 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function GoogleCallback() {
-  const navigate = useNavigate();
   const { setUser } = useAuth();
 
   useEffect(() => {
@@ -17,14 +15,14 @@ export default function GoogleCallback() {
         if (error) {
           console.error("Google OAuth error:", error);
           alert("Đăng nhập Google thất bại: " + error);
-          navigate("/login");
+          window.location.href = "/";
           return;
         }
 
         if (!code) {
           console.error("No authorization code received");
           alert("Không nhận được mã xác thực từ Google");
-          navigate("/login");
+          window.location.href = "/";
           return;
         }
 
@@ -66,16 +64,16 @@ export default function GoogleCallback() {
         );
 
         // Redirect to dashboard
-        navigate("/dashboard");
+        window.location.href = "/dashboard";
       } catch (error) {
         console.error("Google callback error:", error);
         alert("Lỗi xử lý đăng nhập Google: " + error.message);
-        navigate("/login");
+        window.location.href = "/";
       }
     };
 
     handleGoogleCallback();
-  }, [navigate]);
+  }, [setUser]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">

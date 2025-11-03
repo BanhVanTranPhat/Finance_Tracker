@@ -3,37 +3,37 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
 const { OAuth2Client } = require("google-auth-library");
+const config = require("../config");
+const { authLimiter, registerLimiter } = require("../middleware/rateLimiter");
+const {
+  validateRegister,
+  validateLogin,
+  validateProfileUpdate,
+} = require("../middleware/validation");
+const logger = require("../utils/logger");
+const crypto = require("crypto");
+const { sendResetCodeEmail } = require("../utils/mailer");
 
 const router = express.Router();
-const GOOGLE_CLIENT_ID =
-  process.env.GOOGLE_CLIENT_ID ||
-  "885076368157-gk6624okffn4thbbh366uhb18ul2ne7t.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET =
-  process.env.GOOGLE_CLIENT_SECRET || "GOCSPX-your-client-secret-here";
 
-const googleClient = new OAuth2Client(
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  "http://localhost:5173/auth/callback"
-);
+// Google OAuth client - only create when credentials exist to avoid crash in dev
+let googleClient = null;
+try {
+  if (config.googleClientId && config.googleClientSecret) {
+    googleClient = new OAuth2Client(
+      config.googleClientId,
+      config.googleClientSecret,
+      process.env.GOOGLE_REDIRECT_URI || "http://localhost:5173/auth/callback"
+    );
+  }
+} catch (e) {
+  logger.warn("Google OAuth client init skipped", { error: e.message });
+}
 
 // Register
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, validateRegister, async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    // Validation
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng điền đầy đủ thông tin" });
-    }
-
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Mật khẩu phải có ít nhất 6 ký tự" });
-    }
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -46,11 +46,9 @@ router.post("/register", async (req, res) => {
     await user.save();
 
     // Generate token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user._id }, config.jwtSecret, {
+      expiresIn: "7d",
+    });
 
     res.status(201).json({
       message: "Đăng ký thành công",
@@ -59,25 +57,19 @@ router.post("/register", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || "",
       },
     });
   } catch (error) {
-    console.error("Register error:", error);
+    logger.logError(error, { action: "register", email: req.body.email });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
 
 // Login
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, validateLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng điền đầy đủ thông tin" });
-    }
 
     // Find user
     const user = await User.findOne({ email });
@@ -96,11 +88,9 @@ router.post("/login", async (req, res) => {
     }
 
     // Generate token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user._id }, config.jwtSecret, {
+      expiresIn: "7d",
+    });
 
     res.json({
       message: "Đăng nhập thành công",
@@ -109,10 +99,81 @@ router.post("/login", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || "",
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    logger.logError(error, { action: "login", email: req.body.email });
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+// Forgot password - send OTP code
+router.post("/forgot", authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ message: "Thiếu email" });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Trả thành công để tránh dò email
+      return res.json({ message: "Nếu email tồn tại, mã đã được gửi" });
+    }
+
+    // Giới hạn số lần thử
+    if ((user.resetAttempts || 0) >= 5 && user.resetCodeExpires && user.resetCodeExpires > new Date()) {
+      return res.status(429).json({ message: "Thử lại sau ít phút" });
+    }
+
+    const code = ("" + Math.floor(100000 + Math.random() * 900000)); // 6 số
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+    user.resetCodeHash = codeHash;
+    user.resetCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
+    user.resetAttempts = 0;
+    await user.save();
+
+    await sendResetCodeEmail(email, code);
+    res.json({ message: "Đã gửi mã xác thực về email" });
+  } catch (error) {
+    logger.logError(error, { action: "forgot", email: req.body?.email });
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+// Reset password with code
+router.post("/reset", authLimiter, async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body || {};
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ message: "Thiếu dữ liệu" });
+    }
+
+    const user = await User.findOne({ email }).select("+resetCodeHash +resetCodeExpires +resetAttempts");
+    if (!user || !user.resetCodeHash || !user.resetCodeExpires) {
+      return res.status(400).json({ message: "Mã không hợp lệ" });
+    }
+
+    if (user.resetCodeExpires < new Date()) {
+      return res.status(400).json({ message: "Mã đã hết hạn" });
+    }
+
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+    if (codeHash !== user.resetCodeHash) {
+      user.resetAttempts = (user.resetAttempts || 0) + 1;
+      await user.save();
+      return res.status(400).json({ message: "Mã không đúng" });
+    }
+
+    // Đổi mật khẩu và xóa thông tin reset
+    user.password = newPassword;
+    user.resetCodeHash = undefined;
+    user.resetCodeExpires = undefined;
+    user.resetAttempts = 0;
+    await user.save();
+
+    res.json({ message: "Đổi mật khẩu thành công" });
+  } catch (error) {
+    logger.logError(error, { action: "reset", email: req.body?.email });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -120,10 +181,79 @@ router.post("/login", async (req, res) => {
 // Get current user
 router.get("/me", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
-    res.json({ user });
+    // auth middleware sets req.user.id (not req.userId)
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: "Không xác định được người dùng" });
+    }
+    
+    const user = await User.findById(userId).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
+    }
+    
+    res.json({ 
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || "",
+      }
+    });
   } catch (error) {
-    console.error("Get user error:", error);
+    logger.logError(error, { action: "getUser", userId: req.user?.id });
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+// Update user profile
+router.put(
+  "/profile",
+  auth,
+  validateProfileUpdate,
+  async (req, res) => {
+  try {
+    // auth middleware sets req.user.id (not req.userId)
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: "Không xác định được người dùng" });
+    }
+    
+    const { name, email, avatar } = req.body;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
+    }
+
+    // Update fields if provided
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) {
+      // Check if email is already taken by another user
+      const existingUser = await User.findOne({ email, _id: { $ne: user._id } });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email đã được sử dụng" });
+      }
+      user.email = email;
+    }
+    if (avatar !== undefined) user.avatar = avatar;
+
+    await user.save();
+
+    res.json({
+      message: "Cập nhật thông tin thành công",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || "",
+      },
+    });
+  } catch (error) {
+    logger.logError(error, { action: "updateProfile", userId: req.user?.id });
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -131,13 +261,9 @@ router.get("/me", auth, async (req, res) => {
 // Google Sign-In: verify Google ID token -> our JWT
 router.post("/google", async (req, res) => {
   try {
-    if (
-      !GOOGLE_CLIENT_ID ||
-      GOOGLE_CLIENT_ID === "GOCSPX-your-client-secret-here"
-    ) {
-      console.error(
-        "Google OAuth not configured: GOOGLE_CLIENT_ID missing or invalid"
-      );
+    // Treat as not configured only if Google client is not initialized
+    if (!googleClient) {
+      logger.error("Google OAuth not configured: Missing credentials");
       return res.status(500).json({
         message:
           "Google OAuth chưa được cấu hình. Vui lòng liên hệ quản trị viên.",
@@ -149,10 +275,10 @@ router.post("/google", async (req, res) => {
       return res.status(400).json({ message: "Thiếu Google credential" });
     }
 
-    console.log("Verifying Google ID token...");
+    logger.debug("Verifying Google ID token...");
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: GOOGLE_CLIENT_ID,
+      audience: config.googleClientId,
     });
 
     const payload = ticket.getPayload();
@@ -161,17 +287,17 @@ router.post("/google", async (req, res) => {
     const googleId = payload?.sub;
 
     if (!email || !googleId) {
-      console.error("Invalid Google payload:", { email, googleId });
+      logger.warn("Invalid Google payload", { email, googleId });
       return res
         .status(400)
         .json({ message: "Không xác thực được người dùng Google" });
     }
 
-    console.log("Google user verified:", { email, name, googleId });
+    logger.info("Google user verified", { email, name, googleId: googleId.substring(0, 10) + "..." });
 
     let user = await User.findOne({ email });
     if (!user) {
-      console.log("Creating new user for Google login");
+      logger.info("Creating new user for Google login", { email });
       user = await User.create({
         name,
         email,
@@ -179,19 +305,17 @@ router.post("/google", async (req, res) => {
         authProvider: "google",
       });
     } else if (!user.googleId) {
-      console.log("Linking existing user with Google account");
+      logger.info("Linking existing user with Google account", { email });
       user.googleId = googleId;
       user.authProvider = user.authProvider || "google";
       await user.save();
     }
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user._id }, config.jwtSecret, {
+      expiresIn: "7d",
+    });
 
-    console.log("Google login successful for user:", user.email);
+    logger.info("Google login successful", { email: user.email, userId: user._id });
     res.json({
       message: "Đăng nhập Google thành công",
       token,
@@ -199,11 +323,12 @@ router.post("/google", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || "",
         onboardingCompleted: user.onboardingCompleted || false,
       },
     });
   } catch (error) {
-    console.error("Google auth error:", error);
+    logger.logError(error, { action: "googleAuth" });
 
     // More specific error messages
     if (error.message?.includes("Invalid token")) {

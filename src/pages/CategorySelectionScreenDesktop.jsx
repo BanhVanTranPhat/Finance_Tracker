@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import { useCategory } from "../contexts/CategoryContext.jsx";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 import {
-  categoryTemplates,
-  defaultIncomeCategories,
-} from "../data/categoryTemplates.js";
+  getLocalizedCategoryTemplates,
+  getLocalizedIncomeCategories,
+} from "../utils/getLocalizedCategoryTemplates.js";
 
 export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
   const {
@@ -26,10 +27,29 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
     getSelectedCategoriesByGroup,
   } = useCategory();
   const { initializeCategories } = useFinance();
+  const { t } = useLanguage();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const [localTemplate, setLocalTemplate] = useState(
-    selectedTemplate || categoryTemplates[0]
+  const localizedTemplates = useMemo(
+    () => getLocalizedCategoryTemplates(t),
+    [t]
   );
+
+  const [localTemplate, setLocalTemplate] = useState(null);
+
+  // Update localTemplate when templates are localized or selectedTemplate changes
+  useEffect(() => {
+    if (selectedTemplate) {
+      const matched = localizedTemplates.find(
+        (t) => t.id === selectedTemplate.id
+      );
+      if (matched) {
+        setLocalTemplate(matched);
+      }
+    } else if (localizedTemplates.length > 0) {
+      setLocalTemplate(localizedTemplates[0]);
+    }
+  }, [selectedTemplate, localizedTemplates]);
 
   const handleTemplateSelect = (template) => {
     setLocalTemplate(template);
@@ -61,52 +81,84 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
   };
 
   const handleNext = async () => {
-    // Chuyển đổi selectedCategories (chi tiêu) thành format cho FinanceContext
-    const expenseCategories = selectedCategories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      type: "expense",
-      group:
-        selectedTemplate?.groups.find((g) =>
+    // Prevent multiple clicks
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      
+      // Chuyển đổi selectedCategories (chi tiêu) thành format cho FinanceContext
+      const expenseCategories = selectedCategories.map((category) => {
+        const group = selectedTemplate?.groups.find((g) =>
           g.categories.some((c) => c.id === category.id)
-        )?.name || "Khác",
-      isDefault: false,
-    }));
+        );
+        const categoryInGroup = group?.categories.find((c) => c.id === category.id);
+        const icon = categoryInGroup?.icon || "folder";
+        // Ensure icon is a string, not emoji
+        const cleanIcon = typeof icon === "string" && icon.length > 0 ? icon : "folder";
+        // Don't send 'id' field to API - let MongoDB create it
+        return {
+          name: category.name.trim(),
+          type: "expense",
+          group: (group?.name || t("other")).trim(),
+          icon: cleanIcon,
+          isDefault: false,
+        };
+      });
 
-    // Thêm danh mục thu nhập mặc định
-    const incomeCategories = defaultIncomeCategories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      type: "income",
-      group: "Thu nhập",
-      isDefault: true,
-    }));
+      // Thêm danh mục thu nhập mặc định (localized)
+      const localizedIncomeCategories = getLocalizedIncomeCategories(t);
+      const incomeCategories = localizedIncomeCategories.map((category) => {
+        // Ensure icon is a string, not emoji
+        const cleanIcon = typeof category.icon === "string" && category.icon.length > 0 
+          ? category.icon 
+          : "dollar-sign";
+        // Don't send 'id' field to API - let MongoDB create it
+        return {
+          name: category.name.trim(),
+          type: "income",
+          group: t("groupIncome").trim(),
+          icon: cleanIcon,
+          isDefault: true,
+        };
+      });
 
-    // Kết hợp cả thu nhập và chi tiêu
-    const allCategories = [...incomeCategories, ...expenseCategories];
+      // Kết hợp cả thu nhập và chi tiêu
+      const allCategories = [...incomeCategories, ...expenseCategories];
 
-    console.log("📝 Initializing categories (Desktop):", {
-      income: incomeCategories.length,
-      expense: expenseCategories.length,
-      total: allCategories.length,
-    });
+      console.log("📝 Initializing categories (Desktop):", {
+        income: incomeCategories.length,
+        expense: expenseCategories.length,
+        total: allCategories.length,
+      });
 
-    // Khởi tạo danh mục trong FinanceContext
-    await initializeCategories(allCategories);
+      // Khởi tạo danh mục trong FinanceContext
+      await initializeCategories(allCategories);
 
-    // Chuyển sang bước tiếp theo
-    onNext();
+      // Chuyển sang bước tiếp theo
+      onNext();
+    } catch (error) {
+      console.error("Error initializing categories:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || t("initializeCategoriesError");
+      alert(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const getGroupIcon = (groupName) => {
-    switch (groupName) {
-      case "Chi phí bắt buộc":
+  const getGroupIcon = (groupName, groupId) => {
+    // Use groupId for more reliable matching
+    switch (groupId) {
+      case "mandatory":
+      case "needs":
         return <Target className="w-5 h-5" />;
-      case "Chi phí không thường xuyên":
+      case "irregular":
         return <Users className="w-5 h-5" />;
-      case "Niềm vui của tôi":
+      case "joy":
+      case "wants":
         return <Heart className="w-5 h-5" />;
-      case "Đầu tư dài hạn":
+      case "long-term-investment":
+      case "savings-investment":
         return <TrendingUp className="w-5 h-5" />;
       default:
         return <Target className="w-5 h-5" />;
@@ -122,29 +174,29 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
             <button
               onClick={onBack}
               className="p-3 hover:bg-emerald-100 rounded-full transition-colors mr-4"
-              aria-label="Quay lại"
-              title="Quay lại"
+              aria-label={t("goBack")}
+              title={t("goBack")}
             >
               <ArrowLeft className="w-6 h-6 text-gray-600" />
             </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Chọn danh mục chi tiêu
+                {t("selectExpenseCategories")}
               </h1>
               <p className="text-lg text-gray-600">
-                {getTotalSelectedCount()} danh mục đã chọn
+                {getTotalSelectedCount()} {t("categoriesSelected")}
               </p>
             </div>
           </div>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Chọn danh mục chi tiêu của bạn
+              {t("selectYourExpenseCategories")}
             </h2>
             <p className="text-gray-600">
-              Danh mục thu nhập (Lương, Thưởng, Đầu tư...) sẽ được tạo tự động.
+              {t("incomeCategoriesAutoCreated")}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              Bạn có thể chỉnh sửa bất kì lúc nào sau này.
+              {t("canEditLater")}
             </p>
           </div>
         </div>
@@ -152,12 +204,12 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
         {/* Template Selection */}
         <div className="mb-8">
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            {categoryTemplates.map((template) => (
+            {localizedTemplates.map((template) => (
               <button
                 key={template.id}
                 onClick={() => handleTemplateSelect(template)}
                 className={`p-6 rounded-2xl border-2 transition-all text-left ${
-                  localTemplate.id === template.id
+                  localTemplate?.id === template.id
                     ? "border-emerald-500 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl"
                     : "border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:shadow-lg"
                 }`}
@@ -173,7 +225,7 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
 
         {/* Category Groups Grid */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {localTemplate.groups.map((group) => {
+          {localTemplate?.groups?.map((group) => {
             const selectedCount = getSelectedCountForGroup(group.id);
             const totalCount = group.categories.length;
             const allSelected = selectedCount === totalCount;
@@ -189,7 +241,7 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                      {getGroupIcon(group.name)}
+                      {getGroupIcon(group.name, group.id)}
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-emerald-800">
@@ -215,7 +267,7 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
-                        Tất cả
+                        {t("selectAll")}
                       </button>
                       <button
                         onClick={() => handleDeselectAll(group.id)}
@@ -225,7 +277,7 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
                             : "bg-red-100 text-red-600 hover:bg-red-200"
                         }`}
                       >
-                        Bỏ chọn
+                        {t("deselectAll")}
                       </button>
                     </div>
                   </div>
@@ -267,19 +319,31 @@ export default function CategorySelectionScreenDesktop({ onBack, onNext }) {
         <div className="text-center">
           <div className="bg-white rounded-2xl p-6 shadow-lg max-w-2xl mx-auto">
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Sẵn sàng tiếp tục?
+              {t("readyToContinue")}
             </h3>
             <p className="text-gray-600 mb-6">
               {getTotalSelectedCount() > 0
-                ? `Bạn đã chọn ${getTotalSelectedCount()} danh mục để bắt đầu quản lý tài chính`
-                : "Bạn có thể bỏ qua bước này và tạo danh mục sau trong ứng dụng"}
+                ? t("selectedCategoriesCount").replace("{count}", getTotalSelectedCount())
+                : t("skipStepHint")}
             </p>
             <button
               onClick={handleNext}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 px-8 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto"
+              disabled={isProcessing}
+              className={`bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 px-8 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 mx-auto ${
+                isProcessing ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              <span>TIẾP TỤC</span>
-              <ArrowRight className="w-5 h-5" />
+              {isProcessing ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>{t("loading") || "Loading..."}</span>
+                </>
+              ) : (
+                <>
+                  <span>{t("continueButton")}</span>
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </button>
           </div>
         </div>

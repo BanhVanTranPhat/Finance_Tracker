@@ -25,19 +25,39 @@ api.interceptors.request.use(
   }
 );
 
+// Flag to track if we're in initAuth phase
+let isInitializingAuth = false;
+
 // Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/";
+      // Only clear token if we're not in the initial auth phase
+      // During initAuth, we want to keep the cached session even if verification fails temporarily
+      if (!isInitializingAuth) {
+        // Token expired or invalid during active session
+        // Only clear for actual authenticated requests, not initial verification
+        const isAuthEndpoint = error.config?.url?.includes('/auth/me');
+        
+        if (!isAuthEndpoint) {
+          // This is a real authenticated request that failed
+          console.log("🚫 401 error on authenticated request, clearing session");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/";
+        }
+        // For /auth/me (initial verification), let AuthContext handle it
+      }
     }
     return Promise.reject(error);
   }
 );
+
+// Export function to set init auth flag
+export const setInitializingAuth = (value) => {
+  isInitializingAuth = value;
+};
 
 // Auth API
 export const authAPI = {
@@ -57,6 +77,11 @@ export const authAPI = {
 
   getCurrentUser: async () => {
     const response = await api.get("/auth/me");
+    return response.data;
+  },
+
+  updateProfile: async (profileData) => {
+    const response = await api.put("/auth/profile", profileData);
     return response.data;
   },
 };

@@ -18,7 +18,9 @@
 
 ### 🏠 Trang chủ - Dashboard
 
-![Dashboard](https://github.com/user-attachments/assets/16c3c181-f17d-4b36-8c53-25752c930413)  
+<!-- Screenshot: Dashboard -->
+
+![Dashboard - PLACEHOLDER](PUT_YOUR_DASHBOARD_IMAGE_URL_HERE)
 _Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ---
@@ -46,9 +48,22 @@ _Thiết lập và theo dõi mục tiêu ngân sách_
 
 ### 🔐 Đăng nhập / Đăng ký
 
-![Login](https://github.com/user-attachments/assets/7758c36e-be71-4965-8470-686987e0735c)
-![Register](https://github.com/user-attachments/assets/a8e12e93-41bf-4d55-be01-7b114a9104dc)  
+<!-- Screenshot: Login / Register -->
+
+![Login - PLACEHOLDER](PUT_YOUR_LOGIN_IMAGE_URL_HERE)
+![Register - PLACEHOLDER](PUT_YOUR_REGISTER_IMAGE_URL_HERE)  
 _Hệ thống xác thực với Google OAuth và tài khoản local_
+
+### 🔁 Quên/Đặt lại mật khẩu
+
+<!-- Screenshot: Settings - Reset password (Desktop) -->
+
+![Settings - Reset password (Desktop) - PLACEHOLDER](PUT_YOUR_SETTINGS_DESKTOP_RESET_IMAGE_URL_HERE)
+
+<!-- Screenshot: Settings - Reset password (Mobile) -->
+
+![Settings - Reset password (Mobile) - PLACEHOLDER](PUT_YOUR_SETTINGS_MOBILE_RESET_IMAGE_URL_HERE)
+_Gửi mã 6 số về email và đặt lại mật khẩu trực tiếp trong Cài đặt_
 
 ---
 
@@ -80,6 +95,8 @@ cd Finance_Tracker
 npm run install:all
 ```
 
+Lưu ý: dự án dùng thư viện hướng dẫn `react-joyride`. Nếu bạn cài đặt thủ công, hãy đảm bảo chạy `npm install` ở thư mục root để cài đúng phiên bản mới nhất.
+
 #### 🧩 Cách 2: Cài đặt thủ công
 
 ```bash
@@ -110,7 +127,27 @@ PORT=5000
 MONGO_URI=mongodb://localhost:27017/finance-tracker
 JWT_SECRET=your-super-secret-jwt-key-here
 GOOGLE_CLIENT_ID=your-google-client-id-here
+GOOGLE_CLIENT_SECRET=your-google-client-secret-here
+
+# SMTP - gửi email quên mật khẩu
+# Lựa chọn A) SendGrid SMTP (khuyến nghị, không đổi code)
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=apikey
+SMTP_PASS=YOUR_SENDGRID_API_KEY
+MAIL_FROM="Finance Tracker <verified_sender@example.com>"  # email đã Verify trong SendGrid
+
+# Lựa chọn B) Gmail SMTP
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=465
+# SMTP_SECURE=true
+# SMTP_USER=your.gmail@gmail.com
+# SMTP_PASS=your-gmail-app-password
+# MAIL_FROM="Finance Tracker <your.gmail@gmail.com>"
 ```
+
+> Nếu KHÔNG cấu hình SMTP, hệ thống tự động log nội dung email ra console (dev) và không gửi mail thật.
 
 ---
 
@@ -219,8 +256,14 @@ npm run dev
 
 - ✅ Responsive Design
 - ✅ Dark / Light Mode
-- ✅ Onboarding Flow
+- ✅ Onboarding Flow (tour tự chạy cho người dùng mới)
 - ✅ Loading & Error Handling
+
+#### Onboarding & Trợ giúp cho người mới
+
+- Người dùng mới đăng ký/đăng nhập lần đầu sẽ tự động thấy tour ngắn hướng dẫn các điểm chính: Quản lý nhóm danh mục, Chỉnh sửa ngân sách, Cập nhật số dư ví, Thêm giao dịch.
+- Một số gợi ý ngữ cảnh (Context Tip) hiển thị một lần ở: Quản lý nhóm danh mục và Cập nhật số dư ví.
+- Có thể mở lại hướng dẫn bất kỳ lúc nào ở: Cài đặt → Hướng dẫn sử dụng → “Bắt đầu lại hướng dẫn”. Mục này không làm đăng xuất tài khoản.
 
 ---
 
@@ -280,12 +323,22 @@ Finance_Tracker/
 
 ### Authentication
 
-| Method | Endpoint             | Mô tả              |
-| ------ | -------------------- | ------------------ |
-| POST   | `/api/auth/register` | Đăng ký            |
-| POST   | `/api/auth/login`    | Đăng nhập          |
-| POST   | `/api/auth/google`   | Google OAuth       |
-| GET    | `/api/auth/me`       | Lấy thông tin user |
+| Method | Endpoint             | Mô tả                       |
+| ------ | -------------------- | --------------------------- |
+| POST   | `/api/auth/register` | Đăng ký                     |
+| POST   | `/api/auth/login`    | Đăng nhập                   |
+| POST   | `/api/auth/google`   | Google OAuth                |
+| GET    | `/api/auth/me`       | Lấy thông tin user          |
+| POST   | `/api/auth/forgot`   | Gửi mã quên mật khẩu (6 số) |
+| POST   | `/api/auth/reset`    | Đặt lại mật khẩu bằng mã    |
+
+### Quên/Đặt lại mật khẩu (Flow)
+
+- Từ trang Cài đặt bấm “Đặt lại mật khẩu” (VI) / “Reset password” (EN)
+- Gửi mã → Backend tạo mã 6 số (hết hạn 10 phút) và gửi qua email
+- Nhập mã + mật khẩu mới → Xác nhận đặt lại
+
+Lưu ý: Backend chống brute-force bằng rate limit và giới hạn số lần nhập mã; dev đã nới hạn mức để không bị 429 khi thử nghiệm.
 
 ### Transactions
 
@@ -339,6 +392,12 @@ taskkill /PID <PID> /F
 rm -rf node_modules server/node_modules
 npm run install:all
 ```
+
+**Không thấy tour hướng dẫn**
+
+- Hãy vào Dashboard sau khi đăng nhập (tab Ngân sách).
+- Với tài khoản mới, tour sẽ tự bật. Nếu không, vào Cài đặt → Hướng dẫn sử dụng → “Bắt đầu lại hướng dẫn”.
+- Có thể xoá các khóa localStorage: `tour_dismissed`, `tour_seen_once_<userId>` rồi reload.
 
 ---
 

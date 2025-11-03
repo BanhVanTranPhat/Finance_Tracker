@@ -1,6 +1,7 @@
 const express = require("express");
 const Wallet = require("../models/Wallet");
 const auth = require("../middleware/auth");
+const logger = require("../utils/logger");
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.get("/", auth, async (req, res) => {
     });
     res.json(wallets);
   } catch (error) {
-    console.error("Error fetching wallets:", error);
+    logger.logError("Error fetching wallets:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -44,7 +45,7 @@ router.post("/", auth, async (req, res) => {
     await wallet.save();
     res.status(201).json(wallet);
   } catch (error) {
-    console.error("Error creating wallet:", error);
+    logger.logError("Error creating wallet:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -65,7 +66,7 @@ router.put("/:id", auth, async (req, res) => {
 
     res.json(wallet);
   } catch (error) {
-    console.error("Error updating wallet:", error);
+    logger.logError("Error updating wallet:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -79,7 +80,7 @@ router.delete("/all", auth, async (req, res) => {
       deletedCount: result.deletedCount,
     });
   } catch (error) {
-    console.error("Error deleting all wallets:", error);
+    logger.logError("Error deleting all wallets:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -98,7 +99,7 @@ router.delete("/:id", auth, async (req, res) => {
 
     res.json({ message: "Wallet deleted successfully" });
   } catch (error) {
-    console.error("Error deleting wallet:", error);
+    logger.logError("Error deleting wallet:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
