@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 import { formatDateForTransaction } from "../utils/dateFormatter.js";
 import WalletManagementModal from "./WalletManagementModal.jsx";
 import TransferMoneyModal from "./TransferMoneyModal.jsx";
@@ -34,23 +35,37 @@ const iconMapping = {
 };
 
 // Determine wallet type for subtitle based on chosen icon
-const getWalletTypeLabel = (iconId) => {
+// This function should use translations - will be replaced with translated version
+const getWalletTypeLabel = (iconId, t) => {
+  if (!t) {
+    // Fallback if translation not available
+    const map = {
+      "money-bag": "Tiền mặt",
+      "credit-card": "Thẻ ngân hàng",
+      bank: "Ví điện tử",
+      coins: "Vàng",
+      target: "Thẻ tín dụng",
+      calendar: "Các khoản vay",
+    };
+    return map[iconId] || "Tiền mặt";
+  }
+  
   const map = {
-    "money-bag": "Tiền mặt",
-    "credit-card": "Thẻ ngân hàng",
-    bank: "Ví điện tử",
-    coins: "Vàng",
-    target: "Thẻ tín dụng",
-    calendar: "Các khoản vay",
+    "money-bag": t("cash"),
+    "credit-card": t("bankCard"),
+    bank: t("eWallet"),
+    coins: t("gold"),
+    target: t("creditCard"),
+    calendar: t("loans"),
   };
-  return map[iconId] || "Tiền mặt";
+  return map[iconId] || t("cash");
 };
 
 export default function WalletScreen() {
+  const { t } = useLanguage();
   const {
     wallets,
     totalAssets,
-    totalIncome,
     totalExpense,
     recentTransactions,
     deleteWallet,
@@ -97,7 +112,7 @@ export default function WalletScreen() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="pt-12 pb-6 px-4">
-        <h1 className="text-2xl font-bold text-gray-800">Ví của tôi</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t("myWallets")}</h1>
       </div>
 
       {/* Total Assets Card */}
@@ -111,7 +126,7 @@ export default function WalletScreen() {
           </div>
           <div className="flex items-center justify-between text-sm text-gray-700">
             <div className="flex items-center">
-              <TrendingUp className="w-4 h-4 mr-1 text-emerald-600" />
+              <TrendingUp className="w-4 h-4 mr-1 text-[#1ABC9C]" />
               <span>Thanh toán</span>
             </div>
             <div className="text-lg font-bold text-gray-900">
@@ -120,10 +135,12 @@ export default function WalletScreen() {
           </div>
           <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
             <div className="flex items-center">
-              <TrendingDown className="w-4 h-4 mr-1 text-red-600" />
-              <span>Theo dõi</span>
+              <TrendingDown className="w-4 h-4 mr-1 text-[#F2745A]" />
+              <span>Chi tiêu tháng này</span>
             </div>
-            <div className="text-lg font-bold text-gray-900">0₫</div>
+            <div className="text-lg font-bold text-gray-900">
+              {totalExpense.toLocaleString()}₫
+            </div>
           </div>
         </div>
       </div>
@@ -134,6 +151,7 @@ export default function WalletScreen() {
           <button
             onClick={handleCreateWallet}
             className="flex flex-col items-center justify-center bg-indigo-500 rounded-2xl p-4 hover:bg-indigo-600 active:scale-95 transition-all shadow-md"
+            data-tour="create-wallet-btn"
           >
             <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mb-2">
               <Plus className="w-6 h-6 text-white" />
@@ -158,6 +176,7 @@ export default function WalletScreen() {
           <button
             onClick={() => setShowUpdateBalanceModal(true)}
             className="flex flex-col items-center justify-center bg-indigo-500 rounded-2xl p-4 hover:bg-indigo-600 active:scale-95 transition-all shadow-md"
+            data-tour="wallet-update-btn"
           >
             <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center mb-2">
               <Zap className="w-6 h-6 text-white" />
@@ -173,14 +192,14 @@ export default function WalletScreen() {
       <div className="px-4 mb-6">
         <div className="mb-4">
           <h2 className="text-lg font-bold text-gray-800 mb-2">
-            Ví thanh toán
+            {t("paymentWallets")}
           </h2>
         </div>
         {wallets.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-gray-400 text-sm mb-2">Chưa có ví nào</div>
+            <div className="text-gray-400 text-sm mb-2">{t("noWallets")}</div>
             <div className="text-gray-300 text-xs">
-              Tạo ví đầu tiên để bắt đầu quản lý tài chính
+              {t("createFirstWallet")}
             </div>
           </div>
         ) : (
@@ -207,11 +226,11 @@ export default function WalletScreen() {
                         </span>
                         {wallet.isDefault && (
                           <span className="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            Mặc định
+                            {t("defaultWallet")}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">{getWalletTypeLabel(wallet.icon)}</div>
+                      <div className="text-sm text-gray-500">{getWalletTypeLabel(wallet.icon, t)}</div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div
@@ -288,15 +307,15 @@ export default function WalletScreen() {
                           }`}
                         >
                           {isIncome ? (
-                            <TrendingUp className="w-5 h-5 text-emerald-600" />
+                            <TrendingUp className="w-5 h-5 text-[#1ABC9C]" />
                           ) : (
-                            <TrendingDown className="w-5 h-5 text-red-600" />
+                            <TrendingDown className="w-5 h-5 text-[#F2745A]" />
                           )}
                         </div>
                         <div className="flex-1">
                           <div
                             className={`font-semibold ${
-                              isIncome ? "text-emerald-900" : "text-red-900"
+                              isIncome ? "text-[#166f64]" : "text-[#9c3f2e]"
                             }`}
                           >
                             {transaction.description || transaction.category}
@@ -308,7 +327,7 @@ export default function WalletScreen() {
                         </div>
                         <div
                           className={`font-bold text-lg ${
-                            isIncome ? "text-emerald-600" : "text-red-600"
+                            isIncome ? "text-[#1ABC9C]" : "text-[#F2745A]"
                           }`}
                         >
                           {isIncome ? "+" : "-"}
