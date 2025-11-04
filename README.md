@@ -16,10 +16,9 @@
 
 ### 🏠 Trang chủ - Dashboard
 
-<!-- Screenshot: Dashboard -->
-![StartPage](<img width="2567" height="1954" alt="image" src="https://github.com/user-attachments/assets/dfe5e5ac-de58-4a37-9dee-7254b61edc4b" />)
+<img width="2567" height="1954" alt="StartPage" src="https://github.com/user-attachments/assets/dfe5e5ac-de58-4a37-9dee-7254b61edc4b" />
 
-![Dashboard](<img width="3805" height="1956" alt="image" src="https://github.com/user-attachments/assets/15026445-3841-4099-a917-7f8104aac7f4" />)
+<img width="3805" height="1956" alt="Dashboard" src="https://github.com/user-attachments/assets/15026445-3841-4099-a917-7f8104aac7f4" />
 _Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ---
@@ -40,21 +39,15 @@ _Danh sách và quản lý các giao dịch thu chi_
 
 ### 🔐 Đăng nhập / Đăng ký
 
-<!-- Screenshot: Login / Register -->
-
-![Login](<img width="839" height="1384" alt="image" src="https://github.com/user-attachments/assets/f636b6c4-ea3e-4447-a3eb-e7dc07ee865c" />)
-![Register](<img width="829" height="1406" alt="image" src="https://github.com/user-attachments/assets/bad2af0b-2d7c-4221-9c9a-833987a96219" />)  
+<img width="839" height="1384" alt="Login" src="https://github.com/user-attachments/assets/f636b6c4-ea3e-4447-a3eb-e7dc07ee865c" />
+<img width="829" height="1406" alt="Register" src="https://github.com/user-attachments/assets/bad2af0b-2d7c-4221-9c9a-833987a96219" />  
 _Hệ thống xác thực với Google OAuth và tài khoản local_
 
 ### 🔁 Quên/Đặt lại mật khẩu
 
-<!-- Screenshot: Settings - Reset password (Desktop) -->
+<img width="3817" height="1948" alt="Settings - Reset password" src="https://github.com/user-attachments/assets/86806a20-792b-45f8-8de2-fcbea44ad416" />
 
-![Settings - Reset password](<img width="3817" height="1948" alt="image" src="https://github.com/user-attachments/assets/86806a20-792b-45f8-8de2-fcbea44ad416" />)
-
-<!-- Screenshot: Settings - Reset password (Mobile) -->
-
-![Settings - Reset password](<img width="3819" height="734" alt="image" src="https://github.com/user-attachments/assets/95f147b1-9c68-48d1-8b4f-a71e8277ba56" />)
+<img width="3819" height="734" alt="Settings - Reset password" src="https://github.com/user-attachments/assets/95f147b1-9c68-48d1-8b4f-a71e8277ba56" />
 _Gửi mã 6 số về email và đặt lại mật khẩu trực tiếp trong Cài đặt_
 
 ---
