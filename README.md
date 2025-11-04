@@ -1,6 +1,4 @@
-<img width="2567" height="1954" alt="image" src="https://github.com/user-attachments/assets/1f30746f-dd82-4542-be93-67433cd547ae" /><p align="center">
-  <img src="https://github.com/user-attachments/assets/22ac371f-badb-44ab-a7cc-535fc8bfe3ca" alt="Finance Tracker Logo" width="280"/>
-</p>
+
 
 # 💰 Finance Tracker - Ứng dụng Quản lý Tài chính Cá nhân Thông minh
 
@@ -19,7 +17,7 @@
 ### 🏠 Trang chủ - Dashboard
 
 <!-- Screenshot: Dashboard -->
-![StartPage]<img width="2567" height="1954" alt="image" src="https://github.com/user-attachments/assets/dfe5e5ac-de58-4a37-9dee-7254b61edc4b" />
+![StartPage](<img width="2567" height="1954" alt="image" src="https://github.com/user-attachments/assets/dfe5e5ac-de58-4a37-9dee-7254b61edc4b" />)
 
 ![Dashboard](<img width="3805" height="1956" alt="image" src="https://github.com/user-attachments/assets/15026445-3841-4099-a917-7f8104aac7f4" />)
 _Tổng quan tài chính với biểu đồ thu chi và thống kê_
