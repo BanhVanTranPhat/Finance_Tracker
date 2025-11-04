@@ -1,4 +1,4 @@
-<p align="center">
+<img width="2567" height="1954" alt="image" src="https://github.com/user-attachments/assets/1f30746f-dd82-4542-be93-67433cd547ae" /><p align="center">
   <img src="https://github.com/user-attachments/assets/22ac371f-badb-44ab-a7cc-535fc8bfe3ca" alt="Finance Tracker Logo" width="280"/>
 </p>
 
@@ -19,8 +19,9 @@
 ### 🏠 Trang chủ - Dashboard
 
 <!-- Screenshot: Dashboard -->
+![StartPage]<img width="2567" height="1954" alt="image" src="https://github.com/user-attachments/assets/dfe5e5ac-de58-4a37-9dee-7254b61edc4b" />
 
-![Dashboard - PLACEHOLDER](PUT_YOUR_DASHBOARD_IMAGE_URL_HERE)
+![Dashboard](<img width="3805" height="1956" alt="image" src="https://github.com/user-attachments/assets/15026445-3841-4099-a917-7f8104aac7f4" />)
 _Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ---
@@ -39,30 +40,23 @@ _Danh sách và quản lý các giao dịch thu chi_
 
 ---
 
-### 🎯 Mục tiêu ngân sách
-
-![Budget Goals](https://github.com/user-attachments/assets/d3ba53fa-31bd-4c01-85f0-88ec334a6cbe)  
-_Thiết lập và theo dõi mục tiêu ngân sách_
-
----
-
 ### 🔐 Đăng nhập / Đăng ký
 
 <!-- Screenshot: Login / Register -->
 
-![Login - PLACEHOLDER](PUT_YOUR_LOGIN_IMAGE_URL_HERE)
-![Register - PLACEHOLDER](PUT_YOUR_REGISTER_IMAGE_URL_HERE)  
+![Login](<img width="839" height="1384" alt="image" src="https://github.com/user-attachments/assets/f636b6c4-ea3e-4447-a3eb-e7dc07ee865c" />)
+![Register](<img width="829" height="1406" alt="image" src="https://github.com/user-attachments/assets/bad2af0b-2d7c-4221-9c9a-833987a96219" />)  
 _Hệ thống xác thực với Google OAuth và tài khoản local_
 
 ### 🔁 Quên/Đặt lại mật khẩu
 
 <!-- Screenshot: Settings - Reset password (Desktop) -->
 
-![Settings - Reset password (Desktop) - PLACEHOLDER](PUT_YOUR_SETTINGS_DESKTOP_RESET_IMAGE_URL_HERE)
+![Settings - Reset password](<img width="3817" height="1948" alt="image" src="https://github.com/user-attachments/assets/86806a20-792b-45f8-8de2-fcbea44ad416" />)
 
 <!-- Screenshot: Settings - Reset password (Mobile) -->
 
-![Settings - Reset password (Mobile) - PLACEHOLDER](PUT_YOUR_SETTINGS_MOBILE_RESET_IMAGE_URL_HERE)
+![Settings - Reset password](<img width="3819" height="734" alt="image" src="https://github.com/user-attachments/assets/95f147b1-9c68-48d1-8b4f-a71e8277ba56" />)
 _Gửi mã 6 số về email và đặt lại mật khẩu trực tiếp trong Cài đặt_
 
 ---
