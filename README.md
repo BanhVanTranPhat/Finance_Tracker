@@ -25,14 +25,18 @@ _Tổng quan tài chính với biểu đồ thu chi và thống kê_
 
 ### 📊 Phân tích tài chính
 
-![Analytics](https://github.com/user-attachments/assets/767bad29-297d-44fe-ac06-ea0a20919f3d)  
+![Analytics]<img width="3814" height="1946" alt="image" src="https://github.com/user-attachments/assets/04404559-4cd7-48a8-ae37-ce65b733c78a" />
+
 _Biểu đồ phân tích chi tiết theo tháng và danh mục_
 
 ---
 
-### 💳 Quản lý giao dịch
+### 💳 Quản lý giao dịch, ví
 
-![Transactions](https://github.com/user-attachments/assets/f0fbdbd7-e8b2-4635-b79b-e88111ec6b33)  
+![Transactions]<img width="3251" height="1945" alt="image" src="https://github.com/user-attachments/assets/cbe7c630-2e6a-4ba8-8785-70a436a652e6" />
+
+![Wallets]<img width="3803" height="1963" alt="image" src="https://github.com/user-attachments/assets/f70100f7-44d8-49a5-8e5f-bb340b8e9c8f" />
+
 _Danh sách và quản lý các giao dịch thu chi_
 
 ---
