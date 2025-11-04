@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, ArrowRight, ArrowUpDown, Check } from "lucide-react";
+import { X, ArrowRight, ArrowUpDown, Check, Calendar, ChevronDown } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
 import { useCurrency } from "../contexts/CurrencyContext.jsx";
+import CalendarPicker from "./CalendarPicker.jsx";
 
 export default function TransferMoneyModal({ isOpen, onClose }) {
   const { wallets, updateWallet, addTransaction } = useFinance();
@@ -13,6 +14,7 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
   const [amount, setAmount] = useState("0");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (isOpen && wallets.length > 0) {
@@ -78,25 +80,27 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
     }
 
     try {
-      // Update wallet balances
-      await updateWallet(fromWalletObj.id, {
-        ...fromWalletObj,
-        balance: fromWalletObj.balance - transferAmount,
-      });
-
-      await updateWallet(toWalletObj.id, {
-        ...toWalletObj,
-        balance: toWalletObj.balance + transferAmount,
-      });
-
-      // Add transfer transaction (optional - for tracking)
+      // Create transfer transactions - backend will automatically update wallet balances
+      // We create 2 transactions: expense from source wallet, income to destination wallet
+      const transferDescription = description || `Chuyển từ ${fromWallet} sang ${toWallet}`;
+      
+      // Expense transaction from source wallet (will decrease balance)
       await addTransaction({
-        type: "transfer",
+        type: "expense",
         amount: transferAmount,
         category: "Chuyển ví",
         wallet: fromWallet,
-        toWallet: toWallet,
-        description: description || `Chuyển từ ${fromWallet} sang ${toWallet}`,
+        note: `Chuyển đi: ${transferDescription}`,
+        date: date,
+      });
+
+      // Income transaction to destination wallet (will increase balance)
+      await addTransaction({
+        type: "income",
+        amount: transferAmount,
+        category: "Chuyển ví",
+        wallet: toWallet,
+        note: `Chuyển đến: ${transferDescription}`,
         date: date,
       });
 
@@ -130,11 +134,52 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Amount Display */}
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 mb-4 text-center shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 mb-1">{t("youWantToTransfer")}</div>
-          <div className="text-3xl font-bold text-emerald-800">
-            {formatCurrency(parseFloat(amount))}
+        {/* Amount Display - Desktop: Input field, Mobile: Display only */}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 sm:p-6 mb-4 shadow-sm border border-gray-100">
+          <div className="text-sm text-gray-500 mb-2">{t("youWantToTransfer")}</div>
+          {/* Desktop: Input field */}
+          <div className="hidden sm:block">
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={parseFloat(amount).toLocaleString()}
+                onChange={(e) => {
+                  // Remove all non-digit characters
+                  const value = e.target.value.replace(/[^\d]/g, "");
+                  setAmount(value || "0");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleTransfer();
+                  }
+                }}
+                className="w-full text-3xl sm:text-4xl font-bold text-emerald-800 text-center bg-transparent border-b-2 border-emerald-200 focus:border-emerald-500 outline-none transition-colors px-4 py-2"
+                placeholder={t("enterAmount")}
+                autoFocus
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl font-bold text-emerald-600">
+                ₫
+              </div>
+            </div>
+          </div>
+          {/* Mobile: Display with optional input */}
+          <div className="block sm:hidden">
+            <div className="text-3xl sm:text-4xl font-bold text-emerald-800 mb-2">
+              {formatCurrency(parseFloat(amount))}
+            </div>
+            {/* Optional keyboard input for mobile */}
+            <input
+              type="tel"
+              inputMode="numeric"
+              value={amount === "0" ? "" : amount}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d]/g, "");
+                setAmount(value || "0");
+              }}
+              placeholder="Nhập số tiền"
+              className="w-full text-base text-center text-gray-600 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
           </div>
         </div>
 
@@ -204,13 +249,35 @@ export default function TransferMoneyModal({ isOpen, onClose }) {
           </div>
 
           {/* Date */}
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full text-sm text-gray-700 focus:outline-none"
-            />
+          <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 relative">
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className="w-full flex items-center justify-between hover:bg-gray-50 -m-1 p-1 rounded-lg transition-colors"
+            >
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <span className="text-sm text-gray-700 font-medium">
+                  {new Date(date).toLocaleDateString("vi-VN")}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-gray-400 transition-transform ${
+                  showDatePicker ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {showDatePicker && (
+              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 z-50">
+                <CalendarPicker
+                  selectedDate={new Date(date)}
+                  onDateChange={(newDate) => {
+                    setDate(newDate.toISOString().split("T")[0]);
+                    setShowDatePicker(false);
+                  }}
+                  onClose={() => setShowDatePicker(false)}
+                />
+              </div>
+            )}
           </div>
         </div>
 

@@ -15,6 +15,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
+import CalendarPicker from "./CalendarPicker.jsx";
 
 export default function TransactionModal({
   isOpen,
@@ -26,7 +27,7 @@ export default function TransactionModal({
   editTransaction,
   mode = "add",
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   let wallets = [];
   let categories = [];
   try {
@@ -82,7 +83,7 @@ export default function TransactionModal({
       setSelectedWallet(editTransaction.wallet);
       setSelectedCategory(editTransaction.category);
       setDate(editTransaction.date.split("T")[0]);
-      setDescription(editTransaction.description || "");
+      setDescription(editTransaction.note || editTransaction.description || "");
     } else {
       // Reset form for add mode
       setType(initialType);
@@ -143,8 +144,13 @@ export default function TransactionModal({
       wallet: selectedWallet,
       category: selectedCategory,
       date: new Date(date).toISOString(),
-      description: description.trim() || undefined,
     };
+    
+    // Only include note if it's not empty
+    const noteValue = description.trim();
+    if (noteValue) {
+      transactionData.note = noteValue;
+    }
 
     if (mode === "edit" && editTransaction) {
       const transactionId = editTransaction._id || editTransaction.id;
@@ -439,17 +445,15 @@ export default function TransactionModal({
               />
             </button>
             {showDatePicker && (
-              <div className="mt-3">
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => {
-                    setDate(e.target.value);
+              <div className="mt-3 relative">
+                <CalendarPicker
+                  selectedDate={new Date(date)}
+                  onDateChange={(newDate) => {
+                    setDate(newDate.toISOString().split("T")[0]);
                     setShowDatePicker(false);
                   }}
-                  className="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm sm:text-base"
-                  aria-label="Chọn ngày giao dịch"
-                  title="Chọn ngày giao dịch"
+                  onClose={() => setShowDatePicker(false)}
+                  className="absolute left-0 sm:left-auto sm:right-0 z-50"
                 />
               </div>
             )}

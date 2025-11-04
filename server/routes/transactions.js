@@ -104,7 +104,10 @@ router.get("/:id", auth, async (req, res) => {
 // Create new transaction
 router.post("/", auth, validateTransaction, async (req, res) => {
   try {
-    const { type, amount, currency, date, category, wallet, note } = req.body;
+    const { type, amount, currency, date, category, wallet, note, description } = req.body;
+    // Support both 'note' and 'description' for backward compatibility
+    // Only include note if it has a value (not empty string or undefined)
+    const transactionNote = (note || description)?.trim() || undefined;
 
     // Validation
     if (!type || !amount || !date || !category || !wallet) {
@@ -146,7 +149,7 @@ router.post("/", auth, validateTransaction, async (req, res) => {
 
     await walletDoc.save();
 
-    const transaction = new Transaction({
+    const transactionData = {
       user: req.user.id,
       type,
       amount,
@@ -154,8 +157,14 @@ router.post("/", auth, validateTransaction, async (req, res) => {
       date: transactionDate,
       category,
       wallet,
-      note,
-    });
+    };
+    
+    // Only include note if it has a value
+    if (transactionNote) {
+      transactionData.note = transactionNote;
+    }
+    
+    const transaction = new Transaction(transactionData);
 
     await transaction.save();
 
@@ -178,7 +187,9 @@ router.post("/", auth, validateTransaction, async (req, res) => {
 // Update transaction
 router.put("/:id", auth, async (req, res) => {
   try {
-    const { type, amount, currency, date, category, wallet, note } = req.body;
+    const { type, amount, currency, date, category, wallet, note, description } = req.body;
+    // Support both 'note' and 'description' for backward compatibility
+    const transactionNote = note || description;
 
     const transaction = await Transaction.findOne({
       _id: req.params.id,
@@ -217,7 +228,14 @@ router.put("/:id", auth, async (req, res) => {
     if (date) transaction.date = new Date(date);
     if (category) transaction.category = category;
     if (wallet) transaction.wallet = wallet;
-    if (note !== undefined) transaction.note = note;
+    // Update note only if provided and not empty
+    if (transactionNote !== undefined) {
+      if (transactionNote && transactionNote.trim()) {
+        transaction.note = transactionNote.trim();
+      } else {
+        transaction.note = undefined;
+      }
+    }
 
     await transaction.save();
 

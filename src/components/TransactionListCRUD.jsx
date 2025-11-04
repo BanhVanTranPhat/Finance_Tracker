@@ -10,6 +10,7 @@ import {
   ArrowUp,
   ArrowDown,
   MoreVertical,
+  FileText,
 } from "lucide-react";
 import { useFinance } from "../contexts/FinanceContext.jsx";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
@@ -37,7 +38,7 @@ export default function TransactionListCRUD() {
         transaction.category
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        transaction.description
+        (transaction.note || transaction.description)
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         transaction.wallet?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -241,12 +242,18 @@ export default function TransactionListCRUD() {
                       </div>
                     </div>
 
-                    {/* Description */}
-                    {transaction.description && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                        {transaction.description}
-                      </p>
-                    )}
+                    {/* Description/Note */}
+                    {(() => {
+                      const noteText = transaction.note || transaction.description;
+                      return noteText && noteText.trim() ? (
+                        <div className="flex items-start space-x-1.5 mt-2 pt-2 border-t border-gray-200">
+                          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-gray-600 flex-1 line-clamp-2 italic">
+                            {noteText.trim()}
+                          </p>
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
 

@@ -160,6 +160,36 @@ export default function ResponsiveLayout({
     }
   };
 
+  // Handle add transaction - check if user has wallets first
+  const handleAddTransaction = () => {
+    // Check if user has no wallets
+    if (!wallets || wallets.length === 0) {
+      // Navigate to wallet tab first
+      onTabChange("wallet");
+      
+      // Start tour guide to create wallet
+      setTimeout(() => {
+        // Set flag to start tour from step 5 (create wallet)
+        localStorage.setItem("force_run_tour", "true");
+        localStorage.setItem("tour_start_from_step", "5"); // Custom flag to start from step 5
+        
+        // Dispatch events to start tour
+        window.dispatchEvent(
+          new StorageEvent("storage", {
+            key: "force_run_tour",
+            newValue: "true",
+          })
+        );
+        window.dispatchEvent(new CustomEvent("startTour"));
+      }, 500); // Wait for tab navigation to complete
+      
+      return;
+    }
+    
+    // User has wallets, proceed with normal transaction modal
+    setShowTransactionModal(true);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "budget":
@@ -184,7 +214,7 @@ export default function ResponsiveLayout({
           activeTab={activeTab}
           onTabChange={onTabChange}
           onCreateWallet={() => setShowWalletPrompt(true)}
-          onCentralAction={() => setShowTransactionModal(true)}
+          onCentralAction={handleAddTransaction}
         />
 
         {/* Wallet Prompt Modal */}
@@ -246,7 +276,7 @@ export default function ResponsiveLayout({
       <DesktopSidebar
         activeTab={activeTab}
         onTabChange={onTabChange}
-        onAddTransaction={() => setShowTransactionModal(true)}
+        onAddTransaction={handleAddTransaction}
       />
 
       {/* Main Content */}

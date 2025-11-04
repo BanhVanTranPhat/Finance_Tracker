@@ -38,11 +38,13 @@ api.interceptors.response.use(
       if (!isInitializingAuth) {
         // Token expired or invalid during active session
         // Only clear for actual authenticated requests, not initial verification
-        const isAuthEndpoint = error.config?.url?.includes('/auth/me');
-        
+        const isAuthEndpoint = error.config?.url?.includes("/auth/me");
+
         if (!isAuthEndpoint) {
           // This is a real authenticated request that failed
-          console.log("🚫 401 error on authenticated request, clearing session");
+          console.log(
+            "🚫 401 error on authenticated request, clearing session"
+          );
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           window.location.href = "/";
@@ -176,6 +178,11 @@ export const categoryAPI = {
       year,
       month,
     });
+    return response.data;
+  },
+
+  updateCategoryOrder: async (categoryOrders) => {
+    const response = await api.put("/categories/order", { categoryOrders });
     return response.data;
   },
 };

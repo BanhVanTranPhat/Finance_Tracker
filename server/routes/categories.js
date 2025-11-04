@@ -11,6 +11,7 @@ const router = express.Router();
 router.get("/", auth, async (req, res) => {
   try {
     const categories = await Category.find({ user: req.user.id }).sort({
+      order: 1,
       createdAt: -1,
     });
 
@@ -108,7 +109,11 @@ router.put("/:id", auth, async (req, res) => {
 
     res.json(category);
   } catch (error) {
-    logger.logError(error, { action: "updateCategory", categoryId: req.params.id, userId: req.user?.id });
+    logger.logError(error, {
+      action: "updateCategory",
+      categoryId: req.params.id,
+      userId: req.user?.id,
+    });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -117,43 +122,106 @@ router.put("/:id", auth, async (req, res) => {
 router.delete("/all", auth, async (req, res) => {
   try {
     // Only delete expense categories, preserve income categories
-    const result = await Category.deleteMany({ 
+    const result = await Category.deleteMany({
       user: req.user.id,
-      type: "expense"
+      type: "expense",
     });
 
     // Check existing income categories (preserve all existing income categories)
     const existingIncomeCategories = await Category.find({
       user: req.user.id,
-      type: "income"
+      type: "income",
     });
 
     // If no income categories exist, create the 4 default ones (in Vietnamese, user can edit later)
     // If some exist, preserve them (don't create duplicates)
     if (existingIncomeCategories.length === 0) {
       const defaultIncomeCategories = [
-        { name: "Lương", type: "income", group: "Thu nhập", icon: "dollar-sign", isDefault: true },
-        { name: "Thưởng", type: "income", group: "Thu nhập", icon: "gift", isDefault: true },
-        { name: "Đầu tư", type: "income", group: "Thu nhập", icon: "line-chart", isDefault: true },
-        { name: "Thu nhập khác", type: "income", group: "Thu nhập", icon: "coins", isDefault: true },
+        {
+          name: "Lương",
+          type: "income",
+          group: "Thu nhập",
+          icon: "dollar-sign",
+          isDefault: true,
+        },
+        {
+          name: "Thưởng",
+          type: "income",
+          group: "Thu nhập",
+          icon: "gift",
+          isDefault: true,
+        },
+        {
+          name: "Đầu tư",
+          type: "income",
+          group: "Thu nhập",
+          icon: "line-chart",
+          isDefault: true,
+        },
+        {
+          name: "Thu nhập khác",
+          type: "income",
+          group: "Thu nhập",
+          icon: "coins",
+          isDefault: true,
+        },
       ];
 
-      const categoriesToCreate = defaultIncomeCategories.map(category => ({
+      const categoriesToCreate = defaultIncomeCategories.map((category) => ({
         ...category,
         user: req.user.id,
       }));
-      
+
       await Category.insertMany(categoriesToCreate);
-      logger.info(`Created 4 default income categories for user (none existed)`, { userId: req.user.id });
+      logger.info(
+        `Created 4 default income categories for user (none existed)`,
+        { userId: req.user.id }
+      );
     }
 
     res.json({
-      message: "All expense categories deleted successfully (income categories preserved)",
+      message:
+        "All expense categories deleted successfully (income categories preserved)",
       deletedCount: result.deletedCount,
       incomeCategoriesPreserved: existingIncomeCategories.length,
     });
   } catch (error) {
-    logger.logError(error, { action: "deleteAllCategories", userId: req.user?.id });
+    logger.logError(error, {
+      action: "deleteAllCategories",
+      userId: req.user?.id,
+    });
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Update category order (bulk update)
+router.put("/order", auth, async (req, res) => {
+  try {
+    const { categoryOrders } = req.body;
+
+    if (!categoryOrders || !Array.isArray(categoryOrders)) {
+      return res
+        .status(400)
+        .json({ message: "categoryOrders array is required" });
+    }
+
+    // Update order for each category
+    const updatePromises = categoryOrders.map(({ id, order }) =>
+      Category.findOneAndUpdate(
+        { _id: id, user: req.user.id },
+        { order },
+        { new: true }
+      )
+    );
+
+    await Promise.all(updatePromises);
+
+    res.json({ message: "Category order updated successfully" });
+  } catch (error) {
+    logger.logError(error, {
+      action: "updateCategoryOrder",
+      userId: req.user?.id,
+    });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -172,7 +240,11 @@ router.delete("/:id", auth, async (req, res) => {
 
     res.json({ message: "Category deleted successfully" });
   } catch (error) {
-    logger.logError(error, { action: "deleteCategory", categoryId: req.params.id, userId: req.user?.id });
+    logger.logError(error, {
+      action: "deleteCategory",
+      categoryId: req.params.id,
+      userId: req.user?.id,
+    });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -187,25 +259,35 @@ router.post("/initialize", auth, async (req, res) => {
     }
 
     if (categories.length === 0) {
-      return res.status(400).json({ message: "At least one category is required" });
+      return res
+        .status(400)
+        .json({ message: "At least one category is required" });
     }
 
     // Validate each category has required fields
     for (let i = 0; i < categories.length; i++) {
       const cat = categories[i];
-      if (!cat.name || typeof cat.name !== "string" || cat.name.trim().length === 0) {
-        return res.status(400).json({ 
-          message: `Category at index ${i} is missing or has invalid name` 
+      if (
+        !cat.name ||
+        typeof cat.name !== "string" ||
+        cat.name.trim().length === 0
+      ) {
+        return res.status(400).json({
+          message: `Category at index ${i} is missing or has invalid name`,
         });
       }
       if (!cat.type || !["income", "expense"].includes(cat.type)) {
-        return res.status(400).json({ 
-          message: `Category at index ${i} has invalid type. Must be "income" or "expense"` 
+        return res.status(400).json({
+          message: `Category at index ${i} has invalid type. Must be "income" or "expense"`,
         });
       }
-      if (!cat.group || typeof cat.group !== "string" || cat.group.trim().length === 0) {
-        return res.status(400).json({ 
-          message: `Category at index ${i} is missing or has invalid group` 
+      if (
+        !cat.group ||
+        typeof cat.group !== "string" ||
+        cat.group.trim().length === 0
+      ) {
+        return res.status(400).json({
+          message: `Category at index ${i} is missing or has invalid group`,
         });
       }
     }
@@ -227,23 +309,28 @@ router.post("/initialize", auth, async (req, res) => {
     const createdCategories = await Category.insertMany(categoriesWithUser);
     res.status(201).json(createdCategories);
   } catch (error) {
-    logger.logError(error, { 
-      action: "initializeCategories", 
+    logger.logError(error, {
+      action: "initializeCategories",
       userId: req.user?.id,
       errorMessage: error.message,
-      stack: error.stack 
+      stack: error.stack,
     });
-    
+
     // Provide more helpful error message
     if (error.name === "ValidationError") {
-      return res.status(400).json({ 
-        message: "Validation error: " + Object.values(error.errors).map(e => e.message).join(", ")
+      return res.status(400).json({
+        message:
+          "Validation error: " +
+          Object.values(error.errors)
+            .map((e) => e.message)
+            .join(", "),
       });
     }
-    
-    res.status(500).json({ 
-      message: "An error occurred while initializing categories. Please try again.",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined
+
+    res.status(500).json({
+      message:
+        "An error occurred while initializing categories. Please try again.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
@@ -271,7 +358,11 @@ router.put("/:id/budget", auth, async (req, res) => {
 
     res.json(category);
   } catch (error) {
-    logger.logError(error, { action: "updateBudgetLimit", categoryId: req.params.id, userId: req.user?.id });
+    logger.logError(error, {
+      action: "updateBudgetLimit",
+      categoryId: req.params.id,
+      userId: req.user?.id,
+    });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -383,7 +474,10 @@ router.get("/budget-summary", auth, async (req, res) => {
           : 0,
     });
   } catch (error) {
-    logger.logError(error, { action: "getBudgetSummary", userId: req.user?.id });
+    logger.logError(error, {
+      action: "getBudgetSummary",
+      userId: req.user?.id,
+    });
     res.status(500).json({ message: "Server error" });
   }
 });

@@ -375,12 +375,20 @@ export default function WalletScreenDesktop() {
                               isIncome ? "text-[#166f64]" : "text-[#9c3f2e]"
                               }`}
                             >
-                              {transaction.description || transaction.category}
+                              {transaction.category}
                             </div>
                             <div className="text-sm text-gray-600">
-                              {transaction.category} •{" "}
+                              {transaction.wallet || "N/A"} •{" "}
                               {formatDateForTransaction(transaction.date)}
                             </div>
+                            {(() => {
+                              const noteText = transaction.note || transaction.description;
+                              return noteText && noteText.trim() ? (
+                                <div className="text-xs text-gray-500 mt-1 italic">
+                                  {noteText.trim()}
+                                </div>
+                              ) : null;
+                            })()}
                           </div>
                           <div
                             className={`font-bold text-lg ${

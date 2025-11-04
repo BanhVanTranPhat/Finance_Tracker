@@ -68,7 +68,8 @@ const translations = {
     newBalance: "Số dư mới",
     updateBalance: "CẬP NHẬT SỐ DƯ",
     updateBalanceTitle: "Cập nhật số dư hiện tại trong ví",
-    balanceInputTip: "Nhập số dư mới cho ví. Bạn có thể dùng nút xóa để xoá nhanh các ký tự.",
+    balanceInputTip:
+      "Nhập số dư mới cho ví. Bạn có thể dùng nút xóa để xoá nhanh các ký tự.",
     clearAll: "Xóa hết",
     youWantToTransfer: "Bạn muốn chuyển đi",
     selectWallet: "Chọn ví",
@@ -88,8 +89,10 @@ const translations = {
     updateWalletBalance: "Cập nhật số dư ví",
     walletName: "Tên của ví này",
     currentBalanceInWallet: "Hiện tại số dư trong ví của bạn là bao nhiêu?",
-    balanceInputHelper: "Bạn nhập số tiền càng chính xác thì chúng tôi có thể giúp bạn cập nhật ngân sách càng chính xác hơn.",
-    defaultWalletDescription: "Ví mặc định là ví sẽ được mặc định lựa chọn khi bạn tạo các giao dịch.",
+    balanceInputHelper:
+      "Bạn nhập số tiền càng chính xác thì chúng tôi có thể giúp bạn cập nhật ngân sách càng chính xác hơn.",
+    defaultWalletDescription:
+      "Ví mặc định là ví sẽ được mặc định lựa chọn khi bạn tạo các giao dịch.",
     setAsDefaultWallet: "Đặt làm ví mặc định",
     saveNewWallet: "Lưu ví mới",
     saveNewWalletButton: "LƯU VÍ MỚI",
@@ -130,27 +133,34 @@ const translations = {
     manageCategoryGroups: "Quản lý nhóm danh mục",
     createCategoryGroup: "Tạo nhóm danh mục",
     addCategory: "Thêm danh mục",
-    categoryGroupTip: "Bạn có thể thêm nhanh từ mẫu có sẵn. Các danh mục đã có sẽ hiển thị nhãn \"Đã có\".",
+    categoryGroupTip:
+      'Bạn có thể thêm nhanh từ mẫu có sẵn. Các danh mục đã có sẽ hiển thị nhãn "Đã có".',
     deleteCategoryError: "Có lỗi xảy ra khi xóa danh mục",
     sort: "Sắp xếp",
     deleteCategory: "Xoá danh mục",
     alreadyAdded: "Đã có",
     // Help Center
     helpCenter: "Trung tâm trợ giúp",
-    helpCenterContent: "- Thiết lập danh mục và nhóm danh mục để quản lý ngân sách theo từng mục.\n- Phân bổ ngân sách trong phần Chỉnh sửa ngân sách.\n- Cập nhật số dư ví và thêm giao dịch để theo dõi thu/chi.",
+    helpCenterContent:
+      "- Thiết lập danh mục và nhóm danh mục để quản lý ngân sách theo từng mục.\n- Phân bổ ngân sách trong phần Chỉnh sửa ngân sách.\n- Cập nhật số dư ví và thêm giao dịch để theo dõi thu/chi.",
     restartGuide: "Bắt đầu lại hướng dẫn",
-    restartGuideDescription: "Khởi chạy lại tour hướng dẫn từng bước dành cho người mới.",
+    restartGuideDescription:
+      "Khởi chạy lại tour hướng dẫn từng bước dành cho người mới.",
     // Onboarding
     welcomeToFinanceTracker: "Chào mừng đến với Finance Tracker",
     smartPersonalFinanceApp: "Ứng dụng quản lý tài chính cá nhân thông minh",
     smartSpendingManagement: "Quản lý chi tiêu thông minh",
-    trackAndAnalyzeIncomeExpenses: "Theo dõi và phân tích thu chi một cách dễ dàng",
+    trackAndAnalyzeIncomeExpenses:
+      "Theo dõi và phân tích thu chi một cách dễ dàng",
     enterIncomeAndExpenses: "Nhập thu nhập và chi tiêu",
-    recordAllDailyTransactions: "Ghi lại tất cả các khoản thu chi hàng ngày để biết bạn đang tiêu tiền vào đâu.",
+    recordAllDailyTransactions:
+      "Ghi lại tất cả các khoản thu chi hàng ngày để biết bạn đang tiêu tiền vào đâu.",
     categorizeByCategory: "Phân loại theo danh mục",
-    divideMoneyIntoCategories: "Chia tiền vào các danh mục cụ thể như Ăn uống, Đi lại, Giải trí...",
+    divideMoneyIntoCategories:
+      "Chia tiền vào các danh mục cụ thể như Ăn uống, Đi lại, Giải trí...",
     viewChartsAndStatistics: "Xem biểu đồ và thống kê",
-    analyzeSpendingThroughCharts: "Phân tích chi tiêu qua biểu đồ trực quan, dễ hiểu.",
+    analyzeSpendingThroughCharts:
+      "Phân tích chi tiêu qua biểu đồ trực quan, dễ hiểu.",
     keyFeatures: "Tính năng chính",
     simpleIncomeExpenseManagement: "Quản lý thu chi đơn giản",
     visualEasyToUnderstandCharts: "Biểu đồ trực quan, dễ hiểu",
@@ -159,12 +169,16 @@ const translations = {
     startNow: "Bắt đầu ngay",
     zeroBasedBudgetingMethod: "Phương pháp lập ngân sách dựa trên con số không",
     incomeMinusExpensesEqualsZero: "Thu Nhập - Chi Tiêu = 0",
-    everyDollarMustBeAssigned: "Mọi đồng tiền kiếm được đều phải được \"giao việc\" trước khi bạn thực sự tiêu nó.",
-    createEnvelopes: "Tạo các \"Phong bì\"",
-    divideMoneyIntoSpecificCategories: "Chia tiền vào các danh mục cụ thể như Ăn uống, Đi lại, Tiết kiệm...",
+    everyDollarMustBeAssigned:
+      'Mọi đồng tiền kiếm được đều phải được "giao việc" trước khi bạn thực sự tiêu nó.',
+    createEnvelopes: 'Tạo các "Phong bì"',
+    divideMoneyIntoSpecificCategories:
+      "Chia tiền vào các danh mục cụ thể như Ăn uống, Đi lại, Tiết kiệm...",
     completeControl: "Kiểm soát hoàn toàn",
-    knowExactlyWhereMoneyGoes: "Bạn biết chính xác tiền đi đâu và có thể điều chỉnh linh hoạt.",
-    benefitsOfSmartSpendingManagement: "Lợi ích của Quản lý chi tiêu thông minh",
+    knowExactlyWhereMoneyGoes:
+      "Bạn biết chính xác tiền đi đâu và có thể điều chỉnh linh hoạt.",
+    benefitsOfSmartSpendingManagement:
+      "Lợi ích của Quản lý chi tiêu thông minh",
     betterSpendingControl: "Kiểm soát chi tiêu tốt hơn",
     saveMore: "Tiết kiệm nhiều hơn",
     achieveFinancialGoals: "Đạt được mục tiêu tài chính",
@@ -172,23 +186,28 @@ const translations = {
     strengthenFinancialDiscipline: "Tăng cường kỷ luật tài chính",
     betterFuturePlanning: "Lập kế hoạch tương lai tốt hơn",
     readyToStartFinancialJourney: "Sẵn sàng bắt đầu hành trình tài chính?",
-    startSmartFinancialManagement: "Hãy bắt đầu quản lý tài chính thông minh với Finance Tracker",
+    startSmartFinancialManagement:
+      "Hãy bắt đầu quản lý tài chính thông minh với Finance Tracker",
     // Category Selection
     selectExpenseCategories: "Chọn danh mục chi tiêu",
     categoriesSelected: "danh mục đã chọn",
     selectYourExpenseCategories: "Chọn danh mục chi tiêu của bạn",
-    incomeCategoriesAutoCreated: "Danh mục thu nhập (Lương, Thưởng, Đầu tư...) sẽ được tạo tự động.",
+    incomeCategoriesAutoCreated:
+      "Danh mục thu nhập (Lương, Thưởng, Đầu tư...) sẽ được tạo tự động.",
     canEditLater: "Bạn có thể chỉnh sửa bất kì lúc nào sau này.",
     template1FinanceTracker: "Mẫu 1: Finance Tracker Style",
     template1Description: "Phong cách quản lý tài chính linh hoạt và hiện đại",
     template2_50_30_20: "Mẫu 2: 50/30/20",
-    template2Description: "Phương pháp phân bổ ngân sách 50% nhu cầu, 30% mong muốn, 20% tiết kiệm",
+    template2Description:
+      "Phương pháp phân bổ ngân sách 50% nhu cầu, 30% mong muốn, 20% tiết kiệm",
     selectAll: "Tất cả",
     deselectAll: "Bỏ chọn",
     continueButton: "TIẾP TỤC",
     readyToContinue: "Sẵn sàng tiếp tục?",
-    skipStepHint: "Bạn có thể bỏ qua bước này và tạo danh mục sau trong ứng dụng",
-    selectedCategoriesCount: "Bạn đã chọn {count} danh mục để bắt đầu quản lý tài chính",
+    skipStepHint:
+      "Bạn có thể bỏ qua bước này và tạo danh mục sau trong ứng dụng",
+    selectedCategoriesCount:
+      "Bạn đã chọn {count} danh mục để bắt đầu quản lý tài chính",
     goBack: "Quay lại",
     // Category Names (for templates)
     categoryRent: "Tiền nhà",
@@ -244,7 +263,8 @@ const translations = {
     tourStep2BudgetList: "Xem và chỉnh sửa ngân sách từng danh mục tại đây.",
     tourStep3WalletUpdate: "Cập nhật số dư ví để số liệu chính xác.",
     tourStep4AddTransaction: "Thêm giao dịch đầu tiên của bạn.",
-    tourStep5CreateWallet: "Tạo ví mới để quản lý tài chính của bạn một cách hiệu quả.",
+    tourStep5CreateWallet:
+      "Tạo ví mới để quản lý tài chính của bạn một cách hiệu quả.",
     finish: "Hoàn tất",
     next: "Tiếp tục",
     skip: "Bỏ qua",
@@ -268,22 +288,27 @@ const translations = {
     landingSecurityBadge: "Bảo mật & Miễn phí 100%",
     landingHeroTitle: "Quản lý tài chính",
     landingHeroSubtitle: "thông minh hơn",
-    landingHeroDescription: "Theo dõi chi tiêu, phân tích xu hướng và đạt được mục tiêu tài chính của bạn. Tất cả trong một ứng dụng đơn giản, dễ sử dụng.",
+    landingHeroDescription:
+      "Theo dõi chi tiêu, phân tích xu hướng và đạt được mục tiêu tài chính của bạn. Tất cả trong một ứng dụng đơn giản, dễ sử dụng.",
     landingStartFree: "Bắt đầu ngay - Miễn phí",
     landingExampleIncome: "Thu nhập tháng này",
     landingExampleExpense: "Chi tiêu tháng này",
     landingFeaturesTitle: "Tính năng nổi bật",
     landingFeaturesSubtitle: "Mọi thứ bạn cần để quản lý tài chính hiệu quả",
     landingFeature1Title: "Theo dõi thu chi",
-    landingFeature1Desc: "Ghi lại mọi khoản thu nhập và chi tiêu một cách dễ dàng, nhanh chóng",
+    landingFeature1Desc:
+      "Ghi lại mọi khoản thu nhập và chi tiêu một cách dễ dàng, nhanh chóng",
     landingFeature2Title: "Phân tích chi tiêu",
-    landingFeature2Desc: "Biểu đồ trực quan giúp bạn hiểu rõ các khoản chi tiêu của mình",
+    landingFeature2Desc:
+      "Biểu đồ trực quan giúp bạn hiểu rõ các khoản chi tiêu của mình",
     landingFeature3Title: "Mục tiêu tiết kiệm",
     landingFeature3Desc: "Đặt mục tiêu tài chính và theo dõi tiến độ đạt được",
     landingFeature4Title: "Giao dịch định kỳ",
-    landingFeature4Desc: "Tự động ghi nhận các khoản thu chi lặp lại hàng tháng",
+    landingFeature4Desc:
+      "Tự động ghi nhận các khoản thu chi lặp lại hàng tháng",
     landingFeature5Title: "Xu hướng tài chính",
-    landingFeature5Desc: "Xem xu hướng thu chi theo thời gian để có quyết định tốt hơn",
+    landingFeature5Desc:
+      "Xem xu hướng thu chi theo thời gian để có quyết định tốt hơn",
     landingFeature6Title: "Xuất báo cáo",
     landingFeature6Desc: "Tải xuống dữ liệu dưới dạng CSV hoặc PDF để lưu trữ",
     landingBenefit1: "Miễn phí 100% - Không có phí ẩn",
@@ -294,7 +319,8 @@ const translations = {
     landingBenefit6: "Hỗ trợ đa thiết bị",
     landingWhyUsTitle: "Tại sao chọn chúng tôi?",
     landingCTATitle: "Sẵn sàng bắt đầu hành trình tài chính của bạn?",
-    landingCTADescription: "Tham gia cùng hàng nghìn người dùng đã cải thiện tài chính của họ",
+    landingCTADescription:
+      "Tham gia cùng hàng nghìn người dùng đã cải thiện tài chính của họ",
     landingCTAButton: "Đăng ký miễn phí ngay",
     landingFooterText: "Quản lý tài chính thông minh.",
     loginSubtitle: "Quản lý tài chính cá nhân của bạn",
@@ -303,14 +329,29 @@ const translations = {
     emailRequired: "Vui lòng nhập email",
     passwordRequired: "Vui lòng nhập mật khẩu",
     passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự",
-    passwordStrengthRequirement: "Mật khẩu phải chứa ít nhất 1 chữ hoa (A-Z), 1 chữ thường (a-z) và 1 số (0-9). Ví dụ: MyPass123",
-    passwordTooWeak: "Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu có chữ hoa, chữ thường và số để tăng tính bảo mật.",
+    passwordStrengthRequirement:
+      "Mật khẩu phải chứa ít nhất 1 chữ hoa (A-Z), 1 chữ thường (a-z) và 1 số (0-9). Ví dụ: MyPass123",
+    passwordTooWeak:
+      "Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu có chữ hoa, chữ thường và số để tăng tính bảo mật.",
     loginFailed: "Đăng nhập thất bại",
     loggingIn: "Đang đăng nhập...",
+    resetPassword: "Đặt lại mật khẩu",
+    sendCodeToEmail: "Gửi mã về email",
+    sendingCode: "Đang gửi mã...",
+    verificationCode: "Mã xác thực (6 số)",
+    newPassword: "Mật khẩu mới",
+    confirmReset: "Xác nhận đặt lại",
+    verificationCodeSent:
+      "Đã gửi mã xác thực về email. Vui lòng kiểm tra hộp thư.",
+    resetPasswordSuccess: "Đặt lại mật khẩu thành công.",
+    resetPasswordFailed: "Đặt lại mật khẩu thất bại",
+    sendCodeFailed: "Gửi mã thất bại",
     or: "Hoặc",
     noAccountYet: "Chưa có tài khoản?",
-    googleOAuthNotConfigured: "Google OAuth chưa được cấu hình. Vui lòng liên hệ quản trị viên.",
-    googleSignInInitError: "Không thể khởi tạo Google Sign-In. Vui lòng tải lại trang.",
+    googleOAuthNotConfigured:
+      "Google OAuth chưa được cấu hình. Vui lòng liên hệ quản trị viên.",
+    googleSignInInitError:
+      "Không thể khởi tạo Google Sign-In. Vui lòng tải lại trang.",
     // Transaction List
     transactionCount: "Giao dịch",
     byAmount: "Theo số tiền",
@@ -324,7 +365,8 @@ const translations = {
     budgetAllocationError: "Có lỗi xảy ra khi lưu phân bổ ngân sách",
     updateBudgetSuccess: "Cập nhật ngân sách thành công!",
     updateBudgetError: "Có lỗi xảy ra khi cập nhật ngân sách",
-    initializeCategoriesError: "Có lỗi xảy ra khi khởi tạo danh mục. Vui lòng thử lại.",
+    initializeCategoriesError:
+      "Có lỗi xảy ra khi khởi tạo danh mục. Vui lòng thử lại.",
     noExpenseData: "Chưa có dữ liệu chi tiêu",
     navigateTo: "Chuyển đến",
     // Quick Action Modal
@@ -336,13 +378,15 @@ const translations = {
     // Wallet Prompt Modal
     walletPromptTitle: "Tạo ví đầu tiên",
     startManagingFinances: "Bắt đầu quản lý tài chính",
-    walletPromptDescription: "Để thêm giao dịch, bạn cần tạo ít nhất một ví. Ví giúp bạn tổ chức và theo dõi số tiền của mình.",
+    walletPromptDescription:
+      "Để thêm giao dịch, bạn cần tạo ít nhất một ví. Ví giúp bạn tổ chức và theo dõi số tiền của mình.",
     manageMultipleWalletsTitle: "Quản lý nhiều ví",
     manageMultipleWalletsDesc: "Tạo nhiều ví cho các mục đích khác nhau",
     trackBalanceTitle: "Theo dõi số dư",
     trackBalanceDesc: "Xem số dư hiện tại của từng ví một cách dễ dàng",
     recordTransactionsTitle: "Ghi chép giao dịch",
-    recordTransactionsDesc: "Sau khi có ví, bạn có thể bắt đầu thêm giao dịch thu chi",
+    recordTransactionsDesc:
+      "Sau khi có ví, bạn có thể bắt đầu thêm giao dịch thu chi",
     laterButton: "Để sau",
     createWalletNow: "Tạo ví ngay",
     // Budget Screen
@@ -352,7 +396,8 @@ const translations = {
     budgetNotSet: "Chưa thiết lập ngân sách",
     remainingLabel: "Còn:",
     noCategoriesCreated: "Chưa có danh mục nào được tạo",
-    createCategoriesToStart: "Tạo danh mục để bắt đầu quản lý ngân sách theo Zero-Based Budgeting",
+    createCategoriesToStart:
+      "Tạo danh mục để bắt đầu quản lý ngân sách theo Zero-Based Budgeting",
     createNewCategory: "Tạo danh mục mới",
     selectFromTemplate: "Chọn từ mẫu có sẵn",
     noCategoriesYet: "Chưa có danh mục nào. Vui lòng tạo danh mục trước.",
@@ -361,7 +406,8 @@ const translations = {
     selectWallet: "Chọn ví",
     enterAmount: "Nhập số tiền",
     yourCategories: "Danh mục của bạn",
-    pleaseCreateWalletAndCategory: "Vui lòng tạo ví và danh mục trước khi thêm giao dịch",
+    pleaseCreateWalletAndCategory:
+      "Vui lòng tạo ví và danh mục trước khi thêm giao dịch",
     addTransaction: "Thêm giao dịch",
     editTransaction: "Chỉnh sửa giao dịch",
     saveTransaction: "Lưu giao dịch",
@@ -385,7 +431,8 @@ const translations = {
     previousMonth: "Tháng trước",
     // Settings Screen
     dataAndBackup: "Dữ liệu & Sao lưu",
-    deleteAllDataWarning: "Xóa toàn bộ ví, danh mục, giao dịch và ngân sách. Hành động này không thể hoàn tác.",
+    deleteAllDataWarning:
+      "Xóa toàn bộ ví, danh mục, giao dịch và ngân sách. Hành động này không thể hoàn tác.",
     accountInformation: "Thông tin tài khoản",
     editPersonalInformation: "Chỉnh sửa thông tin cá nhân",
     contactUs: "Liên hệ chúng tôi",
@@ -406,7 +453,8 @@ const translations = {
     noDataToExport: "Không có dữ liệu để xuất",
     confirmLogout: "Bạn có chắc chắn muốn đăng xuất?",
     updateProfileError: "Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại.",
-    deleteDataWarning: "⚠️ CẢNH BÁO\n\nBạn có chắc chắn muốn xóa TẤT CẢ dữ liệu tài chính?\n\nHành động này sẽ:\n• Xóa tất cả ví, danh mục, giao dịch\n• Xóa tất cả ngân sách và thống kê\n• KHÔNG THỂ HOÀN TÁC\n\nNhập 'XÓA' để xác nhận:",
+    deleteDataWarning:
+      "⚠️ CẢNH BÁO\n\nBạn có chắc chắn muốn xóa TẤT CẢ dữ liệu tài chính?\n\nHành động này sẽ:\n• Xóa tất cả ví, danh mục, giao dịch\n• Xóa tất cả ngân sách và thống kê\n• KHÔNG THỂ HOÀN TÁC\n\nNhập 'XÓA' để xác nhận:",
     deleteDataConfirmCode: "XÓA",
     deleteDataError: "Có lỗi xảy ra khi xóa dữ liệu. Vui lòng thử lại.",
     deleteDataConfirmInvalid: "Xác nhận không đúng. Hủy bỏ xóa dữ liệu.",
@@ -481,7 +529,8 @@ const translations = {
     newBalance: "New Balance",
     updateBalance: "UPDATE BALANCE",
     updateBalanceTitle: "Update current balance in wallet",
-    balanceInputTip: "Enter new balance for wallet. You can use the delete button to quickly clear characters.",
+    balanceInputTip:
+      "Enter new balance for wallet. You can use the delete button to quickly clear characters.",
     clearAll: "Clear All",
     youWantToTransfer: "You want to transfer",
     selectWallet: "Select wallet",
@@ -501,8 +550,10 @@ const translations = {
     updateWalletBalance: "Update Wallet Balance",
     walletName: "Name of this wallet",
     currentBalanceInWallet: "What is the current balance in your wallet?",
-    balanceInputHelper: "The more accurate the amount you enter, the more accurately we can help you update your budget.",
-    defaultWalletDescription: "The default wallet is the wallet that will be selected by default when you create transactions.",
+    balanceInputHelper:
+      "The more accurate the amount you enter, the more accurately we can help you update your budget.",
+    defaultWalletDescription:
+      "The default wallet is the wallet that will be selected by default when you create transactions.",
     setAsDefaultWallet: "Set as default wallet",
     saveNewWallet: "Save new wallet",
     saveNewWalletButton: "SAVE NEW WALLET",
@@ -543,27 +594,34 @@ const translations = {
     manageCategoryGroups: "Manage Category Groups",
     createCategoryGroup: "Create Category Group",
     addCategory: "Add Category",
-    categoryGroupTip: "You can quickly add from available templates. Existing categories will display the \"Already Added\" label.",
+    categoryGroupTip:
+      'You can quickly add from available templates. Existing categories will display the "Already Added" label.',
     deleteCategoryError: "An error occurred while deleting category",
     sort: "Sort",
     deleteCategory: "Delete category",
     alreadyAdded: "Already Added",
     // Help Center
     helpCenter: "Help Center",
-    helpCenterContent: "- Set up categories and category groups to manage budget by item.\n- Allocate budget in the Edit Budget section.\n- Update wallet balance and add transactions to track income/expenses.",
+    helpCenterContent:
+      "- Set up categories and category groups to manage budget by item.\n- Allocate budget in the Edit Budget section.\n- Update wallet balance and add transactions to track income/expenses.",
     restartGuide: "Restart Guide",
-    restartGuideDescription: "Restart the step-by-step tutorial tour for new users.",
+    restartGuideDescription:
+      "Restart the step-by-step tutorial tour for new users.",
     // Onboarding
     welcomeToFinanceTracker: "Welcome to Finance Tracker",
     smartPersonalFinanceApp: "Smart personal finance management app",
     smartSpendingManagement: "Smart Spending Management",
-    trackAndAnalyzeIncomeExpenses: "Track and analyze income and expenses easily",
+    trackAndAnalyzeIncomeExpenses:
+      "Track and analyze income and expenses easily",
     enterIncomeAndExpenses: "Enter income and expenses",
-    recordAllDailyTransactions: "Record all daily transactions to know where you're spending money.",
+    recordAllDailyTransactions:
+      "Record all daily transactions to know where you're spending money.",
     categorizeByCategory: "Categorize by category",
-    divideMoneyIntoCategories: "Divide money into specific categories like Food, Transportation, Entertainment...",
+    divideMoneyIntoCategories:
+      "Divide money into specific categories like Food, Transportation, Entertainment...",
     viewChartsAndStatistics: "View charts and statistics",
-    analyzeSpendingThroughCharts: "Analyze spending through visual, easy-to-understand charts.",
+    analyzeSpendingThroughCharts:
+      "Analyze spending through visual, easy-to-understand charts.",
     keyFeatures: "Key Features",
     simpleIncomeExpenseManagement: "Simple income and expense management",
     visualEasyToUnderstandCharts: "Visual, easy-to-understand charts",
@@ -572,11 +630,14 @@ const translations = {
     startNow: "Start now",
     zeroBasedBudgetingMethod: "Zero-based budgeting method",
     incomeMinusExpensesEqualsZero: "Income - Expenses = 0",
-    everyDollarMustBeAssigned: "Every dollar earned must be \"assigned a job\" before you actually spend it.",
-    createEnvelopes: "Create \"Envelopes\"",
-    divideMoneyIntoSpecificCategories: "Divide money into specific categories like Food, Transportation, Savings...",
+    everyDollarMustBeAssigned:
+      'Every dollar earned must be "assigned a job" before you actually spend it.',
+    createEnvelopes: 'Create "Envelopes"',
+    divideMoneyIntoSpecificCategories:
+      "Divide money into specific categories like Food, Transportation, Savings...",
     completeControl: "Complete Control",
-    knowExactlyWhereMoneyGoes: "You know exactly where your money goes and can adjust flexibly.",
+    knowExactlyWhereMoneyGoes:
+      "You know exactly where your money goes and can adjust flexibly.",
     benefitsOfSmartSpendingManagement: "Benefits of Smart Spending Management",
     betterSpendingControl: "Better spending control",
     saveMore: "Save more",
@@ -585,23 +646,28 @@ const translations = {
     strengthenFinancialDiscipline: "Strengthen financial discipline",
     betterFuturePlanning: "Better future planning",
     readyToStartFinancialJourney: "Ready to start your financial journey?",
-    startSmartFinancialManagement: "Start smart financial management with Finance Tracker",
+    startSmartFinancialManagement:
+      "Start smart financial management with Finance Tracker",
     // Category Selection
     selectExpenseCategories: "Select expense categories",
     categoriesSelected: "categories selected",
     selectYourExpenseCategories: "Select your expense categories",
-    incomeCategoriesAutoCreated: "Income categories (Salary, Bonus, Investment...) will be created automatically.",
+    incomeCategoriesAutoCreated:
+      "Income categories (Salary, Bonus, Investment...) will be created automatically.",
     canEditLater: "You can edit them anytime later.",
     template1FinanceTracker: "Template 1: Finance Tracker Style",
     template1Description: "Flexible and modern financial management style",
     template2_50_30_20: "Template 2: 50/30/20",
-    template2Description: "Budget allocation method: 50% needs, 30% wants, 20% savings",
+    template2Description:
+      "Budget allocation method: 50% needs, 30% wants, 20% savings",
     selectAll: "All",
     deselectAll: "Deselect",
     continueButton: "CONTINUE",
     readyToContinue: "Ready to continue?",
-    skipStepHint: "You can skip this step and create categories later in the app",
-    selectedCategoriesCount: "You have selected {count} categories to start financial management",
+    skipStepHint:
+      "You can skip this step and create categories later in the app",
+    selectedCategoriesCount:
+      "You have selected {count} categories to start financial management",
     goBack: "Go back",
     // Category Names (for templates)
     categoryRent: "Rent/Housing",
@@ -653,11 +719,13 @@ const translations = {
     incomeInvestment: "Investment",
     incomeOther: "Other Income",
     // Tour Guide
-    tourStep1ManageGroups: "Manage groups and add categories from available templates.",
+    tourStep1ManageGroups:
+      "Manage groups and add categories from available templates.",
     tourStep2BudgetList: "View and edit budget for each category here.",
     tourStep3WalletUpdate: "Update wallet balance for accurate data.",
     tourStep4AddTransaction: "Add your first transaction.",
-    tourStep5CreateWallet: "Create a new wallet to efficiently manage your finances.",
+    tourStep5CreateWallet:
+      "Create a new wallet to efficiently manage your finances.",
     finish: "Finish",
     next: "Next",
     skip: "Skip",
@@ -681,12 +749,14 @@ const translations = {
     landingSecurityBadge: "100% Secure & Free",
     landingHeroTitle: "Manage your finances",
     landingHeroSubtitle: "smarter",
-    landingHeroDescription: "Track expenses, analyze trends and achieve your financial goals. All in one simple, easy-to-use app.",
+    landingHeroDescription:
+      "Track expenses, analyze trends and achieve your financial goals. All in one simple, easy-to-use app.",
     landingStartFree: "Start Now - Free",
     landingExampleIncome: "This month's income",
     landingExampleExpense: "This month's expense",
     landingFeaturesTitle: "Featured Features",
-    landingFeaturesSubtitle: "Everything you need to manage finances effectively",
+    landingFeaturesSubtitle:
+      "Everything you need to manage finances effectively",
     landingFeature1Title: "Track Income & Expenses",
     landingFeature1Desc: "Record all income and expenses easily and quickly",
     landingFeature2Title: "Spending Analysis",
@@ -694,9 +764,11 @@ const translations = {
     landingFeature3Title: "Savings Goals",
     landingFeature3Desc: "Set financial goals and track your progress",
     landingFeature4Title: "Recurring Transactions",
-    landingFeature4Desc: "Automatically record monthly recurring income and expenses",
+    landingFeature4Desc:
+      "Automatically record monthly recurring income and expenses",
     landingFeature5Title: "Financial Trends",
-    landingFeature5Desc: "View income and expense trends over time for better decisions",
+    landingFeature5Desc:
+      "View income and expense trends over time for better decisions",
     landingFeature6Title: "Export Reports",
     landingFeature6Desc: "Download data as CSV or PDF for storage",
     landingBenefit1: "100% Free - No hidden fees",
@@ -707,7 +779,8 @@ const translations = {
     landingBenefit6: "Multi-device support",
     landingWhyUsTitle: "Why choose us?",
     landingCTATitle: "Ready to start your financial journey?",
-    landingCTADescription: "Join thousands of users who have improved their finances",
+    landingCTADescription:
+      "Join thousands of users who have improved their finances",
     landingCTAButton: "Register Free Now",
     landingFooterText: "Smart financial management.",
     loginSubtitle: "Manage your personal finances",
@@ -716,18 +789,34 @@ const translations = {
     emailRequired: "Please enter email",
     passwordRequired: "Please enter password",
     passwordMinLength: "Password must be at least 6 characters",
-    passwordStrengthRequirement: "Password must contain at least 1 uppercase letter (A-Z), 1 lowercase letter (a-z) and 1 number (0-9)",
-    passwordTooWeak: "Password is too weak. Please use a password with uppercase, lowercase letters and numbers for better security.",
+    passwordStrengthRequirement:
+      "Password must contain at least 1 uppercase letter (A-Z), 1 lowercase letter (a-z) and 1 number (0-9)",
+    passwordTooWeak:
+      "Password is too weak. Please use a password with uppercase, lowercase letters and numbers for better security.",
     loginFailed: "Login failed",
     loggingIn: "Logging in...",
+    resetPassword: "Reset Password",
+    sendCodeToEmail: "Send code to email",
+    sendingCode: "Sending code...",
+    verificationCode: "Verification code (6 digits)",
+    newPassword: "New password",
+    confirmReset: "Confirm reset",
+    verificationCodeSent:
+      "Verification code has been sent to your email. Please check your inbox.",
+    resetPasswordSuccess: "Password reset successful.",
+    resetPasswordFailed: "Password reset failed",
+    sendCodeFailed: "Failed to send code",
     or: "Or",
     noAccountYet: "Don't have an account?",
-    googleOAuthNotConfigured: "Google OAuth is not configured. Please contact administrator.",
-    googleSignInInitError: "Unable to initialize Google Sign-In. Please reload the page.",
+    googleOAuthNotConfigured:
+      "Google OAuth is not configured. Please contact administrator.",
+    googleSignInInitError:
+      "Unable to initialize Google Sign-In. Please reload the page.",
     // Transaction List
     transactionCount: "Transactions",
     byAmount: "By Amount",
-    confirmDeleteTransaction: "Are you sure you want to delete this transaction?",
+    confirmDeleteTransaction:
+      "Are you sure you want to delete this transaction?",
     // Budget Screen
     expenseManagement: "Expense Management",
     trackPersonalIncomeExpenses: "Track personal income and expenses",
@@ -737,7 +826,8 @@ const translations = {
     budgetAllocationError: "An error occurred while saving budget allocation",
     updateBudgetSuccess: "Budget updated successfully!",
     updateBudgetError: "An error occurred while updating budget",
-    initializeCategoriesError: "An error occurred while initializing categories. Please try again.",
+    initializeCategoriesError:
+      "An error occurred while initializing categories. Please try again.",
     noExpenseData: "No expense data yet",
     navigateTo: "Navigate to",
     // Quick Action Modal
@@ -749,13 +839,15 @@ const translations = {
     // Wallet Prompt Modal
     walletPromptTitle: "Create your first wallet",
     startManagingFinances: "Start managing finances",
-    walletPromptDescription: "To add transactions, you need to create at least one wallet. Wallets help you organize and track your money.",
+    walletPromptDescription:
+      "To add transactions, you need to create at least one wallet. Wallets help you organize and track your money.",
     manageMultipleWalletsTitle: "Manage multiple wallets",
     manageMultipleWalletsDesc: "Create multiple wallets for different purposes",
     trackBalanceTitle: "Track balance",
     trackBalanceDesc: "View the current balance of each wallet easily",
     recordTransactionsTitle: "Record transactions",
-    recordTransactionsDesc: "After creating a wallet, you can start adding income and expense transactions",
+    recordTransactionsDesc:
+      "After creating a wallet, you can start adding income and expense transactions",
     laterButton: "Later",
     createWalletNow: "Create wallet now",
     // Budget Screen
@@ -765,7 +857,8 @@ const translations = {
     budgetNotSet: "Budget not set yet",
     remainingLabel: "Remaining:",
     noCategoriesCreated: "No categories created yet",
-    createCategoriesToStart: "Create categories to start managing budget with Zero-Based Budgeting",
+    createCategoriesToStart:
+      "Create categories to start managing budget with Zero-Based Budgeting",
     createNewCategory: "Create new category",
     selectFromTemplate: "Select from template",
     noCategoriesYet: "No categories yet. Please create categories first.",
@@ -774,7 +867,8 @@ const translations = {
     selectWallet: "Select wallet",
     enterAmount: "Enter amount",
     yourCategories: "Your Categories",
-    pleaseCreateWalletAndCategory: "Please create a wallet and categories before adding a transaction",
+    pleaseCreateWalletAndCategory:
+      "Please create a wallet and categories before adding a transaction",
     addTransaction: "Add Transaction",
     editTransaction: "Edit Transaction",
     saveTransaction: "Save Transaction",
@@ -798,7 +892,8 @@ const translations = {
     previousMonth: "Previous Month",
     // Settings Screen
     dataAndBackup: "Data & Backup",
-    deleteAllDataWarning: "Delete all wallets, categories, transactions, and budgets. This action cannot be undone.",
+    deleteAllDataWarning:
+      "Delete all wallets, categories, transactions, and budgets. This action cannot be undone.",
     accountInformation: "Account Information",
     editPersonalInformation: "Edit personal information",
     contactUs: "Contact Us",
@@ -818,8 +913,10 @@ const translations = {
     cancelButton: "Cancel",
     noDataToExport: "No data to export",
     confirmLogout: "Are you sure you want to logout?",
-    updateProfileError: "An error occurred while saving information. Please try again.",
-    deleteDataWarning: "⚠️ WARNING\n\nAre you sure you want to delete ALL financial data?\n\nThis action will:\n• Delete all wallets, categories, transactions\n• Delete all budgets and statistics\n• CANNOT BE UNDONE\n\nEnter 'DELETE' to confirm:",
+    updateProfileError:
+      "An error occurred while saving information. Please try again.",
+    deleteDataWarning:
+      "⚠️ WARNING\n\nAre you sure you want to delete ALL financial data?\n\nThis action will:\n• Delete all wallets, categories, transactions\n• Delete all budgets and statistics\n• CANNOT BE UNDONE\n\nEnter 'DELETE' to confirm:",
     deleteDataConfirmCode: "DELETE",
     deleteDataError: "An error occurred while deleting data. Please try again.",
     deleteDataConfirmInvalid: "Invalid confirmation. Canceling data deletion.",
@@ -890,4 +987,3 @@ export function useLanguage() {
   }
   return context;
 }
-

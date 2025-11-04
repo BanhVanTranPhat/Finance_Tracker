@@ -69,26 +69,27 @@ export default function LandingPage({ onLogin, onRegister }) {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl shadow-lg">
-                <Wallet className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-1.5 sm:p-2 rounded-xl shadow-lg">
+                <Wallet className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Finance Tracker
+              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                <span className="hidden sm:inline">Finance Tracker</span>
+                <span className="sm:hidden">Finance</span>
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               {/* Language Selector */}
               <div className="relative">
                 <button
                   onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition text-gray-700 font-medium"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 transition text-gray-700 font-medium"
                   aria-label="Select language"
                 >
-                  <Languages className="w-5 h-5" />
-                  <span className="hidden sm:inline">{language === "vi" ? "Tiếng Việt" : "English"}</span>
+                  <Languages className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden md:inline">{language === "vi" ? "Tiếng Việt" : "English"}</span>
                 </button>
                 {showLanguageMenu && (
                   <>
@@ -125,15 +126,17 @@ export default function LandingPage({ onLogin, onRegister }) {
               </div>
               <button
                 onClick={onLogin}
-                className="text-gray-700 hover:text-emerald-600 px-4 py-2 rounded-lg font-medium transition"
+                className="text-gray-700 hover:text-emerald-600 px-2 sm:px-4 py-2 rounded-lg font-medium transition text-sm sm:text-base"
               >
-                {t("login")}
+                <span className="hidden sm:inline">{t("login")}</span>
+                <span className="sm:hidden">ĐN</span>
               </button>
               <button
                 onClick={onRegister}
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-md hover:shadow-lg"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-3 sm:px-6 py-2 rounded-lg font-semibold transition shadow-md hover:shadow-lg text-xs sm:text-base whitespace-nowrap"
               >
-                {t("registerFree")}
+                <span className="hidden sm:inline">{t("registerFree")}</span>
+                <span className="sm:hidden">ĐK</span>
               </button>
             </div>
           </div>

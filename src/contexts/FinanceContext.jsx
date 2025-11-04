@@ -385,17 +385,20 @@ export const FinanceProvider = ({ children }) => {
   // Transaction functions
   const addTransaction = async (transactionData) => {
     try {
-      const response = await transactionAPI.createTransaction({
+      await transactionAPI.createTransaction({
         type: transactionData.type,
         amount: transactionData.amount,
         date: transactionData.date,
         category: transactionData.category,
         wallet: transactionData.wallet,
-        note: transactionData.description,
+        note: transactionData.note || transactionData.description,
       });
 
-      const newTransaction = response.transaction || response;
-      setTransactions((prev) => [newTransaction, ...prev]);
+      // Reload transactions from server to ensure consistency (including note field)
+      const transactionsResult = await transactionAPI.getTransactions();
+      const transactionsData =
+        transactionsResult.transactions || transactionsResult || [];
+      setTransactions(transactionsData);
 
       // Reload wallets to get updated balance
       const updatedWallets = await walletAPI.getWallets();
@@ -412,22 +415,20 @@ export const FinanceProvider = ({ children }) => {
 
   const updateTransaction = async (id, transactionData) => {
     try {
-      const updatedTransaction = await transactionAPI.updateTransaction(id, {
+      await transactionAPI.updateTransaction(id, {
         type: transactionData.type,
         amount: transactionData.amount,
         date: transactionData.date,
         category: transactionData.category,
         wallet: transactionData.wallet,
-        note: transactionData.description,
+        note: transactionData.note || transactionData.description,
       });
 
-      setTransactions((prev) =>
-        prev.map((transaction) =>
-          (transaction._id || transaction.id) === id
-            ? updatedTransaction
-            : transaction
-        )
-      );
+      // Reload transactions from server to ensure consistency with filters/sorting
+      const transactionsResult = await transactionAPI.getTransactions();
+      const transactionsData =
+        transactionsResult.transactions || transactionsResult || [];
+      setTransactions(transactionsData);
 
       // Reload wallets to get updated balance
       const updatedWallets = await walletAPI.getWallets();

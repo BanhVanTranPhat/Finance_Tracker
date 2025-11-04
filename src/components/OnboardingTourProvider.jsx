@@ -6,6 +6,7 @@ export default function OnboardingTourProvider({ children, enabled = true }) {
   const { t } = useLanguage();
   const [run, setRun] = useState(false);
   const [tourKey, setTourKey] = useState(0); // Key to force remount Joyride and reset to step 1
+  const [startStepIndex, setStartStepIndex] = useState(0); // Index to start tour from (0-based)
 
   useEffect(() => {
     if (!enabled) return;
@@ -14,9 +15,19 @@ export default function OnboardingTourProvider({ children, enabled = true }) {
       const force = localStorage.getItem("force_run_tour") === "true";
       const completed = localStorage.getItem("onboarding_completed") === "true";
       const dismissed = localStorage.getItem("tour_dismissed") === "true";
+      const startFromStep = localStorage.getItem("tour_start_from_step");
       
-      // Only run tour if forced to run (from App.jsx after onboarding)
+      // Only run tour if forced to run (from App.jsx after onboarding or from add transaction)
       if (force && completed && !dismissed) {
+        // Check if we should start from a specific step
+        if (startFromStep) {
+          const stepIndex = parseInt(startFromStep, 10) - 1; // Convert to 0-based index
+          if (stepIndex >= 0 && stepIndex < 5) {
+            setStartStepIndex(stepIndex);
+            localStorage.removeItem("tour_start_from_step");
+          }
+        }
+        
         // Wait a bit to ensure DOM is ready
         setTimeout(() => {
           setRun(true);
@@ -64,16 +75,35 @@ export default function OnboardingTourProvider({ children, enabled = true }) {
     // Check for force_run_tour and ensure at least first target is ready
     const checkTourFlag = () => {
       const force = localStorage.getItem("force_run_tour") === "true";
+      const startFromStep = localStorage.getItem("tour_start_from_step");
+      
       if (force) {
-        // Reset tour state first to ensure it starts from step 1
+        // Check if we should start from a specific step (e.g., step 5 for wallet creation)
+        if (startFromStep) {
+          const stepIndex = parseInt(startFromStep, 10) - 1; // Convert to 0-based index
+          if (stepIndex === 4) {
+            // Starting from step 5 (create wallet) - navigate to wallet tab
+            console.log("🔄 Starting tour from step 5 (create wallet) - navigating to wallet tab");
+            // Don't set stepIndex yet - wait until target is confirmed ready in checkTargets
+            window.dispatchEvent(
+              new CustomEvent("tourNavigateToWallet", { detail: { stepIndex: 4, forStep5: true, immediate: true } })
+            );
+          } else {
+            setStartStepIndex(stepIndex);
+          }
+        } else {
+          // Reset to start from step 1
+          setStartStepIndex(0);
+          // Step 1 target is only in Budget tab, so navigate there first
+          console.log("🔄 Restarting tour - navigating to Budget tab for step 1");
+          window.dispatchEvent(
+            new CustomEvent("tourNavigateToBudget", { detail: { restart: true } })
+          );
+        }
+        
+        // Reset tour state
         setRun(false);
         setTourKey(prev => prev + 1); // Force remount Joyride component
-        
-        // Step 1 target is only in Budget tab, so navigate there first
-        console.log("🔄 Restarting tour - navigating to Budget tab for step 1");
-        window.dispatchEvent(
-          new CustomEvent("tourNavigateToBudget", { detail: { restart: true } })
-        );
         
         // Wait for tab navigation and DOM to be ready
         setTimeout(() => {
@@ -81,46 +111,92 @@ export default function OnboardingTourProvider({ children, enabled = true }) {
           const checkTargets = (retries = 0) => {
             logTourTargets(); // Log for debugging
             
-            // Check if step 1 and step 2 targets exist (both are in Budget tab)
-            const step1Target = document.querySelector('[data-tour="manage-groups-btn"]');
-            const step2Target = document.querySelector('[data-tour="budget-list"]');
-            
-            console.log(`🔍 Checking targets (retry ${retries + 1}):`, {
-              step1: step1Target ? "✅" : "❌",
-              step2: step2Target ? "✅" : "❌",
-              step2Visible: step2Target && step2Target.offsetParent !== null ? "✅" : "❌"
-            });
-            
-            // CRITICAL: Both targets must exist AND be visible in DOM
-            if (step1Target && step2Target && step2Target.offsetParent !== null) {
-              console.log("✅ Starting tour - step 1 and step 2 targets found and visible");
-              // Add small delay to ensure DOM is fully stable
-              setTimeout(() => {
-                setRun(true);
-                localStorage.removeItem("force_run_tour");
-              }, 300);
-            } else {
-              // Retry after a short delay if targets not ready
-              if (retries < 20) { // Max 20 retries (6 seconds total) - increased for step 2
-                console.log(`⏳ Waiting for tour targets... (retry ${retries + 1}/20)`);
-                if (!step1Target) console.warn("   ⚠️ Step 1 target missing");
-                if (!step2Target) console.warn("   ⚠️ Step 2 target missing");
-                if (step2Target && step2Target.offsetParent === null) console.warn("   ⚠️ Step 2 target exists but not visible");
-                
-                // Re-ensure Budget tab is active on each retry
-                if (!step2Target || step2Target.offsetParent === null) {
-                  window.dispatchEvent(
-                    new CustomEvent("tourNavigateToBudget", { detail: { force: true, retry: retries } })
-                  );
-                }
-                
-                setTimeout(() => checkTargets(retries + 1), 300);
+            // Check if starting from step 5 (wallet creation)
+            if (startFromStep === "5") {
+              const step5Target = document.querySelector('[data-tour="create-wallet-btn"]');
+              
+              console.log(`🔍 Checking step 5 target (retry ${retries + 1}):`, {
+                step5: step5Target ? "✅" : "❌",
+                step5Visible: step5Target && step5Target.offsetParent !== null ? "✅" : "❌"
+              });
+              
+              if (step5Target && step5Target.offsetParent !== null) {
+                console.log("✅ Starting tour from step 5 - target found and visible");
+                // Ensure stepIndex is set before starting tour
+                setStartStepIndex(4);
+                setTimeout(() => {
+                  setRun(true);
+                  localStorage.removeItem("force_run_tour");
+                }, 300);
               } else {
-                console.error("❌ Tour targets not found after multiple retries");
-                console.error(`   Step 1: ${step1Target ? "✅" : "❌"}, Step 2: ${step2Target ? "✅" : "❌"}, Step 2 Visible: ${step2Target && step2Target.offsetParent !== null ? "✅" : "❌"}`);
-                // Start anyway but log warning
-                setRun(true);
-                localStorage.removeItem("force_run_tour");
+                // Retry after a short delay if target not ready
+                if (retries < 20) {
+                  console.log(`⏳ Waiting for step 5 target... (retry ${retries + 1}/20)`);
+                  if (!step5Target) console.warn("   ⚠️ Step 5 target missing");
+                  if (step5Target && step5Target.offsetParent === null) console.warn("   ⚠️ Step 5 target exists but not visible");
+                  
+                  // Re-ensure wallet tab is active on each retry
+                  window.dispatchEvent(
+                    new CustomEvent("tourNavigateToWallet", { detail: { stepIndex: 4, forStep5: true, force: true, retry: retries } })
+                  );
+                  
+                  setTimeout(() => checkTargets(retries + 1), 300);
+                } else {
+                  console.warn("⚠️ Max retries reached - cannot start tour from step 5 (target not found)");
+                  localStorage.removeItem("force_run_tour");
+                  localStorage.removeItem("tour_start_from_step");
+                  // Don't start tour if target is not found - it will cause errors
+                  // Instead, show a message or fallback to step 1
+                  setStartStepIndex(0);
+                  console.log("⚠️ Falling back to starting tour from step 1");
+                  // Optionally start from step 1 instead
+                  // setTimeout(() => {
+                  //   setRun(true);
+                  // }, 300);
+                }
+              }
+            } else {
+              // Starting from step 1 - check step 1 and step 2 targets (both are in Budget tab)
+              const step1Target = document.querySelector('[data-tour="manage-groups-btn"]');
+              const step2Target = document.querySelector('[data-tour="budget-list"]');
+              
+              console.log(`🔍 Checking targets (retry ${retries + 1}):`, {
+                step1: step1Target ? "✅" : "❌",
+                step2: step2Target ? "✅" : "❌",
+                step2Visible: step2Target && step2Target.offsetParent !== null ? "✅" : "❌"
+              });
+              
+              // CRITICAL: Both targets must exist AND be visible in DOM
+              if (step1Target && step2Target && step2Target.offsetParent !== null) {
+                console.log("✅ Starting tour - step 1 and step 2 targets found and visible");
+                // Add small delay to ensure DOM is fully stable
+                setTimeout(() => {
+                  setRun(true);
+                  localStorage.removeItem("force_run_tour");
+                }, 300);
+              } else {
+                // Retry after a short delay if targets not ready
+                if (retries < 20) { // Max 20 retries (6 seconds total) - increased for step 2
+                  console.log(`⏳ Waiting for tour targets... (retry ${retries + 1}/20)`);
+                  if (!step1Target) console.warn("   ⚠️ Step 1 target missing");
+                  if (!step2Target) console.warn("   ⚠️ Step 2 target missing");
+                  if (step2Target && step2Target.offsetParent === null) console.warn("   ⚠️ Step 2 target exists but not visible");
+                  
+                  // Re-ensure Budget tab is active on each retry
+                  if (!step2Target || step2Target.offsetParent === null) {
+                    window.dispatchEvent(
+                      new CustomEvent("tourNavigateToBudget", { detail: { force: true, retry: retries } })
+                    );
+                  }
+                  
+                  setTimeout(() => checkTargets(retries + 1), 300);
+                } else {
+                  console.error("❌ Tour targets not found after multiple retries");
+                  console.error(`   Step 1: ${step1Target ? "✅" : "❌"}, Step 2: ${step2Target ? "✅" : "❌"}, Step 2 Visible: ${step2Target && step2Target.offsetParent !== null ? "✅" : "❌"}`);
+                  // Start anyway but log warning
+                  setRun(true);
+                  localStorage.removeItem("force_run_tour");
+                }
               }
             }
           };
@@ -433,6 +509,8 @@ export default function OnboardingTourProvider({ children, enabled = true }) {
       setRun(false);
       // Reset tour key when finished to prepare for next restart
       setTourKey(prev => prev + 1);
+      setStartStepIndex(0); // Reset to start from step 1 next time
+      localStorage.removeItem("tour_start_from_step");
     }
     
     // Handle errors (e.g., target not found)
@@ -478,6 +556,7 @@ export default function OnboardingTourProvider({ children, enabled = true }) {
           key={tourKey} // Force remount when key changes to reset to step 1
           run={run}
           steps={steps}
+          stepIndex={startStepIndex > 0 && run ? startStepIndex : undefined} // Only set stepIndex when tour is running and target is ready
           continuous
           showProgress
           showSkipButton

@@ -430,7 +430,7 @@ export default function SettingsScreenDesktop() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button onClick={() => exportCSV(transactions.map((t) => ({ id: t.id || t._id, type: t.type, amount: t.amount, date: t.date, category: t.category, wallet: t.wallet, note: t.note || "" })), "transactions.csv")} className="bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
                 <Download className="w-4 h-4" /> 
                 <span className="truncate">{t("exportTransactions")}</span>
@@ -442,10 +442,6 @@ export default function SettingsScreenDesktop() {
               <button onClick={() => exportCSV(wallets.map((w) => ({ id: w.id || w._id, name: w.name, balance: w.balance, icon: w.icon })), "wallets.csv")} className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
                 <FileSpreadsheet className="w-4 h-4" /> 
                 <span className="truncate">{t("exportWallets")}</span>
-              </button>
-              <button onClick={() => { const tx = filterByPreset(transactions); const join = tx.map((t) => ({ Ngay: new Date(t.date).toISOString().slice(0, 10), SoTien: t.amount, Loai: t.type === "income" ? t("income") : t.type === "expense" ? t("expense") : t.type, DanhMuc: t.category, Vi: t.wallet, GhiChu: t.note || "" })); exportCSV(join, "report.csv"); }} className="bg-[#6C5CE7] hover:bg-[#5a4fcb] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
-                <FileText className="w-4 h-4" /> 
-                <span className="truncate">{t("exportReports")}</span>
               </button>
             </div>
           </div>
@@ -613,23 +609,6 @@ export default function SettingsScreenDesktop() {
               className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
             >
               <FileSpreadsheet className="w-4 h-4" /> Xuất ví (CSV)
-            </button>
-            <button
-              onClick={() => {
-                const tx = filterByPreset(transactions);
-                const join = tx.map((t) => ({
-                  Ngay: new Date(t.date).toISOString().slice(0, 10),
-                  SoTien: t.amount,
-                  Loai: t.type === "income" ? "Thu nhập" : t.type === "expense" ? "Chi tiêu" : t.type,
-                  DanhMuc: t.category,
-                  Vi: t.wallet,
-                  GhiChu: t.note || "",
-                }));
-                exportCSV(join, "report.csv");
-              }}
-              className="bg-[#6C5CE7] hover:bg-[#5a4fcb] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <FileText className="w-4 h-4" /> Xuất báo cáo đơn giản
             </button>
             </div>
           </div>

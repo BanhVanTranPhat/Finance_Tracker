@@ -86,7 +86,11 @@ export default function SettingsScreen() {
       setIsEditingProfile(false);
     } catch (error) {
       console.error("Error saving profile:", error);
-      alert(language === "vi" ? "Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại." : "An error occurred while saving. Please try again.");
+      alert(
+        language === "vi"
+          ? "Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại."
+          : "An error occurred while saving. Please try again."
+      );
     }
   };
 
@@ -142,13 +146,19 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    if (window.confirm(language === "vi" ? "Bạn có chắc chắn muốn đăng xuất?" : "Are you sure you want to logout?")) {
+    if (
+      window.confirm(
+        language === "vi"
+          ? "Bạn có chắc chắn muốn đăng xuất?"
+          : "Are you sure you want to logout?"
+      )
+    ) {
       logout();
     }
   };
 
   const handleResetData = async () => {
-    const confirmMessage = 
+    const confirmMessage =
       "⚠️ CẢNH BÁO\n\n" +
       "Bạn có chắc chắn muốn xóa TẤT CẢ dữ liệu tài chính?\n\n" +
       "Hành động này sẽ:\n" +
@@ -156,9 +166,9 @@ export default function SettingsScreen() {
       "• Xóa tất cả ngân sách và thống kê\n" +
       "• KHÔNG THỂ HOÀN TÁC\n\n" +
       "Nhập 'XÓA' để xác nhận:";
-    
+
     const userInput = window.prompt(confirmMessage);
-    
+
     if (userInput === "XÓA") {
       try {
         console.log("🧹 Starting to delete all financial data...");
@@ -183,9 +193,14 @@ export default function SettingsScreen() {
         // Reset onboarding để hiển thị lại hướng dẫn
         localStorage.setItem("onboarding_completed", "false");
         localStorage.setItem("data_manually_cleared", "true");
-        
+
         // Reset tour flags để chạy lại tour
-        const userKey = (user?.id || user?._id || user?.email || "guest").toString();
+        const userKey = (
+          user?.id ||
+          user?._id ||
+          user?.email ||
+          "guest"
+        ).toString();
         localStorage.removeItem(`tour_seen_once_${userKey}`);
         localStorage.removeItem("tour_dismissed");
 
@@ -207,7 +222,10 @@ export default function SettingsScreen() {
     {
       icon: <User className="w-5 h-5" />,
       title: t("profile"),
-      subtitle: language === "vi" ? "Chỉnh sửa thông tin cá nhân" : "Edit personal information",
+      subtitle:
+        language === "vi"
+          ? "Chỉnh sửa thông tin cá nhân"
+          : "Edit personal information",
       action: () => setIsEditingProfile(true),
     },
     {
@@ -254,7 +272,9 @@ export default function SettingsScreen() {
     const csv = [headers.join(",")].concat(
       rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? "")).join(","))
     );
-    const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["\uFEFF" + csv.join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -433,7 +453,8 @@ export default function SettingsScreen() {
                     Xóa tất cả dữ liệu
                   </h3>
                   <p className="text-sm text-red-700">
-                    Xóa toàn bộ ví, danh mục, giao dịch và ngân sách. Hành động này không thể hoàn tác.
+                    Xóa toàn bộ ví, danh mục, giao dịch và ngân sách. Hành động
+                    này không thể hoàn tác.
                   </p>
                 </div>
               </div>
@@ -459,25 +480,76 @@ export default function SettingsScreen() {
               </select>
               {reportPreset === "custom" && (
                 <div className="flex items-center gap-2">
-                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white" />
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white"
+                  />
                   <span className="text-sm text-gray-500">đến</span>
-                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white" />
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="border border-[#E6E8EB] rounded-lg px-3 py-2 text-sm bg-white"
+                  />
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <button onClick={() => exportCSV(transactions.map((t) => ({ id: t.id || t._id, type: t.type, amount: t.amount, date: t.date, category: t.category, wallet: t.wallet, note: t.note || "" })), "transactions.csv")} className="group bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                onClick={() =>
+                  exportCSV(
+                    transactions.map((t) => ({
+                      id: t.id || t._id,
+                      type: t.type,
+                      amount: t.amount,
+                      date: t.date,
+                      category: t.category,
+                      wallet: t.wallet,
+                      note: t.note || "",
+                    })),
+                    "transactions.csv"
+                  )
+                }
+                className="group bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+              >
                 <Download className="w-4 h-4" /> Xuất giao dịch (CSV)
               </button>
-              <button onClick={() => exportCSV(categories.map((c) => ({ id: c.id || c._id, name: c.name, type: c.type, group: c.group, budgetLimit: c.budgetLimit || 0, spent: c.spent || 0 })), "categories.csv")} className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+              <button
+                onClick={() =>
+                  exportCSV(
+                    categories.map((c) => ({
+                      id: c.id || c._id,
+                      name: c.name,
+                      type: c.type,
+                      group: c.group,
+                      budgetLimit: c.budgetLimit || 0,
+                      spent: c.spent || 0,
+                    })),
+                    "categories.csv"
+                  )
+                }
+                className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+              >
                 <FileSpreadsheet className="w-4 h-4" /> Xuất danh mục (CSV)
               </button>
-              <button onClick={() => exportCSV(wallets.map((w) => ({ id: w.id || w._id, name: w.name, balance: w.balance, icon: w.icon })), "wallets.csv")} className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+              <button
+                onClick={() =>
+                  exportCSV(
+                    wallets.map((w) => ({
+                      id: w.id || w._id,
+                      name: w.name,
+                      balance: w.balance,
+                      icon: w.icon,
+                    })),
+                    "wallets.csv"
+                  )
+                }
+                className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+              >
                 <FileSpreadsheet className="w-4 h-4" /> Xuất ví (CSV)
-              </button>
-              <button onClick={() => { const tx = filterByPreset(transactions); const join = tx.map((t) => ({ Ngay: new Date(t.date).toISOString().slice(0, 10), SoTien: t.amount, Loai: t.type === "income" ? "Thu nhập" : t.type === "expense" ? "Chi tiêu" : t.type, DanhMuc: t.category, Vi: t.wallet, GhiChu: t.note || "" })); exportCSV(join, "report.csv"); }} className="bg-[#6C5CE7] hover:bg-[#5a4fcb] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2">
-                <FileText className="w-4 h-4" /> Xuất báo cáo đơn giản
               </button>
             </div>
           </div>
@@ -547,77 +619,60 @@ export default function SettingsScreen() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
-              onClick={() =>
-                exportCSV(
-                  transactions.map((t) => ({
-                    id: t.id || t._id,
-                    type: t.type,
-                    amount: t.amount,
-                    date: t.date,
-                    category: t.category,
-                    wallet: t.wallet,
-                    note: t.note || "",
-                  })),
-                  "transactions.csv"
-                )
-              }
-              className="group bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" /> Xuất giao dịch (CSV)
-            </button>
-            <button
-              onClick={() =>
-                exportCSV(
-                  categories.map((c) => ({
-                    id: c.id || c._id,
-                    name: c.name,
-                    type: c.type,
-                    group: c.group,
-                    budgetLimit: c.budgetLimit || 0,
-                    spent: c.spent || 0,
-                  })),
-                  "categories.csv"
-                )
-              }
-              className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <FileSpreadsheet className="w-4 h-4" /> Xuất danh mục (CSV)
-            </button>
-            <button
-              onClick={() =>
-                exportCSV(
-                  wallets.map((w) => ({
-                    id: w.id || w._id,
-                    name: w.name,
-                    balance: w.balance,
-                    icon: w.icon,
-                  })),
-                  "wallets.csv"
-                )
-              }
-              className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <FileSpreadsheet className="w-4 h-4" /> Xuất ví (CSV)
-            </button>
-            <button
-              onClick={() => {
-                const tx = filterByPreset(transactions);
-                const join = tx.map((t) => ({
-                  Ngay: new Date(t.date).toISOString().slice(0, 10),
-                  SoTien: t.amount,
-                  Loai: t.type === "income" ? "Thu nhập" : t.type === "expense" ? "Chi tiêu" : t.type,
-                  DanhMuc: t.category,
-                  Vi: t.wallet,
-                  GhiChu: t.note || "",
-                }));
-                exportCSV(join, "report.csv");
-              }}
-              className="bg-[#6C5CE7] hover:bg-[#5a4fcb] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <FileText className="w-4 h-4" /> Xuất báo cáo đơn giản
-            </button>
+                onClick={() =>
+                  exportCSV(
+                    transactions.map((t) => ({
+                      id: t.id || t._id,
+                      type: t.type,
+                      amount: t.amount,
+                      date: t.date,
+                      category: t.category,
+                      wallet: t.wallet,
+                      note: t.note || "",
+                    })),
+                    "transactions.csv"
+                  )
+                }
+                className="group bg-[#1ABC9C] hover:bg-[#149D86] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" /> Xuất giao dịch (CSV)
+              </button>
+              <button
+                onClick={() =>
+                  exportCSV(
+                    categories.map((c) => ({
+                      id: c.id || c._id,
+                      name: c.name,
+                      type: c.type,
+                      group: c.group,
+                      budgetLimit: c.budgetLimit || 0,
+                      spent: c.spent || 0,
+                    })),
+                    "categories.csv"
+                  )
+                }
+                className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+              >
+                <FileSpreadsheet className="w-4 h-4" /> Xuất danh mục (CSV)
+              </button>
+              <button
+                onClick={() =>
+                  exportCSV(
+                    wallets.map((w) => ({
+                      id: w.id || w._id,
+                      name: w.name,
+                      balance: w.balance,
+                      icon: w.icon,
+                    })),
+                    "wallets.csv"
+                  )
+                }
+                className="bg-[#5DADE2] hover:bg-[#4A9BD0] text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2"
+              >
+                <FileSpreadsheet className="w-4 h-4" /> Xuất ví (CSV)
+              </button>
             </div>
           </div>
         </div>
@@ -636,7 +691,9 @@ export default function SettingsScreen() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[420px] rounded-2xl shadow-2xl max-h-[70vh] flex flex-col">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-800">{t("selectCurrency")}</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                {t("selectCurrency")}
+              </h2>
               <button
                 onClick={() => setShowCurrencyModal(false)}
                 className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
@@ -689,7 +746,7 @@ export default function SettingsScreen() {
                       </div>
                     )}
                   </button>
-                  
+
                   {/* Exchange rate input for USD */}
                   {code === "USD" && currency === "USD" && (
                     <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 space-y-2">
@@ -704,7 +761,10 @@ export default function SettingsScreen() {
                           value={tempUsdRate}
                           onChange={(e) => {
                             const value = e.target.value;
-                            if (value === "" || (parseFloat(value) > 0 && !isNaN(value))) {
+                            if (
+                              value === "" ||
+                              (parseFloat(value) > 0 && !isNaN(value))
+                            ) {
                               setTempUsdRate(value);
                             }
                           }}
@@ -722,13 +782,14 @@ export default function SettingsScreen() {
                         <span className="text-gray-600 font-medium">VND</span>
                       </div>
                       <p className="text-xs text-gray-500">
-                        {t("default")} {DEFAULT_USD_TO_VND_RATE.toLocaleString()} VND
+                        {t("default")}{" "}
+                        {DEFAULT_USD_TO_VND_RATE.toLocaleString()} VND
                       </p>
                     </div>
                   )}
                 </div>
               ))}
-              
+
               {/* Close button when USD is selected */}
               {currency === "USD" && (
                 <button
@@ -813,7 +874,9 @@ export default function SettingsScreen() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-800">{t("selectLanguage")}</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                {t("selectLanguage")}
+              </h2>
               <button
                 onClick={() => setShowLanguageModal(false)}
                 className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
@@ -902,9 +965,17 @@ export default function SettingsScreen() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-[420px] rounded-2xl shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-800">Đặt lại mật khẩu</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                {t("resetPassword") || "Đặt lại mật khẩu"}
+              </h2>
               <button
-                onClick={() => { setShowResetModal(false); setResetMessage(""); setResetError(""); setResetCode(""); setResetPassword(""); }}
+                onClick={() => {
+                  setShowResetModal(false);
+                  setResetMessage("");
+                  setResetError("");
+                  setResetCode("");
+                  setResetPassword("");
+                }}
                 className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5 text-gray-600" />
@@ -913,7 +984,9 @@ export default function SettingsScreen() {
 
             <div className="px-6 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("email") || "Email"}
+                </label>
                 <input
                   type="email"
                   value={user?.email || ""}
@@ -939,17 +1012,27 @@ export default function SettingsScreen() {
                   setResetError("");
                   try {
                     setResetSending(true);
-                    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                    const base =
+                      import.meta.env.VITE_API_URL ||
+                      "http://localhost:5000/api";
                     const res = await fetch(base + "/auth/forgot", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ email: user?.email }),
                     });
                     const data = await res.json().catch(() => ({}));
-                    if (!res.ok) throw new Error(data.message || "Gửi mã thất bại");
-                    setResetMessage("Đã gửi mã xác thực về email. Vui lòng kiểm tra hộp thư.");
+                    if (!res.ok)
+                      throw new Error(
+                        data.message || t("sendCodeFailed") || "Gửi mã thất bại"
+                      );
+                    setResetMessage(
+                      t("verificationCodeSent") ||
+                        "Đã gửi mã xác thực về email. Vui lòng kiểm tra hộp thư."
+                    );
                   } catch (e) {
-                    setResetError(e instanceof Error ? e.message : "Có lỗi xảy ra");
+                    setResetError(
+                      e instanceof Error ? e.message : "Có lỗi xảy ra"
+                    );
                   } finally {
                     setResetSending(false);
                   }
@@ -957,12 +1040,16 @@ export default function SettingsScreen() {
                 disabled={resetSending}
                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-4 py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {resetSending ? "Đang gửi mã..." : "Gửi mã về email"}
+                {resetSending
+                  ? t("sendingCode") || "Đang gửi mã..."
+                  : t("sendCodeToEmail") || "Gửi mã về email"}
               </button>
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mã xác thực (6 số)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("verificationCode") || "Mã xác thực (6 số)"}
+                  </label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -974,7 +1061,9 @@ export default function SettingsScreen() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("newPassword") || "Mật khẩu mới"}
+                  </label>
                   <input
                     type="password"
                     value={resetPassword}
@@ -990,22 +1079,38 @@ export default function SettingsScreen() {
                   setResetMessage("");
                   setResetError("");
                   try {
-                    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                    const base =
+                      import.meta.env.VITE_API_URL ||
+                      "http://localhost:5000/api";
                     const res = await fetch(base + "/auth/reset", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: user?.email, code: resetCode, newPassword: resetPassword }),
+                      body: JSON.stringify({
+                        email: user?.email,
+                        code: resetCode,
+                        newPassword: resetPassword,
+                      }),
                     });
                     const data = await res.json().catch(() => ({}));
-                    if (!res.ok) throw new Error(data.message || "Đặt lại mật khẩu thất bại");
-                    setResetMessage("Đặt lại mật khẩu thành công.");
+                    if (!res.ok)
+                      throw new Error(
+                        data.message ||
+                          t("resetPasswordFailed") ||
+                          "Đặt lại mật khẩu thất bại"
+                      );
+                    setResetMessage(
+                      t("resetPasswordSuccess") ||
+                        "Đặt lại mật khẩu thành công."
+                    );
                   } catch (e) {
-                    setResetError(e instanceof Error ? e.message : "Có lỗi xảy ra");
+                    setResetError(
+                      e instanceof Error ? e.message : "Có lỗi xảy ra"
+                    );
                   }
                 }}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-3 rounded-xl transition"
               >
-                Xác nhận đặt lại
+                {t("confirmReset") || "Xác nhận đặt lại"}
               </button>
             </div>
           </div>

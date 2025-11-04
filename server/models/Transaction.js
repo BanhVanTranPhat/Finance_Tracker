@@ -47,6 +47,10 @@ const transactionSchema = new mongoose.Schema(
       virtuals: true,
       transform: function (doc, ret) {
         ret.id = ret._id;
+        // Ensure note is included in response if it exists
+        if (doc.note !== undefined && doc.note !== null) {
+          ret.note = doc.note.trim() || undefined;
+        }
         return ret;
       },
     },

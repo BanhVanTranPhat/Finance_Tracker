@@ -49,7 +49,7 @@ const getWalletTypeLabel = (iconId, t) => {
     };
     return map[iconId] || "Tiền mặt";
   }
-  
+
   const map = {
     "money-bag": t("cash"),
     "credit-card": t("bankCard"),
@@ -230,7 +230,9 @@ export default function WalletScreen() {
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">{getWalletTypeLabel(wallet.icon, t)}</div>
+                      <div className="text-sm text-gray-500">
+                        {getWalletTypeLabel(wallet.icon, t)}
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div
@@ -318,12 +320,20 @@ export default function WalletScreen() {
                               isIncome ? "text-[#166f64]" : "text-[#9c3f2e]"
                             }`}
                           >
-                            {transaction.description || transaction.category}
+                            {transaction.category}
                           </div>
                           <div className="text-sm text-gray-600">
-                            {transaction.category} •{" "}
+                            {transaction.wallet || "N/A"} •{" "}
                             {formatDateForTransaction(transaction.date)}
                           </div>
+                          {(() => {
+                            const noteText = transaction.note || transaction.description;
+                            return noteText && noteText.trim() ? (
+                              <div className="text-xs text-gray-500 mt-1 italic">
+                                {noteText.trim()}
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                         <div
                           className={`font-bold text-lg ${
