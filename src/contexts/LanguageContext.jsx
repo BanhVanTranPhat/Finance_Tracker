@@ -401,14 +401,11 @@ const translations = {
     createNewCategory: "Tạo danh mục mới",
     selectFromTemplate: "Chọn từ mẫu có sẵn",
     noCategoriesYet: "Chưa có danh mục nào. Vui lòng tạo danh mục trước.",
-    // Transaction Modal
-    selectCategory: "Chọn danh mục",
-    selectWallet: "Chọn ví",
+    // Transaction Modal - enterAmount and yourCategories only (others already exist)
     enterAmount: "Nhập số tiền",
     yourCategories: "Danh mục của bạn",
     pleaseCreateWalletAndCategory:
       "Vui lòng tạo ví và danh mục trước khi thêm giao dịch",
-    addTransaction: "Thêm giao dịch",
     editTransaction: "Chỉnh sửa giao dịch",
     saveTransaction: "Lưu giao dịch",
     updateTransaction: "Cập nhật giao dịch",
@@ -416,15 +413,9 @@ const translations = {
     note: "Ghi chú",
     addNoteForTransaction: "Thêm ghi chú cho giao dịch...",
     loadingData: "Đang tải dữ liệu...",
-    clearAll: "Xóa hết",
-    update: "Cập nhật",
-    save: "Lưu",
-    // Wallet Types
+    // Wallet Types - gold and loans only (others already exist)
     mainWallet: "Ví chính",
-    bankCard: "Thẻ ngân hàng",
-    eWallet: "Ví điện tử",
     gold: "Vàng",
-    creditCard: "Thẻ tín dụng",
     loans: "Các khoản vay",
     // Date Picker
     thisMonth: "Tháng này",
@@ -862,14 +853,11 @@ const translations = {
     createNewCategory: "Create new category",
     selectFromTemplate: "Select from template",
     noCategoriesYet: "No categories yet. Please create categories first.",
-    // Transaction Modal
-    selectCategory: "Select category",
-    selectWallet: "Select wallet",
+    // Transaction Modal - enterAmount and yourCategories only (others already exist)
     enterAmount: "Enter amount",
     yourCategories: "Your Categories",
     pleaseCreateWalletAndCategory:
       "Please create a wallet and categories before adding a transaction",
-    addTransaction: "Add Transaction",
     editTransaction: "Edit Transaction",
     saveTransaction: "Save Transaction",
     updateTransaction: "Update Transaction",
@@ -877,15 +865,9 @@ const translations = {
     note: "Note",
     addNoteForTransaction: "Add a note for the transaction...",
     loadingData: "Loading data...",
-    clearAll: "Clear All",
-    update: "Update",
-    save: "Save",
-    // Wallet Types
+    // Wallet Types - gold and loans only (others already exist)
     mainWallet: "Main Wallet",
-    bankCard: "Bank Card",
-    eWallet: "E-Wallet",
     gold: "Gold",
-    creditCard: "Credit Card",
     loans: "Loans",
     // Date Picker
     thisMonth: "This Month",
